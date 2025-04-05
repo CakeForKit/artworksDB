@@ -3,7 +3,7 @@ package hasher_test
 import (
 	"testing"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/hasher"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"github.com/stateio/testify/assert"
 )
 
@@ -33,6 +33,16 @@ func TestWrongPassword(t *testing.T) {
 	err = hasherServ.CheckPassword(wrongPassword, hashedPassword)
 	assert.Error(t, err)
 	assert.Equal(t, hasher.ErrPassword, err)
+}
+
+func TestEmptyPassword(t *testing.T) {
+	password := ""
+	hasherServ, err := hasher.NewHasher()
+	assert.NoError(t, err)
+
+	_, err = hasherServ.HashPassword(password)
+	assert.Error(t, err)
+	assert.Equal(t, hasher.ErrEmptyPassword, err)
 }
 
 func TestDiffHash(t *testing.T) {

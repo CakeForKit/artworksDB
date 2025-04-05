@@ -8,7 +8,7 @@ import (
 
 type EmployeeService interface {
 	GetAllEmployees() []*models.Employee
-	Add(*models.Employee) error // нехешированный пароль (здесь он и хешируется)
+	// Add(*models.Employee) error // нехешированный пароль (здесь он и хешируется)
 	Delete(id uuid.UUID) error
 	Update(id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error)
 }
@@ -27,9 +27,9 @@ func (e *employeeService) GetAllEmployees() []*models.Employee {
 	return e.employeeRep.GetAll()
 }
 
-func (e *employeeService) Add(emp *models.Employee) error {
-	return e.employeeRep.Add(emp)
-}
+// func (e *employeeService) Add(emp *models.Employee) error {
+// 	return e.employeeRep.Add(emp)
+// }
 
 func (e *employeeService) Delete(id uuid.UUID) error {
 	return e.employeeRep.Delete(id)

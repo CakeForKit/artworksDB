@@ -15,6 +15,11 @@ func (m *MockEmployeeRep) GetAll() []*models.Employee {
 	return args.Get(0).([]*models.Employee)
 }
 
+func (m *MockEmployeeRep) GetByLogin(login string) (*models.Employee, error) {
+	args := m.Called(login)
+	return args.Get(0).(*models.Employee), args.Error(1)
+}
+
 func (m *MockEmployeeRep) Add(e *models.Employee) error {
 	args := m.Called(e)
 	return args.Error(0)

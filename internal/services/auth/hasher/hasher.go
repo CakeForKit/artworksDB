@@ -12,8 +12,9 @@ type Hasher interface {
 }
 
 var (
-	ErrHash     = errors.New("failed to hash password")
-	ErrPassword = errors.New("error CompareHashAndPassword")
+	ErrHash          = errors.New("failed to hash password")
+	ErrPassword      = errors.New("error CompareHashAndPassword")
+	ErrEmptyPassword = errors.New("error the password cannot be empty")
 )
 
 func NewHasher() (Hasher, error) {
@@ -26,6 +27,9 @@ type bcryptHasher struct {
 }
 
 func (h *bcryptHasher) HashPassword(password string) (string, error) {
+	if len(password) == 0 {
+		return "", ErrEmptyPassword
+	}
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return "", ErrHash

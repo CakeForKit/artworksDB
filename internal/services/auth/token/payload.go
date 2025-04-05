@@ -7,6 +7,7 @@ import (
 )
 
 // данные полезной нагрузки, хранящиеся внутри тела токена
+
 type Payload struct {
 	ID        uuid.UUID `json:"id"`
 	UserID    uuid.UUID `json:"user_id"`

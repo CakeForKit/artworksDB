@@ -16,6 +16,7 @@ var (
 
 type EmployeeRep interface {
 	GetAll() []*models.Employee
+	GetByLogin(login string) (*models.Employee, error)
 	Add(e *models.Employee) error
 	Delete(id uuid.UUID) error
 	Update(id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error)
