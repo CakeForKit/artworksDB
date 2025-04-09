@@ -16,6 +16,7 @@ var (
 
 type UserRep interface {
 	GetAll() []*models.User
+	GetAllSubscribed() []*models.User
 	GetByID(id uuid.UUID) (*models.User, error)
 	GetByLogin(login string) (*models.User, error)
 	Add(e *models.User) error

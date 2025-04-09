@@ -9,9 +9,10 @@ import (
 // Viper использует пакет mapstructure под капотом для преобразования значений
 
 type Config struct {
-	TokenSymmetricKey    string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
-	AccessTokenDuration  time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
-	RefreshTokenDuration time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	TokenSymmetricKey            string        `mapstructure:"TOKEN_SYMMETRIC_KEY"`
+	AccessTokenDuration          time.Duration `mapstructure:"ACCESS_TOKEN_DURATION"`
+	RefreshTokenDuration         time.Duration `mapstructure:"REFRESH_TOKEN_DURATION"`
+	BuyTicketTransactionDuration time.Duration `mapstructure:"BUY_TICKET_TRANSACTION_DURATION"`
 }
 
 func LoadConfig(path string) (config Config, err error) {

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"net/mail"
 	"time"
 
 	"github.com/google/uuid"
@@ -85,11 +86,16 @@ func (u *User) IsSubscribedToMail() bool {
 }
 
 // Вспомогательная функция для проверки email
-func isValidEmail(email string) bool {
-	// Простая проверка формата (можно заменить на regexp или библиотеку)
-	return len(email) >= 3 && contains(email, "@") && contains(email, ".")
-}
+// func isValidEmail(email string) bool {
+// 	fmt.Print(len(email) >= 3, contains(email, "@"), contains(email, "."))
+// 	return len(email) >= 3 && contains(email, "@") && contains(email, ".")
+// }
 
-func contains(s, substr string) bool {
-	return len(s) >= len(substr) && s[len(s)-len(substr):] == substr
+// func contains(s, substr string) bool {
+// 	return len(s) >= len(substr) && s[len(s)-len(substr):] == substr
+// }
+
+func isValidEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return (err == nil)
 }

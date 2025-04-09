@@ -15,6 +15,11 @@ func (m *MockUserRep) GetAll() []*models.User {
 	return args.Get(0).([]*models.User)
 }
 
+func (m *MockUserRep) GetAllSubscribed() []*models.User {
+	args := m.Called()
+	return args.Get(0).([]*models.User)
+}
+
 func (m *MockUserRep) GetByID(id uuid.UUID) (*models.User, error) {
 	args := m.Called(id)
 	return args.Get(0).(*models.User), args.Error(1)

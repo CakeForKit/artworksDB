@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"time"
 
 	"github.com/google/uuid"
@@ -50,6 +51,17 @@ func NewEvent(title string, dateBegin time.Time, dateEnd time.Time,
 		access:    access,
 		artworks:  artworks,
 	}, nil
+}
+
+func (e *Event) TextAbout() string {
+	return fmt.Sprintf(
+		"Событие: %s:\nДата начала: %s\nДата окончания: %s\nАдрес: %s\nДоступ: %v\n",
+		e.GetTitle(),
+		e.GetDateBegin().Format(time.RFC3339),
+		e.GetDateEnd().Format(time.RFC3339),
+		e.GetAddress(),
+		e.GetAccess(),
+	)
 }
 
 // GetID возвращает уникальный идентификатор события

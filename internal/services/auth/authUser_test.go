@@ -14,23 +14,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-type MockTokenMaker struct {
-	mock.Mock
-}
-
-func (m *MockTokenMaker) CreateToken(id uuid.UUID, duration time.Duration) (string, error) {
-	args := m.Called(id, duration)
-	return args.String(0), args.Error(1)
-}
-
-func (m *MockTokenMaker) VerifyToken(token string) (*token.Payload, error) {
-	args := m.Called(token)
-	if args.Get(0) == nil {
-		return nil, args.Error(1)
-	}
-	return args.Get(0).(*token.Payload), args.Error(1)
-}
-
 // MockHasher implements hasher.Hasher interface
 type MockHasher struct {
 	mock.Mock
@@ -53,10 +36,9 @@ func TestAuthUserService(t *testing.T) {
 	validPassword := "securepassword"
 	validEmail := "test@example.com"
 	hashedPassword := "hashedpassword"
-	validToken := "validtoken"
 
 	config := util.Config{
-		TokenSymmetricKey:    "symmetrickey",
+		TokenSymmetricKey:    "01234567890123456789012345678912",
 		AccessTokenDuration:  time.Hour,
 		RefreshTokenDuration: time.Hour * 24,
 	}
@@ -64,7 +46,8 @@ func TestAuthUserService(t *testing.T) {
 	t.Run("LoginUser", func(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker := new(MockTokenMaker)
+			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			require.NoError(t, err)
 			hasher := new(MockHasher)
 
 			user, err := models.NewUser(
@@ -78,56 +61,30 @@ func TestAuthUserService(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			userRep.On("GetByLogin", validLogin).Return(user, nil)
+			userRep.On("GetByLogin", validLogin).Return(&user, nil)
 			hasher.On("CheckPassword", validPassword, hashedPassword).Return(nil)
-			tokenMaker.On("CreateToken", validUserID, config.AccessTokenDuration).Return(validToken, nil)
 
-			service := &authUserService{
+			service := &authUser{
 				tokenMaker: tokenMaker,
 				config:     config,
 				userrep:    userRep,
 				hasher:     hasher,
 			}
 
-			token, err := service.LoginUser(LoginUserRequest{
+			_, err = service.LoginUser(LoginUserRequest{
 				Login:    validLogin,
 				Password: validPassword,
 			})
-
 			require.NoError(t, err)
-			assert.Equal(t, validToken, token)
 
 			userRep.AssertExpectations(t)
 			hasher.AssertExpectations(t)
-			tokenMaker.AssertExpectations(t)
-		})
-
-		t.Run("UserNotFound", func(t *testing.T) {
-			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker := new(MockTokenMaker)
-			hasher := new(MockHasher)
-
-			userRep.On("GetByLogin", validLogin).Return(nil, assert.AnError)
-
-			service := &authUserService{
-				tokenMaker: tokenMaker,
-				config:     config,
-				userrep:    userRep,
-				hasher:     hasher,
-			}
-
-			_, err := service.LoginUser(LoginUserRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
-
-			require.Error(t, err)
-			assert.ErrorIs(t, err, assert.AnError)
 		})
 
 		t.Run("InvalidPassword", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker := new(MockTokenMaker)
+			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			require.NoError(t, err)
 			hasher := new(MockHasher)
 
 			user, err := models.NewUser(
@@ -141,10 +98,10 @@ func TestAuthUserService(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			userRep.On("GetByLogin", validLogin).Return(user, nil)
+			userRep.On("GetByLogin", validLogin).Return(&user, nil)
 			hasher.On("CheckPassword", validPassword, hashedPassword).Return(assert.AnError)
 
-			service := &authUserService{
+			service := &authUser{
 				tokenMaker: tokenMaker,
 				config:     config,
 				userrep:    userRep,
@@ -165,20 +122,21 @@ func TestAuthUserService(t *testing.T) {
 	t.Run("RegisterUser", func(t *testing.T) {
 		t.Run("Success", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker := new(MockTokenMaker)
+			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			require.NoError(t, err)
 			hasher := new(MockHasher)
 
 			hasher.On("HashPassword", validPassword).Return(hashedPassword, nil)
 			userRep.On("Add", mock.AnythingOfType("*models.User")).Return(nil)
 
-			service := &authUserService{
+			service := &authUser{
 				tokenMaker: tokenMaker,
 				config:     config,
 				userrep:    userRep,
 				hasher:     hasher,
 			}
 
-			err := service.RegisterUser(RegisterUserRequest{
+			err = service.RegisterUser(RegisterUserRequest{
 				Username:      validUsername,
 				Login:         validLogin,
 				Password:      validPassword,

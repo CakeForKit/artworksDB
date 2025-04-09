@@ -23,18 +23,18 @@ type RegisterEmployeeRequest struct {
 	Password string
 }
 
-type AuthEmployeeService interface {
+type AuthEmployee interface {
 	LoginEmployee(ler LoginEmployeeRequest) (string, error)
 	RegisterEmployee(rer RegisterEmployeeRequest) error
 }
 
-func NewAuthEmployeeService(config util.Config) (AuthEmployeeService, error) {
+func NewAuthEmployee(config util.Config) (AuthEmployee, error) {
 	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
 
-	service := &authEmployeeService{
+	service := &authEmployee{
 		tokenMaker: tokenMaker,
 		config:     config,
 	}
@@ -42,14 +42,14 @@ func NewAuthEmployeeService(config util.Config) (AuthEmployeeService, error) {
 	return service, nil
 }
 
-type authEmployeeService struct {
+type authEmployee struct {
 	tokenMaker  token.TokenMaker
 	config      util.Config
 	employeerep employeerep.EmployeeRep
 	hasher      hasher.Hasher
 }
 
-func (s *authEmployeeService) LoginEmployee(ler LoginEmployeeRequest) (string, error) {
+func (s *authEmployee) LoginEmployee(ler LoginEmployeeRequest) (string, error) {
 	employee, err := s.employeerep.GetByLogin(ler.Login)
 	if err != nil {
 		return "", err
@@ -70,7 +70,7 @@ func (s *authEmployeeService) LoginEmployee(ler LoginEmployeeRequest) (string, e
 	return accessToken, nil
 }
 
-func (s *authEmployeeService) RegisterEmployee(rer RegisterEmployeeRequest) error {
+func (s *authEmployee) RegisterEmployee(rer RegisterEmployeeRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rer.Password)
 	if err != nil {
 		return err

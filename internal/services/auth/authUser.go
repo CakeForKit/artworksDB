@@ -25,12 +25,12 @@ type RegisterUserRequest struct {
 	SubscribeMail bool
 }
 
-type AuthUserService interface {
+type AuthUser interface {
 	LoginUser(lur LoginUserRequest) (string, error)
 	RegisterUser(rur RegisterUserRequest) error
 }
 
-func NewAuthUserService(config util.Config, urep userrep.UserRep) (AuthUserService, error) {
+func NewAuthUser(config util.Config, urep userrep.UserRep) (AuthUser, error) {
 	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
@@ -41,7 +41,7 @@ func NewAuthUserService(config util.Config, urep userrep.UserRep) (AuthUserServi
 		return nil, err
 	}
 
-	server := &authUserService{
+	server := &authUser{
 		tokenMaker: tokenMaker,
 		config:     config,
 		userrep:    urep,
@@ -51,14 +51,14 @@ func NewAuthUserService(config util.Config, urep userrep.UserRep) (AuthUserServi
 	return server, nil
 }
 
-type authUserService struct {
+type authUser struct {
 	tokenMaker token.TokenMaker
 	config     util.Config
 	userrep    userrep.UserRep
 	hasher     hasher.Hasher
 }
 
-func (s *authUserService) LoginUser(lur LoginUserRequest) (string, error) {
+func (s *authUser) LoginUser(lur LoginUserRequest) (string, error) {
 	user, err := s.userrep.GetByLogin((lur.Login))
 	if err != nil {
 		return "", err
@@ -79,7 +79,7 @@ func (s *authUserService) LoginUser(lur LoginUserRequest) (string, error) {
 	return accessToken, nil
 }
 
-func (s *authUserService) RegisterUser(rur RegisterUserRequest) error {
+func (s *authUser) RegisterUser(rur RegisterUserRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rur.Password)
 	if err != nil {
 		return err
