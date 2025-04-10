@@ -1,0 +1,13 @@
+services:
+  app:
+    container_name: app-container
+    build:
+      context: ../
+      dockerfile: ./cmd/app/Dockerfile
+    # ports:
+    # env_file:
+    #   - app.env
+    # depends_on:
+    #   - postgres
+    # networks:
+    #   - postgres
