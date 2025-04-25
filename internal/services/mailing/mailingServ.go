@@ -13,6 +13,7 @@ type MailingService interface {
 	SendMailToAllUsers([]*models.Event) error
 	SubscribeToMailing(id uuid.UUID) error
 	UnSubscribeToMailing(id uuid.UUID) error
+	GenerateMessageText(events []*models.Event) string
 }
 
 type mailingService struct {
@@ -38,7 +39,7 @@ func (m *mailingService) SendMailToAllUsers(events []*models.Event) error {
 		return nil
 	}
 	fmt.Printf("Сообщение отправлено пользовтелям:\n")
-	msgText := m.generateMessageText(events)
+	msgText := m.GenerateMessageText(events)
 	for _, u := range users {
 		fmt.Printf("%s, ", u.GetMail())
 	}
@@ -47,7 +48,7 @@ func (m *mailingService) SendMailToAllUsers(events []*models.Event) error {
 	return nil
 }
 
-func (m *mailingService) generateMessageText(events []*models.Event) string {
+func (m *mailingService) GenerateMessageText(events []*models.Event) string {
 	var arre []string = make([]string, len(events)+1)
 	var i int = 0
 	for ; i < len(events); i++ {
@@ -58,35 +59,35 @@ func (m *mailingService) generateMessageText(events []*models.Event) string {
 }
 
 func (m *mailingService) SubscribeToMailing(id uuid.UUID) error {
-	updatefunc := func(u *models.User) (*models.User, error) {
-		updatedUser, err := models.NewUser(
-			u.GetID(),
-			u.GetUsername(),
-			u.GetLogin(),
-			u.GetHashedPassword(),
-			u.GetCreatedAt(),
-			u.GetMail(),
-			true,
-		)
-		return &updatedUser, err
-	}
-	_, err := m.userRep.Update(id, updatefunc)
-	return err
+	// updatefunc := func(u *models.User) (*models.User, error) {
+	// 	updatedUser, err := models.NewUser(
+	// 		u.GetID(),
+	// 		u.GetUsername(),
+	// 		u.GetLogin(),
+	// 		u.GetHashedPassword(),
+	// 		u.GetCreatedAt(),
+	// 		u.GetMail(),
+	// 		true,
+	// 	)
+	// 	return &updatedUser, err
+	// }
+	// _, err := m.userRep.Update(id, updatefunc)
+	return m.userRep.UpdateSubscribeToMailing(id, true)
 }
 
 func (m *mailingService) UnSubscribeToMailing(id uuid.UUID) error {
-	updatefunc := func(u *models.User) (*models.User, error) {
-		updatedUser, err := models.NewUser(
-			u.GetID(),
-			u.GetUsername(),
-			u.GetLogin(),
-			u.GetHashedPassword(),
-			u.GetCreatedAt(),
-			u.GetMail(),
-			false,
-		)
-		return &updatedUser, err
-	}
-	_, err := m.userRep.Update(id, updatefunc)
-	return err
+	// updatefunc := func(u *models.User) (*models.User, error) {
+	// 	updatedUser, err := models.NewUser(
+	// 		u.GetID(),
+	// 		u.GetUsername(),
+	// 		u.GetLogin(),
+	// 		u.GetHashedPassword(),
+	// 		u.GetCreatedAt(),
+	// 		u.GetMail(),
+	// 		false,
+	// 	)
+	// 	return &updatedUser, err
+	// }
+	// _, err := m.userRep.Update(id, updatefunc)
+	return m.userRep.UpdateSubscribeToMailing(id, false)
 }

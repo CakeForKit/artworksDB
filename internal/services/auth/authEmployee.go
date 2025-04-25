@@ -21,6 +21,8 @@ type RegisterEmployeeRequest struct {
 	Username string
 	Login    string
 	Password string
+	Valid    bool
+	AdminID  uuid.UUID
 }
 
 type AuthEmployee interface {
@@ -81,6 +83,8 @@ func (s *authEmployee) RegisterEmployee(rer RegisterEmployeeRequest) error {
 		rer.Login,
 		hashedPassword,
 		time.Now(),
+		rer.Valid,
+		rer.AdminID,
 	)
 	if err != nil {
 		return err

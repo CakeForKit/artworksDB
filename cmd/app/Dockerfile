@@ -9,6 +9,6 @@ RUN go mod download
 
 COPY ../../. .
 
-# CMD ["go", "run", "./cmd/app/main.go"]
+CMD ["go", "run", "./cmd/app/main.go"]
 
-CMD ["go", "test"]
+# CMD ["go", "test"]

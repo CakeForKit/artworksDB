@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -13,50 +14,88 @@ type Employee struct {
 	login          string
 	hashedPassword string
 	createdAt      time.Time
+	valid          bool
+	adminID        uuid.UUID
 }
 
 var (
-	ErrEmployeeEmptyUsername = errors.New("empty username")
-	ErrEmployeeEmptyLogin    = errors.New("empty login")
-	ErrEmployeeEmptyPassword = errors.New("empty password")
-	ErrEmployeeCreatedAt     = errors.New("invalid createdAt time")
+	ErrEmployeeEmptyUsername    = errors.New("empty username")
+	ErrEmployeeEmptyLogin       = errors.New("empty login")
+	ErrEmployeeEmptyPassword    = errors.New("empty password")
+	ErrEmployeeInvalidCreatedAt = errors.New("invalid createdAt time")
+	ErrEmployeeInvalidAdminID   = errors.New("invalid admin ID")
 )
 
-func NewEmployee(id uuid.UUID, username string, login string, hashedPassword string, createdAt time.Time) (Employee, error) {
-	if username == "" {
-		return Employee{}, ErrEmployeeEmptyUsername
-	} else if login == "" {
-		return Employee{}, ErrEmployeeEmptyLogin
-	} else if hashedPassword == "" {
-		return Employee{}, ErrEmployeeEmptyPassword
-	} else if createdAt.IsZero() {
-		return Employee{}, ErrEmployeeCreatedAt
-	}
-	return Employee{
+func NewEmployee(id uuid.UUID, username string, login string, hashedPassword string,
+	createdAt time.Time, valid bool, adminID uuid.UUID) (Employee, error) {
+	employee := Employee{
 		id:             id,
-		username:       username,
-		login:          login,
+		username:       strings.TrimSpace(username),
+		login:          strings.TrimSpace(login),
 		hashedPassword: hashedPassword,
 		createdAt:      createdAt,
-	}, nil
+		valid:          valid,
+		adminID:        adminID,
+	}
+	err := employee.validate()
+	if err != nil {
+		return Employee{}, err
+	}
+	return employee, nil
 }
 
-// GetID возвращает идентификатор сотрудника
+func (e *Employee) validate() error {
+	if e.username == "" || len(e.username) > 50 {
+		return ErrEmployeeEmptyUsername
+	} else if e.login == "" || len(e.login) > 50 {
+		return ErrEmployeeEmptyLogin
+	} else if e.hashedPassword == "" || len(e.hashedPassword) > 255 {
+		return ErrEmployeeEmptyPassword
+	} else if e.createdAt.IsZero() {
+		return ErrEmployeeInvalidCreatedAt
+	} else if e.adminID == uuid.Nil {
+		return ErrEmployeeInvalidAdminID
+	}
+	return nil
+}
+
 func (e *Employee) GetID() uuid.UUID {
 	return e.id
 }
 
-// GetUsername возвращает имя пользователя сотрудника
 func (e *Employee) GetUsername() string {
 	return e.username
 }
 
-// GetLogin возвращает логин сотрудника
 func (e *Employee) GetLogin() string {
 	return e.login
 }
 
-// GetHashedPassword возвращает хэшированный пароль сотрудника
 func (e *Employee) GetHashedPassword() string {
 	return e.hashedPassword
 }
+
+func (e *Employee) GetCreatedAt() time.Time {
+	return e.createdAt
+}
+
+func (e *Employee) IsValid() bool {
+	return e.valid
+}
+
+// func (e *Employee) SetValid(valid bool) {
+// 	e.valid = valid
+// }
+
+func (e *Employee) GetAdminID() uuid.UUID {
+	return e.adminID
+}
+
+// SetAdminID устанавливает ID администратора
+// func (e *Employee) SetAdminID(adminID uuid.UUID) error {
+// 	if adminID == uuid.Nil {
+// 		return ErrEmployeeInvalidAdminID
+// 	}
+// 	e.adminID = adminID
+// 	return nil
+// }

@@ -2,6 +2,7 @@ package models
 
 import (
 	"errors"
+	"strings"
 
 	"github.com/google/uuid"
 )
@@ -18,83 +19,123 @@ type Artwork struct {
 }
 
 var (
-	ErrArtworkEmptyTitle           = errors.New("empty title")
-	ErrArtworkInvalidYear          = errors.New("invalid year")
-	ErrArtworkInvalidAuthor        = errors.New("invalid author")
-	ErrArtworkInvalidCollection    = errors.New("invalid collection")
-	ErrArtworkInvalidSize          = errors.New("empty size")
-	ErrArtworkInvalidMaterial      = errors.New("empty material")
-	ErrArtworkInvalidTechnic       = errors.New("empty technic")
-	ErrArtworkCreationYearToAuthor = errors.New("invalid creation year to author live")
+	ErrArtworkEmptyTitle        = errors.New("empty title")
+	ErrArtworkTitleTooLong      = errors.New("title exceeds maximum length (255 chars)")
+	ErrArtworkEmptyTechnic      = errors.New("empty technic")
+	ErrArtworkTechnicTooLong    = errors.New("technic exceeds maximum length (100 chars)")
+	ErrArtworkEmptyMaterial     = errors.New("empty material")
+	ErrArtworkMaterialTooLong   = errors.New("material exceeds maximum length (100 chars)")
+	ErrArtworkEmptySize         = errors.New("empty size")
+	ErrArtworkSizeTooLong       = errors.New("size exceeds maximum length (50 chars)")
+	ErrArtworkInvalidYear       = errors.New("invalid creation year")
+	ErrArtworkInvalidAuthor     = errors.New("invalid author reference")
+	ErrArtworkInvalidCollection = errors.New("invalid collection reference")
+	ErrArtworkYearNotInRange    = errors.New("creation year not in author's lifetime")
 )
 
-func NewArtwork(id uuid.UUID, title string, creationYear int, author *Author, collection *Collection,
-	size string, material string, technic string) (Artwork, error) {
-
-	if title == "" {
-		return Artwork{}, ErrArtworkEmptyTitle
-	} else if creationYear < 0 {
-		return Artwork{}, ErrArtworkInvalidYear
-	} else if author == nil {
-		return Artwork{}, ErrArtworkInvalidAuthor
-	} else if !(author.birthYear < creationYear && creationYear <= author.deathYear) {
-		return Artwork{}, ErrArtworkCreationYearToAuthor
-	} else if collection == nil {
-		return Artwork{}, ErrArtworkInvalidCollection
-	} else if size == "" {
-		return Artwork{}, ErrArtworkInvalidSize
-	} else if material == "" {
-		return Artwork{}, ErrArtworkInvalidMaterial
-	} else if technic == "" {
-		return Artwork{}, ErrArtworkInvalidTechnic
-	}
-	return Artwork{
+func NewArtwork(
+	id uuid.UUID,
+	title string,
+	technic string,
+	material string,
+	size string,
+	creationYear int,
+	author *Author,
+	collection *Collection,
+) (Artwork, error) {
+	artwork := Artwork{
 		id:           id,
-		title:        title,
+		title:        strings.TrimSpace(title),
+		technic:      strings.TrimSpace(technic),
+		material:     strings.TrimSpace(material),
+		size:         strings.TrimSpace(size),
 		creationYear: creationYear,
 		author:       author,
 		collection:   collection,
-		size:         size,
-		material:     material,
-		technic:      technic,
-	}, nil
+	}
+
+	if err := artwork.validate(); err != nil {
+		return Artwork{}, err
+	}
+
+	if err := artwork.validateWithAuthor(); err != nil {
+		return Artwork{}, err
+	}
+
+	return artwork, nil
+}
+
+func (a *Artwork) validate() error {
+	switch {
+	case a.title == "":
+		return ErrArtworkEmptyTitle
+	case len(a.title) > 255:
+		return ErrArtworkTitleTooLong
+	case a.technic == "":
+		return ErrArtworkEmptyTechnic
+	case len(a.technic) > 100:
+		return ErrArtworkTechnicTooLong
+	case a.material == "":
+		return ErrArtworkEmptyMaterial
+	case len(a.material) > 100:
+		return ErrArtworkMaterialTooLong
+	case a.size == "":
+		return ErrArtworkEmptySize
+	case len(a.size) > 50:
+		return ErrArtworkSizeTooLong
+	case a.creationYear < 0:
+		return ErrArtworkInvalidYear
+	case a.author == nil:
+		return ErrArtworkInvalidAuthor
+	case a.collection == nil:
+		return ErrArtworkInvalidCollection
+	}
+	return nil
+}
+
+func (a *Artwork) validateWithAuthor() error {
+	if a.author == nil {
+		return ErrArtworkInvalidAuthor
+	}
+
+	birthYear := a.author.GetBirthYear()
+	deathYear := a.author.GetDeathYear()
+
+	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
+		return ErrArtworkYearNotInRange
+	}
+
+	return nil
 }
 
 func (a *Artwork) GetID() uuid.UUID {
 	return a.id
 }
 
-// GetTitle возвращает название произведения искусства
 func (a *Artwork) GetTitle() string {
 	return a.title
 }
 
-// GetCreationYear возвращает год создания произведения
 func (a *Artwork) GetCreationYear() int {
 	return a.creationYear
 }
 
-// GetAuthor возвращает указатель на автора произведения
 func (a *Artwork) GetAuthor() *Author {
 	return a.author
 }
 
-// GetCollection возвращает указатель на коллекцию произведения
 func (a *Artwork) GetCollection() *Collection {
 	return a.collection
 }
 
-// GetSize возвращает размер произведения
 func (a *Artwork) GetSize() string {
 	return a.size
 }
 
-// GetMaterial возвращает материал произведения
 func (a *Artwork) GetMaterial() string {
 	return a.material
 }
 
-// GetTechnic возвращает технику исполнения произведения
 func (a *Artwork) GetTechnic() string {
 	return a.technic
 }

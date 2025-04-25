@@ -1,6 +1,7 @@
 package userrep
 
 import (
+	"context"
 	"errors"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -15,13 +16,14 @@ var (
 )
 
 type UserRep interface {
-	GetAll() []*models.User
+	GetAll(ctx context.Context) ([]*models.User, error)
 	GetAllSubscribed() []*models.User
 	GetByID(id uuid.UUID) (*models.User, error)
 	GetByLogin(login string) (*models.User, error)
 	Add(e *models.User) error
 	Delete(id uuid.UUID) error
 	Update(id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
+	UpdateSubscribeToMailing(id uuid.UUID, newSubscribeMail bool) error
 }
 
 func NewUserRep() UserRep {
