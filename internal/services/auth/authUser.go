@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -8,7 +9,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/util"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 )
 
@@ -26,12 +27,12 @@ type RegisterUserRequest struct {
 }
 
 type AuthUser interface {
-	LoginUser(lur LoginUserRequest) (string, error)
-	RegisterUser(rur RegisterUserRequest) error
+	LoginUser(ctx context.Context, lur LoginUserRequest) (string, error)
+	RegisterUser(ctx context.Context, rur RegisterUserRequest) error
 }
 
-func NewAuthUser(config util.Config, urep userrep.UserRep) (AuthUser, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+func NewAuthUser(config config.Config, urep userrep.UserRep) (AuthUser, error) {
+	tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -53,13 +54,13 @@ func NewAuthUser(config util.Config, urep userrep.UserRep) (AuthUser, error) {
 
 type authUser struct {
 	tokenMaker token.TokenMaker
-	config     util.Config
+	config     config.Config
 	userrep    userrep.UserRep
 	hasher     hasher.Hasher
 }
 
-func (s *authUser) LoginUser(lur LoginUserRequest) (string, error) {
-	user, err := s.userrep.GetByLogin((lur.Login))
+func (s *authUser) LoginUser(ctx context.Context, lur LoginUserRequest) (string, error) {
+	user, err := s.userrep.GetByLogin(ctx, lur.Login)
 	if err != nil {
 		return "", err
 	}
@@ -71,7 +72,7 @@ func (s *authUser) LoginUser(lur LoginUserRequest) (string, error) {
 
 	accessToken, err := s.tokenMaker.CreateToken(
 		user.GetID(),
-		s.config.AccessTokenDuration,
+		s.config.App.AccessTokenDuration,
 	)
 	if err != nil {
 		return "", err
@@ -79,7 +80,7 @@ func (s *authUser) LoginUser(lur LoginUserRequest) (string, error) {
 	return accessToken, nil
 }
 
-func (s *authUser) RegisterUser(rur RegisterUserRequest) error {
+func (s *authUser) RegisterUser(ctx context.Context, rur RegisterUserRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rur.Password)
 	if err != nil {
 		return err
@@ -96,6 +97,6 @@ func (s *authUser) RegisterUser(rur RegisterUserRequest) error {
 	if err != nil {
 		return nil
 	}
-	err = s.userrep.Add(&user)
+	err = s.userrep.Add(ctx, &user)
 	return err
 }

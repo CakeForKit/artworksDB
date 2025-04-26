@@ -1,6 +1,7 @@
 package mailing
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -43,11 +44,13 @@ func createTestEvent() *models.Event {
 }
 
 func TestMailingService_SendMailToAllUsers(t *testing.T) {
+	ctx := context.Background()
 	name, email, password := createTestConfig()
 	tests := []struct {
 		name            string
 		subscribedUsers []*models.User
 		events          []*models.Event
+		mockError       error
 		expectedError   error
 	}{
 		{
@@ -60,24 +63,26 @@ func TestMailingService_SendMailToAllUsers(t *testing.T) {
 				createTestEvent(),
 				createTestEvent(),
 			},
+			mockError:     nil,
 			expectedError: nil,
 		},
 		{
 			name:            "no subscribed users",
 			subscribedUsers: []*models.User{},
 			events:          []*models.Event{createTestEvent()},
+			mockError:       nil,
 			expectedError:   nil,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(mockRepo, name, email, password)
+			userRep := new(mockuserrep.MockUserRep)
+			service := NewGmailSender(userRep, name, email, password)
 
-			mockRepo.On("GetAllSubscribed").Return(tt.subscribedUsers)
+			userRep.On("GetAllSubscribed", ctx).Return(tt.subscribedUsers, tt.mockError)
 
-			err := service.SendMailToAllUsers(tt.events)
+			err := service.SendMailToAllUsers(ctx, tt.events)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
@@ -85,12 +90,13 @@ func TestMailingService_SendMailToAllUsers(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-			mockRepo.AssertExpectations(t)
+			userRep.AssertExpectations(t)
 		})
 	}
 }
 
 func TestMailingService_GenerateMessageText(t *testing.T) {
+	ctx := context.Background()
 	eventCur1 := createTestEvent()
 	eventCur2 := createTestEvent()
 	name, email, password := createTestConfig()
@@ -116,16 +122,17 @@ func TestMailingService_GenerateMessageText(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(mockRepo, name, email, password)
+			userRep := new(mockuserrep.MockUserRep)
+			service := NewGmailSender(userRep, name, email, password)
 
-			result := service.GenerateMessageText(tt.events)
+			result := service.GenerateMessageText(ctx, tt.events)
 			assert.Equal(t, tt.expectedText, result)
 		})
 	}
 }
 
 func TestMailingService_SubscribeToMailing(t *testing.T) {
+	ctx := context.Background()
 	name, email, password := createTestConfig()
 	tests := []struct {
 		name          string
@@ -149,11 +156,11 @@ func TestMailingService_SubscribeToMailing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(mockRepo, name, email, password)
-			mockRepo.On("UpdateSubscribeToMailing", tt.userID, true).Return(tt.mockError)
+			userRep := new(mockuserrep.MockUserRep)
+			service := NewGmailSender(userRep, name, email, password)
+			userRep.On("UpdateSubscribeToMailing", ctx, tt.userID, true).Return(tt.mockError)
 
-			err := service.SubscribeToMailing(tt.userID)
+			err := service.SubscribeToMailing(ctx, tt.userID)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
@@ -161,12 +168,13 @@ func TestMailingService_SubscribeToMailing(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-			mockRepo.AssertExpectations(t)
+			userRep.AssertExpectations(t)
 		})
 	}
 }
 
 func TestMailingService_UnSubscribeToMailing(t *testing.T) {
+	ctx := context.Background()
 	name, email, password := createTestConfig()
 	tests := []struct {
 		name          string
@@ -190,11 +198,11 @@ func TestMailingService_UnSubscribeToMailing(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(mockRepo, name, email, password)
-			mockRepo.On("UpdateSubscribeToMailing", tt.userID, false).Return(tt.mockError)
+			userRep := new(mockuserrep.MockUserRep)
+			service := NewGmailSender(userRep, name, email, password)
+			userRep.On("UpdateSubscribeToMailing", ctx, tt.userID, false).Return(tt.mockError)
 
-			err := service.UnSubscribeToMailing(tt.userID)
+			err := service.UnSubscribeToMailing(ctx, tt.userID)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
@@ -202,7 +210,7 @@ func TestMailingService_UnSubscribeToMailing(t *testing.T) {
 			} else {
 				assert.NoError(t, err)
 			}
-			mockRepo.AssertExpectations(t)
+			userRep.AssertExpectations(t)
 		})
 	}
 }

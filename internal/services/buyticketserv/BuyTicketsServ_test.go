@@ -6,7 +6,7 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep/maprep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/util"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/require"
 )
@@ -21,8 +21,10 @@ func TestBuyTicketsService(t *testing.T) {
 	t.Run("BuyTicket - valid", func(t *testing.T) {
 		txRep := maprep.NewBuyTicketsTxMap()
 
-		config := util.Config{
-			BuyTicketTransactionDuration: 10 * time.Minute,
+		config := config.Config{
+			App: config.AppConfig{
+				BuyTicketTransactionDuration: 10 * time.Minute,
+			},
 		}
 
 		serv := &buyTicketsServ{

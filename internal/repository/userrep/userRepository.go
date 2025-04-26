@@ -17,13 +17,15 @@ var (
 
 type UserRep interface {
 	GetAll(ctx context.Context) ([]*models.User, error)
-	GetAllSubscribed() []*models.User
-	GetByID(id uuid.UUID) (*models.User, error)
-	GetByLogin(login string) (*models.User, error)
-	Add(e *models.User) error
-	Delete(id uuid.UUID) error
-	Update(id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
-	UpdateSubscribeToMailing(id uuid.UUID, newSubscribeMail bool) error
+	GetAllSubscribed(ctx context.Context) ([]*models.User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.User, error)
+	GetByLogin(ctx context.Context, login string) (*models.User, error)
+	Add(ctx context.Context, e *models.User) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
+	UpdateSubscribeToMailing(ctx context.Context, id uuid.UUID, newSubscribeMail bool) error
+	Ping(ctx context.Context) error
+	Close()
 }
 
 func NewUserRep() UserRep {

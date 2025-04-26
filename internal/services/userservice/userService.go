@@ -1,18 +1,20 @@
 package userservice
 
 import (
+	"context"
+
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"github.com/google/uuid"
 )
 
 type UserService interface {
-	GetAllUsers() []*models.User
-	GetByID(id uuid.UUID) (*models.User, error)
+	GetAllUsers(ctx context.Context) ([]*models.User, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.User, error)
 	// GetByLogin(login string) (*models.User, error)
 	// Add(*models.User) error // нехешированный пароль (здесь он и хешируется)
-	Delete(id uuid.UUID) error
-	Update(id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
+	Delete(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
 }
 
 type userService struct {
@@ -25,12 +27,12 @@ func NewUserService(empRep userrep.UserRep) UserService {
 	}
 }
 
-func (e *userService) GetAllUsers() []*models.User {
-	return e.userRep.GetAll()
+func (e *userService) GetAllUsers(ctx context.Context) ([]*models.User, error) {
+	return e.userRep.GetAll(ctx)
 }
 
-func (e *userService) GetByID(id uuid.UUID) (*models.User, error) {
-	return e.userRep.GetByID(id)
+func (e *userService) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+	return e.userRep.GetByID(ctx, id)
 }
 
 // func (e *userService) GetByLogin(login string) (*models.User, error) {
@@ -41,10 +43,10 @@ func (e *userService) GetByID(id uuid.UUID) (*models.User, error) {
 // 	return e.userRep.Add(emp)
 // }
 
-func (e *userService) Delete(id uuid.UUID) error {
-	return e.userRep.Delete(id)
+func (e *userService) Delete(ctx context.Context, id uuid.UUID) error {
+	return e.userRep.Delete(ctx, id)
 }
 
-func (e *userService) Update(id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
-	return e.userRep.Update(id, funcUpdate)
+func (e *userService) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
+	return e.userRep.Update(ctx, id, funcUpdate)
 }

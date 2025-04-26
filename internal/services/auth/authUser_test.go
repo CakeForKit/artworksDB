@@ -1,13 +1,14 @@
 package auth
 
 import (
+	"context"
 	"testing"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep/mockuserrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/util"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 	"github.com/stateio/testify/mock"
 	"github.com/stateio/testify/require"
@@ -37,16 +38,18 @@ func TestAuthUserService(t *testing.T) {
 	validEmail := "test@example.com"
 	hashedPassword := "hashedpassword"
 
-	config := util.Config{
-		TokenSymmetricKey:    "01234567890123456789012345678912",
-		AccessTokenDuration:  time.Hour,
-		RefreshTokenDuration: time.Hour * 24,
+	config := config.Config{
+		App: config.AppConfig{
+			TokenSymmetricKey:   "01234567890123456789012345678912",
+			AccessTokenDuration: time.Hour,
+		},
 	}
 
 	t.Run("LoginUser", func(t *testing.T) {
+		ctx := context.Background()
 		t.Run("Success", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
 			require.NoError(t, err)
 			hasher := new(MockHasher)
 
@@ -61,7 +64,7 @@ func TestAuthUserService(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			userRep.On("GetByLogin", validLogin).Return(&user, nil)
+			userRep.On("GetByLogin", ctx, validLogin).Return(&user, nil)
 			hasher.On("CheckPassword", validPassword, hashedPassword).Return(nil)
 
 			service := &authUser{
@@ -71,7 +74,7 @@ func TestAuthUserService(t *testing.T) {
 				hasher:     hasher,
 			}
 
-			_, err = service.LoginUser(LoginUserRequest{
+			_, err = service.LoginUser(ctx, LoginUserRequest{
 				Login:    validLogin,
 				Password: validPassword,
 			})
@@ -83,7 +86,7 @@ func TestAuthUserService(t *testing.T) {
 
 		t.Run("InvalidPassword", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
 			require.NoError(t, err)
 			hasher := new(MockHasher)
 
@@ -98,7 +101,7 @@ func TestAuthUserService(t *testing.T) {
 			)
 			require.NoError(t, err)
 
-			userRep.On("GetByLogin", validLogin).Return(&user, nil)
+			userRep.On("GetByLogin", ctx, validLogin).Return(&user, nil)
 			hasher.On("CheckPassword", validPassword, hashedPassword).Return(assert.AnError)
 
 			service := &authUser{
@@ -108,7 +111,7 @@ func TestAuthUserService(t *testing.T) {
 				hasher:     hasher,
 			}
 
-			_, err = service.LoginUser(LoginUserRequest{
+			_, err = service.LoginUser(ctx, LoginUserRequest{
 				Login:    validLogin,
 				Password: validPassword,
 			})
@@ -120,14 +123,15 @@ func TestAuthUserService(t *testing.T) {
 	})
 
 	t.Run("RegisterUser", func(t *testing.T) {
+		ctx := context.Background()
 		t.Run("Success", func(t *testing.T) {
 			userRep := new(mockuserrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+			tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
 			require.NoError(t, err)
 			hasher := new(MockHasher)
 
 			hasher.On("HashPassword", validPassword).Return(hashedPassword, nil)
-			userRep.On("Add", mock.AnythingOfType("*models.User")).Return(nil)
+			userRep.On("Add", ctx, mock.AnythingOfType("*models.User")).Return(nil)
 
 			service := &authUser{
 				tokenMaker: tokenMaker,
@@ -136,7 +140,7 @@ func TestAuthUserService(t *testing.T) {
 				hasher:     hasher,
 			}
 
-			err = service.RegisterUser(RegisterUserRequest{
+			err = service.RegisterUser(ctx, RegisterUserRequest{
 				Username:      validUsername,
 				Login:         validLogin,
 				Password:      validPassword,
