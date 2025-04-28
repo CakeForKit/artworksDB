@@ -4,11 +4,11 @@ import (
 	"fmt"
 	"time"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 )
 
@@ -30,8 +30,8 @@ type AuthEmployee interface {
 	RegisterEmployee(rer RegisterEmployeeRequest) error
 }
 
-func NewAuthEmployee(config config.Config) (AuthEmployee, error) {
-	tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
+func NewAuthEmployee(config cnfg.AppConfig) (AuthEmployee, error) {
+	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -46,7 +46,7 @@ func NewAuthEmployee(config config.Config) (AuthEmployee, error) {
 
 type authEmployee struct {
 	tokenMaker  token.TokenMaker
-	config      config.Config
+	config      cnfg.AppConfig
 	employeerep employeerep.EmployeeRep
 	hasher      hasher.Hasher
 }
@@ -64,7 +64,7 @@ func (s *authEmployee) LoginEmployee(ler LoginEmployeeRequest) (string, error) {
 
 	accessToken, err := s.tokenMaker.CreateToken(
 		employee.GetID(),
-		s.config.App.AccessTokenDuration,
+		s.config.AccessTokenDuration,
 	)
 	if err != nil {
 		return "", err

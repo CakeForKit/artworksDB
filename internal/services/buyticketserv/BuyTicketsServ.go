@@ -3,9 +3,9 @@ package buyticketserv
 import (
 	"time"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +17,7 @@ type BuyTicketsServ interface {
 	ConfirmBuyTicket(TxID uuid.UUID)
 }
 
-func NewBuyTicketsServ(txRep buyticketstxrep.BuyTicketsTxRep, config config.Config) (BuyTicketsServ, error) {
+func NewBuyTicketsServ(txRep buyticketstxrep.BuyTicketsTxRep, config cnfg.AppConfig) (BuyTicketsServ, error) {
 	return &buyTicketsServ{
 		txRep:  txRep,
 		config: config,
@@ -26,11 +26,11 @@ func NewBuyTicketsServ(txRep buyticketstxrep.BuyTicketsTxRep, config config.Conf
 
 type buyTicketsServ struct {
 	txRep  buyticketstxrep.BuyTicketsTxRep
-	config config.Config
+	config cnfg.AppConfig
 }
 
 func (b *buyTicketsServ) BuyTicket(userID uuid.UUID, eventID uuid.UUID, cntTickets int) error {
-	timeExpire := time.Now().Add(b.config.App.BuyTicketTransactionDuration)
+	timeExpire := time.Now().Add(b.config.BuyTicketTransactionDuration)
 	tx, err := models.NewBuyTicketTx(uuid.New(), userID, eventID, cntTickets, timeExpire)
 	if err != nil {
 		return err

@@ -8,8 +8,8 @@ import (
 	"sync"
 	"time"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -35,12 +35,12 @@ var (
 )
 
 // func NewPgUserRep(ctx context.Context) (UserRep, error) {
-func NewPgUserRep(ctx context.Context, conf *config.Config) (*PgUserRep, error) {
+func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			conf.Postgres.Username, conf.Postgres.Password, conf.Postgres.Host, conf.Postgres.Port, conf.Postgres.DbName)
+			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
 			resErr = fmt.Errorf("%w: %v", ErrOpenConnect, err)
@@ -52,9 +52,9 @@ func NewPgUserRep(ctx context.Context, conf *config.Config) (*PgUserRep, error) 
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(conf.Datebase.MaxIdleConns)
-		db.SetMaxIdleConns(conf.Datebase.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(conf.Datebase.ConnMaxLifetime.Hours()))
+		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxIdleConns(dbConf.MaxIdleConns)
+		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
 		pgInstance = &PgUserRep{db: db}
 	})
@@ -106,9 +106,9 @@ func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
-	}
+	// if len(users) == 0 {
+	// 	return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
+	// }
 	return users, nil
 }
 
@@ -132,9 +132,9 @@ func (pg *PgUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, erro
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
-	}
+	// if len(users) == 0 {
+	// 	return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
+	// }
 	return users, nil
 }
 
@@ -157,9 +157,10 @@ func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, e
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
-	} else if len(users) > 1 {
+	// if len(users) == 0 {
+	// 	return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
+	// } else
+	if len(users) > 1 {
 		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
 	}
 	return users[0], nil
@@ -184,9 +185,10 @@ func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
-	} else if len(users) > 1 {
+	// if len(users) == 0 {
+	// 	return nil, fmt.Errorf("%w: %v", ErrNoUser, err)
+	// } else
+	if len(users) > 1 {
 		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
 	}
 	return users[0], nil
@@ -196,7 +198,7 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Insert("Users").
 		Columns("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetMail(), e.IsSubscribedToMail()).
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -211,7 +213,7 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user added", ErrNoUser)
+		return fmt.Errorf("%w: no user added", ErrRowsAffected)
 	}
 	return nil
 }
@@ -234,7 +236,7 @@ func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user with id %s", ErrNoUser, id)
+		return fmt.Errorf("%w: no user with id %s", ErrRowsAffected, id)
 	}
 	return nil
 }
@@ -256,7 +258,7 @@ func (pg *PgUserRep) Update(ctx context.Context,
 		Set("username", updatedUser.GetUsername()).
 		Set("login", updatedUser.GetLogin()).
 		Set("hashedPassword", updatedUser.GetHashedPassword()).
-		Set("email", updatedUser.GetMail()).
+		Set("email", updatedUser.GetEmail()).
 		Set("subscribeMail", updatedUser.IsSubscribedToMail()).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
@@ -272,7 +274,7 @@ func (pg *PgUserRep) Update(ctx context.Context,
 		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no user added", ErrNoUser)
+		return nil, fmt.Errorf("%w: no user added", ErrRowsAffected)
 	}
 	return updatedUser, nil
 }
@@ -295,7 +297,7 @@ func (pg *PgUserRep) UpdateSubscribeToMailing(ctx context.Context, id uuid.UUID,
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user added", ErrNoUser)
+		return fmt.Errorf("%w: no user added", ErrRowsAffected)
 	}
 	return nil
 }

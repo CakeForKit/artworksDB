@@ -14,9 +14,9 @@ INSERT INTO Employee (id, username, login, hashedPassword, createdAt, adminID) V
 (gen_random_uuid(), 'employee2', 'emp2_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), (SELECT id FROM admin_ids OFFSET 1 LIMIT 1));
 
 -- Вставляем пользователей
-INSERT INTO Users (id, username, login, hashedPassword, createdAt, email, subscribeMail) VALUES
-(gen_random_uuid(), 'user1', 'user1_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), 'user1@example.com', TRUE),
-(gen_random_uuid(), 'user2', 'user2_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), 'user2@example.com', FALSE);
+-- INSERT INTO Users (id, username, login, hashedPassword, createdAt, email, subscribeMail) VALUES
+-- (gen_random_uuid(), 'user1', 'user1_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), 'user1@example.com', TRUE),
+-- (gen_random_uuid(), 'user2', 'user2_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), 'user2@example.com', FALSE);
 
 -- Вставляем авторов
 INSERT INTO Author (id, name, birthYear, deathYear) VALUES

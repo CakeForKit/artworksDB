@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"time"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/config"
 	"github.com/google/uuid"
 )
 
@@ -31,8 +31,8 @@ type AuthUser interface {
 	RegisterUser(ctx context.Context, rur RegisterUserRequest) error
 }
 
-func NewAuthUser(config config.Config, urep userrep.UserRep) (AuthUser, error) {
-	tokenMaker, err := token.NewTokenMaker(config.App.TokenSymmetricKey)
+func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep) (AuthUser, error) {
+	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
 	if err != nil {
 		return nil, fmt.Errorf("cannot create token maker: %w", err)
 	}
@@ -54,7 +54,7 @@ func NewAuthUser(config config.Config, urep userrep.UserRep) (AuthUser, error) {
 
 type authUser struct {
 	tokenMaker token.TokenMaker
-	config     config.Config
+	config     cnfg.AppConfig
 	userrep    userrep.UserRep
 	hasher     hasher.Hasher
 }
@@ -72,7 +72,7 @@ func (s *authUser) LoginUser(ctx context.Context, lur LoginUserRequest) (string,
 
 	accessToken, err := s.tokenMaker.CreateToken(
 		user.GetID(),
-		s.config.App.AccessTokenDuration,
+		s.config.AccessTokenDuration,
 	)
 	if err != nil {
 		return "", err

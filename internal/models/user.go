@@ -59,6 +59,19 @@ func (u *User) validate() error {
 	return nil
 }
 
+func CmpUsers(u1, u2 *User) bool {
+	if u1 == nil || u2 == nil {
+		return u1 == u2
+	}
+	// createdAt - не сравниваем
+	return u1.id == u2.id &&
+		u1.username == u2.username &&
+		u1.login == u2.login &&
+		u1.hashedPassword == u2.hashedPassword &&
+		u1.email == u2.email &&
+		u1.subscribeMail == u2.subscribeMail
+}
+
 func (u *User) GetID() uuid.UUID {
 	return u.id
 }
@@ -79,7 +92,7 @@ func (u *User) GetCreatedAt() time.Time {
 	return u.createdAt
 }
 
-func (u *User) GetMail() string {
+func (u *User) GetEmail() string {
 	return u.email
 }
 

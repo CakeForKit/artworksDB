@@ -45,7 +45,7 @@ func (m *mailingService) SendMailToAllUsers(ctx context.Context, events []*model
 	fmt.Printf("Сообщение отправлено пользовтелям:\n")
 	msgText := m.GenerateMessageText(ctx, events)
 	for _, u := range users {
-		fmt.Printf("%s, ", u.GetMail())
+		fmt.Printf("%s, ", u.GetEmail())
 	}
 	fmt.Printf("\n")
 	fmt.Println(msgText) // TODO to log
@@ -70,7 +70,7 @@ func (m *mailingService) SubscribeToMailing(ctx context.Context, id uuid.UUID) e
 	// 		u.GetLogin(),
 	// 		u.GetHashedPassword(),
 	// 		u.GetCreatedAt(),
-	// 		u.GetMail(),
+	// 		u.GetEmail(),
 	// 		true,
 	// 	)
 	// 	return &updatedUser, err
@@ -87,7 +87,7 @@ func (m *mailingService) UnSubscribeToMailing(ctx context.Context, id uuid.UUID)
 	// 		u.GetLogin(),
 	// 		u.GetHashedPassword(),
 	// 		u.GetCreatedAt(),
-	// 		u.GetMail(),
+	// 		u.GetEmail(),
 	// 		false,
 	// 	)
 	// 	return &updatedUser, err
