@@ -1,4 +1,4 @@
-package userrep
+package employeerep
 
 import (
 	"context"
@@ -12,29 +12,27 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
-	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type PgUserRep struct {
+type PgEmployeeRep struct {
 	db *sql.DB
 }
 
 var (
-	pgInstance *PgUserRep
+	pgInstance *PgEmployeeRep
 	pgOnce     sync.Once
 )
 
 var (
-	ErrOpenConnect     = errors.New("open connect failed")
-	ErrPing            = errors.New("ping failed")
-	ErrQueryBuilds     = errors.New("query build failed")
-	ErrQueryExec       = errors.New("query execution failed")
-	ErrExpectedOneUser = errors.New("expected one user")
-	ErrRowsAffected    = errors.New("no rows affected")
+	ErrOpenConnect         = errors.New("open connect failed")
+	ErrPing                = errors.New("ping failed")
+	ErrQueryBuilds         = errors.New("query build failed")
+	ErrQueryExec           = errors.New("query execution failed")
+	ErrExpectedOneEmployee = errors.New("expected one employee")
+	ErrRowsAffected        = errors.New("no rows affected")
 )
 
-// func NewPgUserRep(ctx context.Context) (UserRep, error) {
-func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
+func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgEmployeeRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
@@ -55,7 +53,7 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-		pgInstance = &PgUserRep{db: db}
+		pgInstance = &PgEmployeeRep{db: db}
 	})
 	if resErr != nil {
 		return nil, resErr
@@ -64,8 +62,8 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf
 	return pgInstance, nil
 }
 
-func (pg *PgUserRep) parseUsersRows(rows *sql.Rows) ([]*models.User, error) {
-	var resUsers []*models.User
+func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee, error) {
+	var resEmployees []*models.Employee
 	for rows.Next() {
 		var id uuid.UUID
 		var username, login, hashedPassword, email string
@@ -74,22 +72,22 @@ func (pg *PgUserRep) parseUsersRows(rows *sql.Rows) ([]*models.User, error) {
 		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
-		user, err := models.NewUser(id, username, login, hashedPassword, createdAt, email, subscribeMail)
+		employee, err := models.NewEmployee(id, username, login, hashedPassword, createdAt, true, uuid.New())
 		if err != nil {
 			return nil, err
 		}
-		resUsers = append(resUsers, &user)
+		resEmployees = append(resEmployees, &employee)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error: %v", err)
 	}
-	return resUsers, nil
+	return resEmployees, nil
 }
 
-func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
+func (pg *PgEmployeeRep) GetAll(ctx context.Context) ([]*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
+		From("employees").
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -101,43 +99,17 @@ func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 	}
 	defer rows.Close()
 
-	users, err := pg.parseUsersRows(rows)
+	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
+	if len(employees) == 0 {
+		return nil, ErrEmployeeNotFound
 	}
-	return users, nil
+	return employees, nil
 }
 
-func (pg *PgUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
-		Where(sq.Eq{"subscribeMail": true}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	users, err := pg.parseUsersRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
-	return users, nil
-}
-
-func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (pg *PgEmployeeRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
 		From("users").
@@ -152,22 +124,22 @@ func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, e
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
-	users, err := pg.parseUsersRows(rows)
+	users, err := pg.parseEmployeesRows(rows)
 	if err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, ErrUserNotFound
+		return nil, ErrEmployeeNotFound
 	} else if len(users) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
+		return nil, fmt.Errorf("%w: %v", ErrExpectedOneEmployee, err)
 	}
 	return users[0], nil
 }
 
-func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User, error) {
+func (pg *PgEmployeeRep) GetByLogin(ctx context.Context, login string) (*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
+		From("employees").
 		Where(sq.Eq{"login": login}).
 		ToSql()
 	if err != nil {
@@ -179,23 +151,23 @@ func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
-	users, err := pg.parseUsersRows(rows)
+	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	} else if len(users) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
+	if len(employees) == 0 {
+		return nil, ErrEmployeeNotFound
+	} else if len(employees) > 1 {
+		return nil, fmt.Errorf("%w: %v", ErrExpectedOneEmployee, err)
 	}
-	return users[0], nil
+	return employees[0], nil
 }
 
-func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
+func (pg *PgEmployeeRep) Add(ctx context.Context, e *models.Employee) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("Users").
-		Columns("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
+	query, args, err := psql.Insert("Employees").
+		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true, uuid.New()).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -210,14 +182,14 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user added", ErrRowsAffected)
+		return fmt.Errorf("%w: no employee added", ErrRowsAffected)
 	}
 	return nil
 }
 
-func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
+func (pg *PgEmployeeRep) Delete(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Users").
+	query, args, err := psql.Delete("Employees").
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
@@ -233,30 +205,30 @@ func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user with id %s", ErrRowsAffected, id)
+		return fmt.Errorf("%w: no employee with id %s", ErrRowsAffected, id)
 	}
 	return nil
 }
 
-func (pg *PgUserRep) Update(ctx context.Context,
+func (pg *PgEmployeeRep) Update(ctx context.Context,
 	id uuid.UUID,
-	funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
-	user, err := pg.GetByID(ctx, id)
+	funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error) {
+	employee, err := pg.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	updatedUser, err := funcUpdate(user)
+	updatedEmployee, err := funcUpdate(employee)
 	if err != nil {
 		return nil, fmt.Errorf("funcUpdate: %v", err)
 	}
-	query, args, err := psql.Update("Users").
-		Set("username", updatedUser.GetUsername()).
-		Set("login", updatedUser.GetLogin()).
-		Set("hashedPassword", updatedUser.GetHashedPassword()).
-		Set("email", updatedUser.GetEmail()).
-		Set("subscribeMail", updatedUser.IsSubscribedToMail()).
+	query, args, err := psql.Update("Employees").
+		Set("username", updatedEmployee.GetUsername()).
+		Set("login", updatedEmployee.GetLogin()).
+		Set("hashedPassword", updatedEmployee.GetHashedPassword()).
+		Set("valid", updatedEmployee.IsValid()).
+		Set("adminID", updatedEmployee.GetAdminID()).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -271,38 +243,7 @@ func (pg *PgUserRep) Update(ctx context.Context,
 		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no user added", ErrRowsAffected)
+		return nil, fmt.Errorf("%w: no employee added", ErrRowsAffected)
 	}
-	return updatedUser, nil
-}
-
-func (pg *PgUserRep) UpdateSubscribeToMailing(ctx context.Context, id uuid.UUID, newSubscribeMail bool) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Update("Users").
-		Set("subscribeMail", newSubscribeMail).
-		Where(sq.Eq{"id": id}).ToSql()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user added", ErrRowsAffected)
-	}
-	return nil
-}
-
-func (pg *PgUserRep) Ping(ctx context.Context) error {
-	return pg.db.PingContext(ctx)
-}
-
-func (pg *PgUserRep) Close() {
-	pg.db.Close()
+	return updatedEmployee, nil
 }

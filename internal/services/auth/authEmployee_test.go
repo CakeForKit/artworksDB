@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -37,6 +38,7 @@ func createTestEmployee() *models.Employee {
 }
 
 func TestAuthEmployee_LoginEmployee(t *testing.T) {
+	ctx := context.Background()
 	config := createTestConfig()
 	validPassword := "valid_password"
 	invalidPassword := "invalid_password"
@@ -91,12 +93,12 @@ func TestAuthEmployee_LoginEmployee(t *testing.T) {
 				hasher:      hasher,
 			}
 
-			mockRepo.On("GetByLogin", tt.login).Return(tt.mockEmployee, tt.mockError)
+			mockRepo.On("GetByLogin", ctx, tt.login).Return(tt.mockEmployee, tt.mockError)
 			if tt.mockEmployee != nil {
 				hasher.On("CheckPassword", tt.password, tt.mockEmployee.GetHashedPassword()).Return(tt.checkPassword)
 			}
 
-			token, err := service.LoginEmployee(LoginEmployeeRequest{
+			token, err := service.LoginEmployee(ctx, LoginEmployeeRequest{
 				Login:    tt.login,
 				Password: tt.password,
 			})
@@ -117,6 +119,7 @@ func TestAuthEmployee_LoginEmployee(t *testing.T) {
 }
 
 func TestAuthEmployee_RegisterEmployee(t *testing.T) {
+	ctx := context.Background()
 	config := createTestConfig()
 	validRequest := RegisterEmployeeRequest{
 		Username: "new_user",
@@ -164,7 +167,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 
 			hasher.On("HashPassword", tt.request.Password).Return("hashed_password", tt.hashError)
 			if tt.hashError == nil {
-				mockRepo.On("Add", mock.Anything).Return(tt.addError)
+				mockRepo.On("Add", ctx, mock.Anything).Return(tt.addError)
 			}
 
 			service := &authEmployee{
@@ -174,7 +177,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 				hasher:      hasher,
 			}
 
-			err := service.RegisterEmployee(tt.request)
+			err := service.RegisterEmployee(ctx, tt.request)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

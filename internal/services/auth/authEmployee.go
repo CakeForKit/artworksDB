@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"fmt"
 	"time"
 
@@ -26,8 +27,8 @@ type RegisterEmployeeRequest struct {
 }
 
 type AuthEmployee interface {
-	LoginEmployee(ler LoginEmployeeRequest) (string, error)
-	RegisterEmployee(rer RegisterEmployeeRequest) error
+	LoginEmployee(ctx context.Context, ler LoginEmployeeRequest) (string, error)
+	RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest) error
 }
 
 func NewAuthEmployee(config cnfg.AppConfig) (AuthEmployee, error) {
@@ -51,8 +52,8 @@ type authEmployee struct {
 	hasher      hasher.Hasher
 }
 
-func (s *authEmployee) LoginEmployee(ler LoginEmployeeRequest) (string, error) {
-	employee, err := s.employeerep.GetByLogin(ler.Login)
+func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeRequest) (string, error) {
+	employee, err := s.employeerep.GetByLogin(ctx, ler.Login)
 	if err != nil {
 		return "", err
 	}
@@ -72,7 +73,7 @@ func (s *authEmployee) LoginEmployee(ler LoginEmployeeRequest) (string, error) {
 	return accessToken, nil
 }
 
-func (s *authEmployee) RegisterEmployee(rer RegisterEmployeeRequest) error {
+func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rer.Password)
 	if err != nil {
 		return err
@@ -89,6 +90,6 @@ func (s *authEmployee) RegisterEmployee(rer RegisterEmployeeRequest) error {
 	if err != nil {
 		return err
 	}
-	err = s.employeerep.Add(&employee)
+	err = s.employeerep.Add(ctx, &employee)
 	return err
 }

@@ -37,7 +37,7 @@ func main() {
 	defer container.Terminate(ctx)
 	fmt.Printf("Creds: %+v\n", pgCreds)
 
-	if err = pgtest.MigrateUp(ctx, &pgCreds, pgTestConfig.MigrationDir); err != nil {
+	if err = pgtest.MigrateUp(ctx); err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}
@@ -53,7 +53,7 @@ func main() {
 	}
 	users, err := urep.GetAll(ctx)
 	if err != nil {
-		if errors.Is(err, userrep.ErrNoUser) {
+		if errors.Is(err, userrep.ErrUserNotFound) {
 			fmt.Printf("No user\n")
 		} else {
 			fmt.Printf("ERROR: %v\n\n\n", err)
