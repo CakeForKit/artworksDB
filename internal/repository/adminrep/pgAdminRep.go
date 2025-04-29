@@ -1,4 +1,4 @@
-package userrep
+package adminrep
 
 import (
 	"context"
@@ -15,26 +15,25 @@ import (
 	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
-type PgUserRep struct {
+type PgAdminRep struct {
 	db *sql.DB
 }
 
 var (
-	pgInstance *PgUserRep
+	pgInstance *PgAdminRep
 	pgOnce     sync.Once
 )
 
 var (
-	ErrOpenConnect     = errors.New("open connect failed")
-	ErrPing            = errors.New("ping failed")
-	ErrQueryBuilds     = errors.New("query build failed")
-	ErrQueryExec       = errors.New("query execution failed")
-	ErrExpectedOneUser = errors.New("expected one user")
-	ErrRowsAffected    = errors.New("no rows affected")
+	ErrOpenConnect      = errors.New("open connect failed")
+	ErrPing             = errors.New("ping failed")
+	ErrQueryBuilds      = errors.New("query build failed")
+	ErrQueryExec        = errors.New("query execution failed")
+	ErrExpectedOneAdmin = errors.New("expected one admin")
+	ErrRowsAffected     = errors.New("no rows affected")
 )
 
-// func NewPgUserRep(ctx context.Context) (UserRep, error) {
-func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
+func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
@@ -55,7 +54,7 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-		pgInstance = &PgUserRep{db: db}
+		pgInstance = &PgAdminRep{db: db}
 	})
 	if resErr != nil {
 		return nil, resErr
@@ -64,8 +63,8 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf
 	return pgInstance, nil
 }
 
-func (pg *PgUserRep) parseUsersRows(rows *sql.Rows) ([]*models.User, error) {
-	var resUsers []*models.User
+func (pg *PgAdminRep) parseAdminsRows(rows *sql.Rows) ([]*models.Admin, error) {
+	var resAdmins []*models.Admin
 	for rows.Next() {
 		var id uuid.UUID
 		var username, login, hashedPassword, email string
@@ -74,22 +73,22 @@ func (pg *PgUserRep) parseUsersRows(rows *sql.Rows) ([]*models.User, error) {
 		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
-		user, err := models.NewUser(id, username, login, hashedPassword, createdAt, email, subscribeMail)
+		admin, err := models.NewAdmin(id, username, login, hashedPassword, createdAt, true)
 		if err != nil {
 			return nil, err
 		}
-		resUsers = append(resUsers, &user)
+		resAdmins = append(resAdmins, &admin)
 	}
 	if err := rows.Err(); err != nil {
 		return nil, fmt.Errorf("rows iteration error: %v", err)
 	}
-	return resUsers, nil
+	return resAdmins, nil
 }
 
-func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
+func (pg *PgAdminRep) GetAll(ctx context.Context) ([]*models.Admin, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
+	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid").
+		From("Admins").
 		ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -101,43 +100,17 @@ func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 	}
 	defer rows.Close()
 
-	users, err := pg.parseUsersRows(rows)
+	admins, err := pg.parseAdminsRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
+	if len(admins) == 0 {
+		return nil, ErrAdminNotFound
 	}
-	return users, nil
+	return admins, nil
 }
 
-func (pg *PgUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
-		Where(sq.Eq{"subscribeMail": true}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	users, err := pg.parseUsersRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
-	return users, nil
-}
-
-func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
+func (pg *PgAdminRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Admin, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
 		From("users").
@@ -152,22 +125,22 @@ func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, e
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
-	users, err := pg.parseUsersRows(rows)
+	users, err := pg.parseAdminsRows(rows)
 	if err != nil {
 		return nil, err
 	}
 	if len(users) == 0 {
-		return nil, ErrUserNotFound
+		return nil, ErrAdminNotFound
 	} else if len(users) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
+		return nil, fmt.Errorf("%w: %v", ErrExpectedOneAdmin, err)
 	}
 	return users[0], nil
 }
 
-func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User, error) {
+func (pg *PgAdminRep) GetByLogin(ctx context.Context, login string) (*models.Admin, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
+		From("Admins").
 		Where(sq.Eq{"login": login}).
 		ToSql()
 	if err != nil {
@@ -179,27 +152,28 @@ func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
-	users, err := pg.parseUsersRows(rows)
+	admins, err := pg.parseAdminsRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	} else if len(users) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneUser, err)
+	if len(admins) == 0 {
+		return nil, ErrAdminNotFound
+	} else if len(admins) > 1 {
+		return nil, fmt.Errorf("%w: %v", ErrExpectedOneAdmin, err)
 	}
-	return users[0], nil
+	return admins[0], nil
 }
 
-func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
+func (pg *PgAdminRep) Add(ctx context.Context, e *models.Admin) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("Users").
-		Columns("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
+	query, args, err := psql.Insert("admins").
+		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid").
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
+
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryExec, err)
@@ -210,14 +184,14 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user added", ErrRowsAffected)
+		return fmt.Errorf("%w: no admin added", ErrRowsAffected)
 	}
 	return nil
 }
 
-func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
+func (pg *PgAdminRep) Delete(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Users").
+	query, args, err := psql.Delete("Admins").
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
@@ -233,30 +207,29 @@ func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user with id %s", ErrRowsAffected, id)
+		return fmt.Errorf("%w: no admin with id %s", ErrRowsAffected, id)
 	}
 	return nil
 }
 
-func (pg *PgUserRep) Update(ctx context.Context,
+func (pg *PgAdminRep) Update(ctx context.Context,
 	id uuid.UUID,
-	funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
-	user, err := pg.GetByID(ctx, id)
+	funcUpdate func(*models.Admin) (*models.Admin, error)) (*models.Admin, error) {
+	admin, err := pg.GetByID(ctx, id)
 	if err != nil {
 		return nil, err
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	updatedUser, err := funcUpdate(user)
+	updatedAdmin, err := funcUpdate(admin)
 	if err != nil {
 		return nil, fmt.Errorf("funcUpdate: %v", err)
 	}
-	query, args, err := psql.Update("Users").
-		Set("username", updatedUser.GetUsername()).
-		Set("login", updatedUser.GetLogin()).
-		Set("hashedPassword", updatedUser.GetHashedPassword()).
-		Set("email", updatedUser.GetEmail()).
-		Set("subscribeMail", updatedUser.IsSubscribedToMail()).
+	query, args, err := psql.Update("Admins").
+		Set("username", updatedAdmin.GetUsername()).
+		Set("login", updatedAdmin.GetLogin()).
+		Set("hashedPassword", updatedAdmin.GetHashedPassword()).
+		Set("valid", updatedAdmin.IsValid()).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -271,38 +244,15 @@ func (pg *PgUserRep) Update(ctx context.Context,
 		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no user updated", ErrRowsAffected)
+		return nil, fmt.Errorf("%w: no admin added", ErrRowsAffected)
 	}
-	return updatedUser, nil
+	return updatedAdmin, nil
 }
 
-func (pg *PgUserRep) UpdateSubscribeToMailing(ctx context.Context, id uuid.UUID, newSubscribeMail bool) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Update("Users").
-		Set("subscribeMail", newSubscribeMail).
-		Where(sq.Eq{"id": id}).ToSql()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user updated", ErrRowsAffected)
-	}
-	return nil
-}
-
-func (pg *PgUserRep) Ping(ctx context.Context) error {
+func (pg *PgAdminRep) Ping(ctx context.Context) error {
 	return pg.db.PingContext(ctx)
 }
 
-func (pg *PgUserRep) Close() {
+func (pg *PgAdminRep) Close() {
 	pg.db.Close()
 }

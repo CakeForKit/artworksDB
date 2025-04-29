@@ -12,9 +12,9 @@ type MockEmployeeRep struct {
 	mock.Mock
 }
 
-func (m *MockEmployeeRep) GetAll(ctx context.Context) []*models.Employee {
+func (m *MockEmployeeRep) GetAll(ctx context.Context) ([]*models.Employee, error) {
 	args := m.Called(ctx)
-	return args.Get(0).([]*models.Employee)
+	return args.Get(0).([]*models.Employee), args.Error(1)
 }
 
 func (m *MockEmployeeRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Employee, error) {
@@ -40,4 +40,12 @@ func (m *MockEmployeeRep) Delete(ctx context.Context, id uuid.UUID) error {
 func (m *MockEmployeeRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error) {
 	args := m.Called(ctx, id, funcUpdate)
 	return args.Get(0).(*models.Employee), args.Error(1)
+}
+
+func (m *MockEmployeeRep) Ping(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
+func (m *MockEmployeeRep) Close() {
 }

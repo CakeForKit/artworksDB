@@ -1,6 +1,7 @@
 package artworkserv_test
 
 import (
+	"context"
 	"testing"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -8,6 +9,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/mockartworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"github.com/google/uuid"
+	"github.com/stateio/testify/require"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 )
@@ -39,6 +41,7 @@ func createTestArtwork() *models.Artwork {
 }
 
 func TestArtworkService_GetAllArtworks(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name          string
 		expectedCount int
@@ -58,9 +61,10 @@ func TestArtworkService_GetAllArtworks(t *testing.T) {
 				expectedArtworks = append(expectedArtworks, artwork)
 			}
 
-			mockRepo.On("GetAll").Return(expectedArtworks)
+			mockRepo.On("GetAll", ctx).Return(expectedArtworks, nil)
 
-			result := service.GetAllArtworks()
+			result, err := service.GetAllArtworks(ctx)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			assert.Equal(t, expectedArtworks, result)
 			mockRepo.AssertExpectations(t)
@@ -69,6 +73,7 @@ func TestArtworkService_GetAllArtworks(t *testing.T) {
 }
 
 func TestArtworkService_Add(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name          string
 		mockError     error
@@ -84,9 +89,9 @@ func TestArtworkService_Add(t *testing.T) {
 			service := artworkserv.NewArtworkService(mockRepo)
 			artwork := createTestArtwork()
 
-			mockRepo.On("Add", artwork).Return(tt.mockError)
+			mockRepo.On("Add", ctx, artwork).Return(tt.mockError)
 
-			err := service.Add(artwork)
+			err := service.Add(ctx, artwork)
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)
@@ -99,6 +104,7 @@ func TestArtworkService_Add(t *testing.T) {
 }
 
 func TestArtworkService_Delete(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name          string
 		mockError     error
@@ -114,9 +120,9 @@ func TestArtworkService_Delete(t *testing.T) {
 			service := artworkserv.NewArtworkService(mockRepo)
 			artworkID := uuid.New()
 
-			mockRepo.On("Delete", artworkID).Return(tt.mockError)
+			mockRepo.On("Delete", ctx, artworkID).Return(tt.mockError)
 
-			err := service.Delete(artworkID)
+			err := service.Delete(ctx, artworkID)
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)
@@ -129,6 +135,7 @@ func TestArtworkService_Delete(t *testing.T) {
 }
 
 func TestArtworkService_Update(t *testing.T) {
+	ctx := context.Background()
 	updateTitle := "Updated Title"
 	updateFunc := func(aw *models.Artwork) (*models.Artwork, error) {
 		newArtwork, err := models.NewArtwork(
@@ -180,9 +187,9 @@ func TestArtworkService_Update(t *testing.T) {
 			service := artworkserv.NewArtworkService(mockRepo)
 			artworkID := uuid.New()
 
-			mockRepo.On("Update", artworkID, mock.Anything).Return(tt.mockResult, tt.mockError)
+			mockRepo.On("Update", ctx, artworkID, mock.Anything).Return(tt.mockResult, tt.mockError)
 
-			result, err := service.Update(artworkID, updateFunc)
+			result, err := service.Update(ctx, artworkID, updateFunc)
 			if tt.expectedError != nil {
 				assert.Error(t, err)
 				assert.Equal(t, tt.expectedError, err)

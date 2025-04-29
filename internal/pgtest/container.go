@@ -30,7 +30,7 @@ func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.Postgr
 func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (testcontainers.Container, cnfg.PostgresCredentials, error) {
 	strPort := fmt.Sprintf("%d/tcp", config.Port)
 	// strPort := "5432/tcp"
-	fmt.Printf("NewTestPostgres: 0\n")
+
 	req := testcontainers.ContainerRequest{
 		Image:        config.Image,
 		ExposedPorts: []string{strPort},
@@ -50,17 +50,16 @@ func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (test
 		ContainerRequest: req,
 		Started:          true,
 	})
-	fmt.Printf("NewTestPostgres: genered\n")
+
 	if err != nil {
 		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
 	}
-	fmt.Printf("NewTestPostgres: 1\n")
+
 	host, err := cnt.Host(ctx)
-	fmt.Printf("NewTestPostgres: 1.1\n")
 	if err != nil {
 		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
 	}
-	fmt.Printf("NewTestPostgres: host - %s\n", host)
+	// fmt.Printf("NewTestPostgres: host - %s\n", host)
 	port, err := cnt.MappedPort(ctx, "5432/tcp")
 	if err != nil {
 		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
@@ -72,6 +71,7 @@ func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (test
 		Username: config.Username,
 		Password: config.Password,
 	}
+	fmt.Printf("PostgresCredentials: %+v\n", creds)
 	// creds := NewPostgresCredentials(config.User, config.Password, config.Database, host, uint16(port.Int()))
 	return cnt, creds, nil
 }

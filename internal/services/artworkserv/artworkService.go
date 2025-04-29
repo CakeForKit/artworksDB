@@ -1,16 +1,18 @@
 package artworkserv
 
 import (
+	"context"
+
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"github.com/google/uuid"
 )
 
 type ArtworkService interface {
-	GetAllArtworks() []*models.Artwork
-	Add(*models.Artwork) error
-	Delete(id uuid.UUID) error
-	Update(id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error)
+	GetAllArtworks(ctx context.Context) ([]*models.Artwork, error)
+	Add(ctx context.Context, aw *models.Artwork) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error)
 }
 
 type artworkService struct {
@@ -23,18 +25,18 @@ func NewArtworkService(artRep artworkrep.ArtworkRep) ArtworkService {
 	}
 }
 
-func (a *artworkService) GetAllArtworks() []*models.Artwork {
-	return a.artworkRep.GetAll()
+func (a *artworkService) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
+	return a.artworkRep.GetAll(ctx)
 }
 
-func (a *artworkService) Add(aw *models.Artwork) error {
-	return a.artworkRep.Add(aw)
+func (a *artworkService) Add(ctx context.Context, aw *models.Artwork) error {
+	return a.artworkRep.Add(ctx, aw)
 }
 
-func (a *artworkService) Delete(id uuid.UUID) error {
-	return a.artworkRep.Delete(id)
+func (a *artworkService) Delete(ctx context.Context, id uuid.UUID) error {
+	return a.artworkRep.Delete(ctx, id)
 }
 
-func (a *artworkService) Update(id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error) {
-	return a.artworkRep.Update(id, funcUpdate)
+func (a *artworkService) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error) {
+	return a.artworkRep.Update(ctx, id, funcUpdate)
 }

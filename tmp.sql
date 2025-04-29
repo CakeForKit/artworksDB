@@ -1,11 +1,20 @@
--- -- Active: 1744740356603@@127.0.0.1@5432@artworks
+-- Active: 1744740356603@@127.0.0.1@5432@artworks
 -- SELECT TABLE_NAME
 -- FROM INFORMATION_SCHEMA.TABLES
 
-select * from artwork
+select * from events
 
-select id, username, login, hashedPassword, createdAt, email, subscribeMail
-from users
+select art.id, art.title, art.technic, art.material, art.size, art.creationYear, 
+    au.id, au.name, au.birthyear, au.deathyear, col.id, col.title
+from artwork art
+join author au
+on art.authorid = au.id
+join collection col
+on art.collectionid = col.id
+where exists (select 1
+                from Artwork_event ae
+                where art.id = ae.artworkID and 
+                    '750f41af-0125-4807-8515-fed3828e2f0e' == ae.eventID)
 
 
 -- Создание таблицы User

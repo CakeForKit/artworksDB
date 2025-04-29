@@ -12,6 +12,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
+	_ "github.com/jackc/pgx/v5/stdlib"
 )
 
 type PgEmployeeRep struct {
@@ -65,14 +66,14 @@ func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, db
 func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee, error) {
 	var resEmployees []*models.Employee
 	for rows.Next() {
-		var id uuid.UUID
-		var username, login, hashedPassword, email string
+		var id, adminID uuid.UUID
+		var username, login, hashedPassword string
 		var createdAt time.Time
-		var subscribeMail bool
-		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
+		var valid bool
+		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &valid, &adminID); err != nil {
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
-		employee, err := models.NewEmployee(id, username, login, hashedPassword, createdAt, true, uuid.New())
+		employee, err := models.NewEmployee(id, username, login, hashedPassword, createdAt, valid, adminID)
 		if err != nil {
 			return nil, err
 		}
@@ -86,7 +87,7 @@ func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee,
 
 func (pg *PgEmployeeRep) GetAll(ctx context.Context) ([]*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
+	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
 		From("employees").
 		ToSql()
 	if err != nil {
@@ -111,8 +112,8 @@ func (pg *PgEmployeeRep) GetAll(ctx context.Context) ([]*models.Employee, error)
 
 func (pg *PgEmployeeRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
+	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
+		From("Employees").
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
@@ -124,21 +125,21 @@ func (pg *PgEmployeeRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Emp
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
-	users, err := pg.parseEmployeesRows(rows)
+	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
 		return nil, err
 	}
-	if len(users) == 0 {
+	if len(employees) == 0 {
 		return nil, ErrEmployeeNotFound
-	} else if len(users) > 1 {
+	} else if len(employees) > 1 {
 		return nil, fmt.Errorf("%w: %v", ErrExpectedOneEmployee, err)
 	}
-	return users[0], nil
+	return employees[0], nil
 }
 
 func (pg *PgEmployeeRep) GetByLogin(ctx context.Context, login string) (*models.Employee, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
+	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
 		From("employees").
 		Where(sq.Eq{"login": login}).
 		ToSql()
@@ -167,7 +168,7 @@ func (pg *PgEmployeeRep) Add(ctx context.Context, e *models.Employee) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Insert("Employees").
 		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true, uuid.New()).
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true, e.GetAdminID()).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -246,4 +247,12 @@ func (pg *PgEmployeeRep) Update(ctx context.Context,
 		return nil, fmt.Errorf("%w: no employee added", ErrRowsAffected)
 	}
 	return updatedEmployee, nil
+}
+
+func (pg *PgEmployeeRep) Ping(ctx context.Context) error {
+	return pg.db.PingContext(ctx)
+}
+
+func (pg *PgEmployeeRep) Close() {
+	pg.db.Close()
 }

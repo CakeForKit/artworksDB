@@ -1,6 +1,7 @@
 package eventrep
 
 import (
+	"context"
 	"errors"
 	"time"
 
@@ -14,14 +15,14 @@ var (
 )
 
 type EventRep interface {
-	GetAll() []*models.Event
-	GetByID(uuid.UUID) (*models.Event, error)
-	GetByDate(dateBeg time.Time, dateEnd time.Time) []*models.Event
-	GetEventOfArtworkOnDate(artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) (*models.Event, error)
+	GetAll(ctx context.Context) ([]*models.Event, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.Event, error)
+	GetByDate(ctx context.Context, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
+	GetEventOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) (*models.Event, error)
 	//
-	Add(aw *models.Event) error
-	Delete(id uuid.UUID) error
-	Update(id uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) (*models.Event, error)
+	Add(ctx context.Context, aw *models.Event) error
+	Delete(ctx context.Context, id uuid.UUID) error
+	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) (*models.Event, error)
 }
 
 func NewEventRep() EventRep {

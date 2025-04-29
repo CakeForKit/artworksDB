@@ -1,6 +1,7 @@
 package searcher
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -9,6 +10,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep/mockeventrep"
 	"github.com/google/uuid"
+	"github.com/stateio/testify/require"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -53,6 +55,7 @@ func createTestEvent() *models.Event {
 }
 
 func TestSearcher_GetAllArtworks(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name           string
 		mockArtworks   []*models.Artwork
@@ -76,9 +79,10 @@ func TestSearcher_GetAllArtworks(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockArt.On("GetAll").Return(tt.mockArtworks)
+			mockArt.On("GetAll", ctx).Return(tt.mockArtworks, nil)
 
-			result := service.GetAllArtworks()
+			result, err := service.GetAllArtworks(ctx)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedLength, len(result))
 			mockArt.AssertExpectations(t)
 		})
@@ -86,6 +90,7 @@ func TestSearcher_GetAllArtworks(t *testing.T) {
 }
 
 func TestSearcher_FilterArtworkByTitle(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name          string
 		title         string
@@ -112,9 +117,10 @@ func TestSearcher_FilterArtworkByTitle(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockArt.On("GetByTitle", tt.title).Return(tt.mockArtworks)
+			mockArt.On("GetByTitle", ctx, tt.title).Return(tt.mockArtworks, nil)
 
-			result := service.FilterArtworkByTitle(tt.title)
+			result, err := service.FilterArtworkByTitle(ctx, tt.title)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockArt.AssertExpectations(t)
 		})
@@ -122,6 +128,7 @@ func TestSearcher_FilterArtworkByTitle(t *testing.T) {
 }
 
 func TestSearcher_FilterArtworkByAuthor(t *testing.T) {
+	ctx := context.Background()
 	author := createTestAuthor()
 	tests := []struct {
 		name          string
@@ -149,9 +156,10 @@ func TestSearcher_FilterArtworkByAuthor(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockArt.On("GetByAuthor", tt.author).Return(tt.mockArtworks)
+			mockArt.On("GetByAuthor", ctx, tt.author).Return(tt.mockArtworks, nil)
 
-			result := service.FilterArtworkByAuthor(tt.author)
+			result, err := service.FilterArtworkByAuthor(ctx, tt.author)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockArt.AssertExpectations(t)
 		})
@@ -159,6 +167,7 @@ func TestSearcher_FilterArtworkByAuthor(t *testing.T) {
 }
 
 func TestSearcher_FilterArtworkByCreationTime(t *testing.T) {
+	ctx := context.Background()
 	artwork := createTestArtwork()
 	tests := []struct {
 		name          string
@@ -189,9 +198,10 @@ func TestSearcher_FilterArtworkByCreationTime(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockArt.On("GetByCreationTime", tt.yearBeg, tt.yearEnd).Return(tt.mockArtworks)
+			mockArt.On("GetByCreationTime", ctx, tt.yearBeg, tt.yearEnd).Return(tt.mockArtworks, nil)
 
-			result := service.FilterArtworkByCreationTime(tt.yearBeg, tt.yearEnd)
+			result, err := service.FilterArtworkByCreationTime(ctx, tt.yearBeg, tt.yearEnd)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockArt.AssertExpectations(t)
 		})
@@ -199,6 +209,7 @@ func TestSearcher_FilterArtworkByCreationTime(t *testing.T) {
 }
 
 func TestSearcher_FilterArtworkByEvent(t *testing.T) {
+	ctx := context.Background()
 	event := createTestEvent()
 	tests := []struct {
 		name          string
@@ -226,9 +237,10 @@ func TestSearcher_FilterArtworkByEvent(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockArt.On("GetByEvent", tt.event).Return(tt.mockArtworks)
+			mockArt.On("GetByEvent", ctx, tt.event).Return(tt.mockArtworks, nil)
 
-			result := service.FilterArtworkByEvent(tt.event)
+			result, err := service.FilterArtworkByEvent(ctx, tt.event)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockArt.AssertExpectations(t)
 		})
@@ -236,6 +248,7 @@ func TestSearcher_FilterArtworkByEvent(t *testing.T) {
 }
 
 func TestSearcher_GetAllEvents(t *testing.T) {
+	ctx := context.Background()
 	tests := []struct {
 		name          string
 		mockEvents    []*models.Event
@@ -259,9 +272,10 @@ func TestSearcher_GetAllEvents(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockEvent.On("GetAll").Return(tt.mockEvents)
+			mockEvent.On("GetAll", ctx).Return(tt.mockEvents, nil)
 
-			result := service.GetAllEvents()
+			result, err := service.GetAllEvents(ctx)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockEvent.AssertExpectations(t)
 		})
@@ -269,6 +283,7 @@ func TestSearcher_GetAllEvents(t *testing.T) {
 }
 
 func TestSearcher_FilterEventsByDate(t *testing.T) {
+	ctx := context.Background()
 	event := createTestEvent()
 	tests := []struct {
 		name          string
@@ -299,9 +314,10 @@ func TestSearcher_FilterEventsByDate(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockEvent.On("GetByDate", tt.dateBeg, tt.dateEnd).Return(tt.mockEvents)
+			mockEvent.On("GetByDate", ctx, tt.dateBeg, tt.dateEnd).Return(tt.mockEvents, nil)
 
-			result := service.FilterEventsByDate(tt.dateBeg, tt.dateEnd)
+			result, err := service.FilterEventsByDate(ctx, tt.dateBeg, tt.dateEnd)
+			require.NoError(t, err)
 			assert.Equal(t, tt.expectedCount, len(result))
 			mockEvent.AssertExpectations(t)
 		})
@@ -309,6 +325,7 @@ func TestSearcher_FilterEventsByDate(t *testing.T) {
 }
 
 func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
+	ctx := context.Background()
 	event := createTestEvent()
 	artwork := createTestArtwork()
 	dateBeg := event.GetDateBegin().Add(-24 * time.Hour)
@@ -352,9 +369,9 @@ func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockEvent.On("GetEventOfArtworkOnDate", tt.artwork, tt.dateBeg, tt.dateEnd).Return(tt.mockEvent, tt.mockError)
+			mockEvent.On("GetEventOfArtworkOnDate", ctx, tt.artwork, tt.dateBeg, tt.dateEnd).Return(tt.mockEvent, tt.mockError)
 
-			result, err := service.GetEventOfArtworkOnDate(tt.artwork, tt.dateBeg, tt.dateEnd)
+			result, err := service.GetEventOfArtworkOnDate(ctx, tt.artwork, tt.dateBeg, tt.dateEnd)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

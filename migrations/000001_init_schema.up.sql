@@ -1,4 +1,4 @@
--- -- Active: 1744740356603@@127.0.0.1@5432@artworks
+
 -- SELECT TABLE_NAME
 -- FROM INFORMATION_SCHEMA.TABLES
 
@@ -13,7 +13,7 @@ CREATE TABLE Admins (
 ALTER TABLE Admins ADD CONSTRAINT emptyCheck 
     CHECK(username != '' AND login != '' AND hashedPassword != ''); 
 
-CREATE TABLE Employee (
+CREATE TABLE Employees (
     id UUID PRIMARY KEY,
     username VARCHAR(50) NOT NULL,
     login VARCHAR(50) NOT NULL UNIQUE,
@@ -23,7 +23,7 @@ CREATE TABLE Employee (
     adminID UUID NOT NULL,
     FOREIGN KEY (adminID) REFERENCES Admins(id)
 );
-ALTER TABLE Employee ADD CONSTRAINT emptyCheck 
+ALTER TABLE Employees ADD CONSTRAINT emptyCheck 
     CHECK(username != '' AND login != '' AND hashedPassword != ''); 
 
 CREATE TABLE Users (
@@ -55,7 +55,7 @@ CREATE TABLE Collection (
 );
 ALTER TABLE Collection ADD CONSTRAINT titleEmpty CHECK(title != '');
 
-CREATE TABLE Artwork (
+CREATE TABLE Artworks (
     id UUID PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     technic VARCHAR(100),
@@ -67,7 +67,7 @@ CREATE TABLE Artwork (
     FOREIGN KEY (authorID) REFERENCES Author(id),
     FOREIGN KEY (collectionID) REFERENCES Collection(id)
 );
-ALTER TABLE Artwork ADD CONSTRAINT emptyCheck 
+ALTER TABLE Artworks ADD CONSTRAINT emptyCheck 
     CHECK(title != '' AND creationYear > 0); 
 
 CREATE TABLE Events (
@@ -79,7 +79,7 @@ CREATE TABLE Events (
     adress VARCHAR(255),
     cntTickets INT,
     creatorID UUID NOT NULL,
-    FOREIGN KEY (creatorID) REFERENCES Employee(id)
+    FOREIGN KEY (creatorID) REFERENCES Employees(id)
 );
 ALTER TABLE Events ADD CONSTRAINT emptyCheck 
     CHECK(title != '' AND adress != ''); 
@@ -90,7 +90,7 @@ ALTER TABLE Events ADD CONSTRAINT dateBeginEndCheck
 CREATE TABLE Artwork_event (
     artworkID UUID NOT NULL,
     eventID UUID NOT NULL,
-    FOREIGN KEY (artworkID) REFERENCES Artwork(id),
+    FOREIGN KEY (artworkID) REFERENCES Artworks(id),
     FOREIGN KEY (eventID) REFERENCES Events(id)
 );
 

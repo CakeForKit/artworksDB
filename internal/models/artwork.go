@@ -11,11 +11,11 @@ type Artwork struct {
 	id           uuid.UUID
 	title        string
 	creationYear int
+	technic      string
+	material     string
+	size         string
 	author       *Author
 	collection   *Collection
-	size         string
-	material     string
-	technic      string
 }
 
 var (
