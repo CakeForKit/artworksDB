@@ -6,11 +6,14 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"github.com/google/uuid"
 )
 
 func main1() {
@@ -116,12 +119,24 @@ func main() {
 	if err != nil {
 		fmt.Printf("ERROR: %v\n\n\n", err)
 	}
-	arts, err := artrep.GetAll(ctx)
+	a, err := artrep.GetByID(ctx, uuid.MustParse("30154661-36c5-4761-96ea-691abb9bb407"))
+	if err != nil {
+		fmt.Printf("ERROR: %v\n\n\n", err)
+	}
+	eventrep, err := eventrep.NewPgEventRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		fmt.Printf("ERROR: %v\n\n\n", err)
+	}
+
+	startDate := time.Date(2025, 4, 21, 0, 0, 0, 0, time.UTC)
+	endDate := time.Date(2025, 6, 22, 0, 0, 0, 0, time.UTC)
+
+	events, err := eventrep.GetEventsOfArtworkOnDate(ctx, a, startDate, endDate)
 	if err != nil {
 		fmt.Printf("ERROR: %v\n\n\n", err)
 		return
 	}
-	for _, a := range arts {
+	for _, a := range events {
 		fmt.Printf("%+v\n", a)
 	}
 	// newUser, _ := models.NewUser(

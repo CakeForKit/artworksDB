@@ -2,7 +2,65 @@
 -- SELECT TABLE_NAME
 -- FROM INFORMATION_SCHEMA.TABLES
 
-select * from events
+select * from Artwork_event
+
+select * from artworks
+
+select * 
+from events
+
+select a.id, a.title, e.title, e.dateBegin, e.dateEnd
+from artworks a
+join Artwork_event ae
+on a.id = ae.artworkid
+join events e
+on ae.eventid = e.id
+
+
+CREATE OR REPLACE FUNCTION get_event_of_artwork(
+    idArtwork UUID, 
+    dateBeginSee TIMESTAMP, 
+    dateEndSee TIMESTAMP)
+RETURNS TABLE (
+    event_id UUID,
+    title VARCHAR(255),
+    dateBegin TIMESTAMP,
+    dateEnd TIMESTAMP,
+    canVisit BOOLEAN,
+    adress VARCHAR(255),
+    cntTickets INT,
+    creatorID UUID
+) AS $$
+
+    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+    FROM Events e
+    JOIN Artwork_event ae ON e.id = ae.eventID
+    WHERE ae.artworkID = idArtwork
+      AND e.dateBegin <= dateEndSee
+      AND e.dateEnd >= dateBeginSee;
+
+$$ LANGUAGE sql;
+
+
+
+drop Function if exists get_event_of_artwork
+
+SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+    FROM Events e
+    JOIN Artwork_event ae ON e.id = ae.eventID
+    WHERE ae.artworkID = '30154661-36c5-4761-96ea-691abb9bb407'
+      AND e.dateBegin <= '2025-05-22 00:00:00'
+      AND e.dateEnd >= '2025-05-01 00:00:00';
+
+select event_id, title, datebegin
+from get_event_of_artwork('30154661-36c5-4761-96ea-691abb9bb407', '2025-04-01 00:00:00', '2025-06-22 00:00:00')
+
+select id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID
+from events
+WHERE 
+    dateBegin >= '2025-05-01 00:00:00'::timestamp AND
+    dateEnd <= '2023-11-30 23:59:59'::timestamp
+-- ORDER BY dateBegin;
 
 select art.id, art.title, art.technic, art.material, art.size, art.creationYear, 
     au.id, au.name, au.birthyear, au.deathyear, col.id, col.title
@@ -14,7 +72,7 @@ on art.collectionid = col.id
 where exists (select 1
                 from Artwork_event ae
                 where art.id = ae.artworkID and 
-                    '750f41af-0125-4807-8515-fed3828e2f0e' == ae.eventID)
+                    '750f41af-0125-4807-8515-fed3828e2f0e' = ae.eventID)
 
 
 -- Создание таблицы User
@@ -73,12 +131,12 @@ CREATE TABLE Artwork (
     FOREIGN KEY (collectionID) REFERENCES Collection(id)
 );
 
-CREATE TABLE Event (
+CREATE TABLE Events (
     id UUID PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     dateBegin DATETIME NOT NULL,
     dateEnd DATETIME NOT NULL,
-    access BOOLEAN,
+    canVisit BOOLEAN,
     adress VARCHAR(255),
     cntTickets INT DEFAULT 0,
     creatorID INT NOT NULL,
@@ -89,7 +147,7 @@ CREATE TABLE Artwork_event (
     artworkID UUID NOT NULL,
     eventID UUID NOT NULL,
     FOREIGN KEY (artworkID) REFERENCES Artwork(id),
-    FOREIGN KEY (eventID) REFERENCES Event(id)
+    FOREIGN KEY (eventID) REFERENCES Events(id)
 );
 
 CREATE TABLE TicketPurchases (
@@ -98,5 +156,5 @@ CREATE TABLE TicketPurchases (
     customerEmail VARCHAR(100),
     eventID UUID NOT NULL,
     purchaseDate DATETIME NOT NULL,
-    FOREIGN KEY (eventID) REFERENCES Event(id)
+    FOREIGN KEY (eventID) REFERENCES Events(id)
 );

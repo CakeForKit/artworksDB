@@ -28,9 +28,9 @@ func (m *MockEventRep) GetByDate(ctx context.Context, dateBeg time.Time, dateEnd
 	return args.Get(0).([]*models.Event), args.Error(1)
 }
 
-func (m *MockEventRep) GetEventOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) (*models.Event, error) {
+func (m *MockEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
 	args := m.Called(ctx, artwork, dateBeg, dateEnd)
-	return args.Get(0).(*models.Event), args.Error(1)
+	return args.Get(0).([]*models.Event), args.Error(1)
 }
 
 func (m *MockEventRep) Add(ctx context.Context, aw *models.Event) error {
@@ -48,4 +48,12 @@ func (m *MockEventRep) Update(ctx context.Context, id uuid.UUID,
 
 	args := m.Called(ctx, id, funcUpdate)
 	return args.Get(0).(*models.Event), args.Error(1)
+}
+
+func (m *MockEventRep) Ping(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
+func (m *MockEventRep) Close() {
 }

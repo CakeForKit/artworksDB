@@ -10,9 +10,9 @@ INSERT INTO Admins (id, username, login, hashedPassword, createdAt) VALUES
 WITH admin_ids AS (
     SELECT id FROM Admins ORDER BY createdAt LIMIT 2
 )
-INSERT INTO Employee (id, username, login, hashedPassword, createdAt, adminID) VALUES
+INSERT INTO Employees (id, username, login, hashedPassword, createdAt, adminID) VALUES
 (gen_random_uuid(), 'employee1', 'emp1_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), (SELECT id FROM admin_ids OFFSET 0 LIMIT 1)),
-(gen_random_uuid(), 'employee2', 'emp2_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW(), (SELECT id FROM admin_ids OFFSET 1 LIMIT 1));
+(gen_random_uuid(), 'employee2', 'emp2_login', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Zd', NOW(), (SELECT id FROM admin_ids OFFSET 1 LIMIT 1));
 
 -- Вставляем пользователей
 -- INSERT INTO Users (id, username, login, hashedPassword, createdAt, email, subscribeMail) VALUES
@@ -43,17 +43,31 @@ van_gogh AS (
 impression_collection AS (
     SELECT id FROM Collection WHERE title = 'Post-Impressionism Collection' LIMIT 1
 )
-INSERT INTO Artwork (id, title, technic, material, size, creationYear, authorID, collectionID) VALUES
+INSERT INTO Artworks (id, title, technic, material, size, creationYear, authorID, collectionID) VALUES
 (gen_random_uuid(), 'Mona Lisa', 'Oil painting', 'Poplar wood', '77 × 53 cm', 1503, (SELECT id FROM author_data), (SELECT id FROM collection_data)),
 (gen_random_uuid(), 'Starry Night', 'Oil painting', 'Canvas', '73.7 × 92.1 cm', 1889, (SELECT id FROM van_gogh), (SELECT id FROM impression_collection));
 
 -- Вставляем события (сначала получаем ID сотрудников)
 WITH employee_ids AS (
-    SELECT id FROM Employee ORDER BY createdAt LIMIT 2
+    SELECT id FROM Employees ORDER BY createdAt LIMIT 2
 )
-INSERT INTO Events (id, title, dateBegin, dateEnd, access, adress, cntTickets, creatorID) VALUES
+INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID) VALUES
 (gen_random_uuid(), 'Renaissance Exhibition', NOW() + INTERVAL '10 days', NOW() + INTERVAL '20 days', TRUE, '123 Art Gallery St, Museum District', 100, (SELECT id FROM employee_ids OFFSET 0 LIMIT 1)),
 (gen_random_uuid(), 'Van Gogh Special', NOW() + INTERVAL '15 days', NOW() + INTERVAL '25 days', TRUE, '456 Modern Art Ave, Downtown', 150, (SELECT id FROM employee_ids OFFSET 1 LIMIT 1));
+
+select * from events
+
+select * from artworks
+
+SELECT 
+        a.id as artwork_id, 
+        e.id as event_id
+    FROM 
+        Artworks a
+    JOIN 
+        Events e ON 
+        (a.title = 'Mona Lisa' AND e.title = 'Renaissance Exhibition') OR
+        (a.title = 'Starry Night' AND e.title = 'Van Gogh Special')
 
 -- Связываем произведения искусства с событиями (сначала получаем ID произведений и событий)
 WITH 
@@ -62,7 +76,7 @@ artwork_event_data AS (
         a.id as artwork_id, 
         e.id as event_id
     FROM 
-        Artwork a
+        Artworks a
     JOIN 
         Events e ON 
         (a.title = 'Mona Lisa' AND e.title = 'Renaissance Exhibition') OR

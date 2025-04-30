@@ -15,7 +15,7 @@ type Event struct {
 	dateBegin  time.Time
 	dateEnd    time.Time
 	address    string
-	access     bool
+	canVisit   bool
 	employeeID uuid.UUID
 	cntTickets int
 }
@@ -26,7 +26,7 @@ var (
 	ErrEventInvalidDates    = errors.New("end date must be after start date")
 	ErrEventEmptyAddress    = errors.New("empty address")
 	ErrEventAddressTooLong  = errors.New("address exceeds maximum length (255 chars)")
-	ErrEventInvalidAccess   = errors.New("invalid access value")
+	ErrEventInvalidAccess   = errors.New("invalid canVisit value")
 	ErrEventInvalidEmployee = errors.New("invalid employee ID")
 	ErrEventNegativeTickets = errors.New("ticket count cannot be negative")
 )
@@ -37,7 +37,7 @@ func NewEvent(
 	dateBegin time.Time,
 	dateEnd time.Time,
 	address string,
-	access bool,
+	canVisit bool,
 	employeeID uuid.UUID,
 	cntTickets int,
 ) (Event, error) {
@@ -47,7 +47,7 @@ func NewEvent(
 		dateBegin:  dateBegin,
 		dateEnd:    dateEnd,
 		address:    strings.TrimSpace(address),
-		access:     access,
+		canVisit:   canVisit,
 		employeeID: employeeID,
 		cntTickets: cntTickets,
 	}
@@ -114,7 +114,7 @@ func (e *Event) GetAddress() string {
 }
 
 func (e *Event) GetAccess() bool {
-	return e.access
+	return e.canVisit
 }
 
 func (e *Event) GetEmployeeID() uuid.UUID {

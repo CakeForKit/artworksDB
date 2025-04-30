@@ -19,7 +19,7 @@ type Searcher interface {
 	FilterArtworkByEvent(ctx context.Context, event models.Event) ([]*models.Artwork, error)
 	GetAllEvents(ctx context.Context) ([]*models.Event, error)
 	FilterEventsByDate(ctx context.Context, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
-	GetEventOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) (*models.Event, error)
+	GetEventsOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
 }
 
 type searcher struct {
@@ -66,6 +66,6 @@ func (s *searcher) FilterEventsByDate(ctx context.Context, dateBeg time.Time, da
 	return s.eventRep.GetByDate(ctx, dateBeg, dateEnd)
 }
 
-func (s *searcher) GetEventOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) (*models.Event, error) {
-	return s.eventRep.GetEventOfArtworkOnDate(ctx, artwork, dateBeg, dateEnd)
+func (s *searcher) GetEventsOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
+	return s.eventRep.GetEventsOfArtworkOnDate(ctx, artwork, dateBeg, dateEnd)
 }

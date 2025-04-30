@@ -75,7 +75,7 @@ CREATE TABLE Events (
     title VARCHAR(255) NOT NULL,
     dateBegin TIMESTAMP NOT NULL,
     dateEnd TIMESTAMP NOT NULL,
-    access BOOLEAN,
+    canVisit BOOLEAN,
     adress VARCHAR(255),
     cntTickets INT,
     creatorID UUID NOT NULL,
@@ -106,3 +106,28 @@ CREATE TABLE TicketPurchases (
 );
 ALTER TABLE TicketPurchases ADD CONSTRAINT emptyCheck 
     CHECK(customerName != '' AND customerEmail != ''); 
+
+
+CREATE OR REPLACE FUNCTION get_event_of_artwork(
+    idArtwork UUID, 
+    dateBeginSee TIMESTAMP, 
+    dateEndSee TIMESTAMP)
+RETURNS TABLE (
+    event_id UUID,
+    title VARCHAR(255),
+    dateBegin TIMESTAMP,
+    dateEnd TIMESTAMP,
+    canVisit BOOLEAN,
+    adress VARCHAR(255),
+    cntTickets INT,
+    creatorID UUID
+) AS $$
+
+    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+    FROM Events e
+    JOIN Artwork_event ae ON e.id = ae.eventID
+    WHERE ae.artworkID = idArtwork
+      AND e.dateBegin <= dateEndSee
+      AND e.dateEnd >= dateBeginSee;
+
+$$ LANGUAGE sql;

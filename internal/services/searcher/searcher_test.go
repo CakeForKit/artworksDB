@@ -336,30 +336,30 @@ func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
 		artwork        *models.Artwork
 		dateBeg        time.Time
 		dateEnd        time.Time
-		mockEvent      *models.Event
+		mockEvent      []*models.Event
 		mockError      error
 		expectedError  error
-		expectedResult *models.Event
+		expectedResult []*models.Event
 	}{
 		{
 			name:           "event found",
 			artwork:        artwork,
 			dateBeg:        dateBeg,
 			dateEnd:        dateEnd,
-			mockEvent:      event,
+			mockEvent:      []*models.Event{event},
 			mockError:      nil,
 			expectedError:  nil,
-			expectedResult: event,
+			expectedResult: []*models.Event{event},
 		},
 		{
 			name:           "event not found",
 			artwork:        artwork,
 			dateBeg:        event.GetDateBegin().Add(-48 * time.Hour),
 			dateEnd:        event.GetDateBegin().Add(-24 * time.Hour),
-			mockEvent:      nil,
+			mockEvent:      make([]*models.Event, 0),
 			mockError:      eventrep.ErrEventNotFound,
 			expectedError:  eventrep.ErrEventNotFound,
-			expectedResult: nil,
+			expectedResult: make([]*models.Event, 0),
 		},
 	}
 
@@ -369,9 +369,9 @@ func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
-			mockEvent.On("GetEventOfArtworkOnDate", ctx, tt.artwork, tt.dateBeg, tt.dateEnd).Return(tt.mockEvent, tt.mockError)
+			mockEvent.On("GetEventsOfArtworkOnDate", ctx, tt.artwork, tt.dateBeg, tt.dateEnd).Return(tt.mockEvent, tt.mockError)
 
-			result, err := service.GetEventOfArtworkOnDate(ctx, tt.artwork, tt.dateBeg, tt.dateEnd)
+			result, err := service.GetEventsOfArtworkOnDate(ctx, tt.artwork, tt.dateBeg, tt.dateEnd)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
