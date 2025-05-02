@@ -4,16 +4,11 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
-	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"github.com/google/uuid"
 )
 
 func main1() {
@@ -90,55 +85,92 @@ func main1() {
 }
 
 func main() {
-	// Config ------
-	pgTestCnfg, err := cnfg.LoadPgTestConfig()
-	if err != nil {
-		log.Fatal("cannot load config:", err)
-	}
-	fmt.Printf("%+v\n", pgTestCnfg)
-	pgCreds, err := cnfg.LoadPgCredentials()
-	if err != nil {
-		log.Fatal("cannot load config:", err)
-	}
-	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
-	if err != nil {
-		log.Fatal("cannot load config:", err)
-	}
-	appCnfg, err := cnfg.LoadAppConfig()
-	if err != nil {
-		log.Fatal("cannot load config:", err)
-	}
-	fmt.Printf("Postgres config: %+v\n", pgCreds)
-	fmt.Printf("App config: %+v\n", appCnfg)
-	fmt.Printf("Datebase config: %+v\n", dbCnfg)
-	// ------
+	// redisCnfg, err := cnfg.LoadRedisCredentials()
+	// if err != nil {
+	// 	fmt.Printf("cannot load config: %v", err)
+	// 	return
+	// }
+	// appCnfg, err := cnfg.LoadAppConfig()
+	// if err != nil {
+	// 	fmt.Printf("cannot load config: %v", err)
+	// 	return
+	// }
+	// ctx := context.Background()
+	// txRep, err := buyticketstxrep.NewBuyTicketsTxRep(ctx, redisCnfg)
+	// if err != nil {
+	// 	fmt.Printf("ERROR1: %v\n", err)
+	// 	return
+	// }
+	// ticketServ, err := buyticketserv.NewBuyTicketsServ(txRep, *appCnfg)
+	// if err != nil {
+	// 	fmt.Printf("ERROR2: %v\n", err)
+	// 	return
+	// }
+	// eventID := uuid.New()
+	// cntTickets := 2
+	// customerName := "customer1"
+	// customerEmail := "customer@test.ru"
+	// ttx, err := ticketServ.BuyTicket(ctx, eventID, cntTickets, customerName, customerEmail)
+	// if err != nil {
+	// 	fmt.Printf("ERROR3: %v\n", err)
+	// 	return
+	// }
+	// err = ticketServ.ConfirmBuyTicket(ctx, ttx.GetID())
+	// if err != nil {
+	// 	fmt.Printf("ERROR4: %v\n", err)
+	// 	return
+	// }
 
-	// Repo ------
-	ctx := context.Background()
-	artrep, err := artworkrep.NewPgArtworkRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n\n\n", err)
-	}
-	a, err := artrep.GetByID(ctx, uuid.MustParse("30154661-36c5-4761-96ea-691abb9bb407"))
-	if err != nil {
-		fmt.Printf("ERROR: %v\n\n\n", err)
-	}
-	eventrep, err := eventrep.NewPgEventRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n\n\n", err)
-	}
+	// // Config ------
+	// pgTestCnfg, err := cnfg.LoadPgTestConfig()
+	// if err != nil {
+	// 	log.Fatal("cannot load config:", err)
+	// }
+	// fmt.Printf("%+v\n", pgTestCnfg)
+	// pgCreds, err := cnfg.LoadPgCredentials()
+	// if err != nil {
+	// 	log.Fatal("cannot load config:", err)
+	// }
+	// dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
+	// if err != nil {
+	// 	log.Fatal("cannot load config:", err)
+	// }
+	// appCnfg, err := cnfg.LoadAppConfig()
+	// if err != nil {
+	// 	log.Fatal("cannot load config:", err)
+	// }
+	// fmt.Printf("Postgres config: %+v\n", pgCreds)
+	// fmt.Printf("App config: %+v\n", appCnfg)
+	// fmt.Printf("Datebase config: %+v\n", dbCnfg)
+	// // ------
 
-	startDate := time.Date(2025, 4, 21, 0, 0, 0, 0, time.UTC)
-	endDate := time.Date(2025, 6, 22, 0, 0, 0, 0, time.UTC)
+	// // Repo ------
+	// ctx := context.Background()
+	// artrep, err := artworkrep.NewPgArtworkRep(ctx, pgCreds, dbCnfg)
+	// if err != nil {
+	// 	fmt.Printf("ERROR: %v\n\n\n", err)
+	// }
+	// a, err := artrep.GetByID(ctx, uuid.MustParse("30154661-36c5-4761-96ea-691abb9bb407"))
+	// if err != nil {
+	// 	fmt.Printf("ERROR: %v\n\n\n", err)
+	// }
+	// eventrep, err := eventrep.NewPgEventRep(ctx, pgCreds, dbCnfg)
+	// if err != nil {
+	// 	fmt.Printf("ERROR: %v\n\n\n", err)
+	// }
 
-	events, err := eventrep.GetEventsOfArtworkOnDate(ctx, a, startDate, endDate)
-	if err != nil {
-		fmt.Printf("ERROR: %v\n\n\n", err)
-		return
-	}
-	for _, a := range events {
-		fmt.Printf("%+v\n", a)
-	}
+	// startDate := time.Date(2025, 4, 21, 0, 0, 0, 0, time.UTC)
+	// endDate := time.Date(2025, 6, 22, 0, 0, 0, 0, time.UTC)
+
+	// events, err := eventrep.GetEventsOfArtworkOnDate(ctx, a, startDate, endDate)
+	// if err != nil {
+	// 	fmt.Printf("ERROR: %v\n\n\n", err)
+	// 	return
+	// }
+	// for _, a := range events {
+	// 	fmt.Printf("%+v\n", a)
+	// }
+
 	// newUser, _ := models.NewUser(
 	// 	uuid.New(),
 	// 	"test-user",

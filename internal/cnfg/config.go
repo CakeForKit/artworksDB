@@ -47,37 +47,17 @@ type PostgresTestConfig struct {
 	MigrationDir string `mapstructure:"postgres_migration_dir"`
 }
 
+type RedisCredentials struct {
+	Host     string `mapstructure:"REDIS_HOST"`
+	Port     int    `mapstructure:"REDIS_PORT"`
+	Username string `mapstructure:"REDIS_USER"`
+	Password string `mapstructure:"REDIS_PASSWORD"`
+}
+
 var (
 	ErrConfigRead = errors.New("ReadInConfig")
 	ErrEnvRead    = errors.New("read env error")
 )
-
-// func LoadConfig() (config *Config, err error) {
-// 	config = &Config{}
-// 	viper.AddConfigPath("./configs/") // расположение файла с настройками
-// 	viper.SetConfigName("db")
-// 	viper.SetConfigType("env")
-// 	viper.AutomaticEnv()
-// 	if err = viper.ReadInConfig(); err != nil {
-// 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
-// 	}
-// 	cnfPostgres := &PostgresCredentials{}
-// 	if err = viper.Unmarshal(cnfPostgres); err != nil { // преобразование значений в переданный объект
-// 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
-// 	}
-// 	config.Postgres = *cnfPostgres
-
-// 	viper.SetConfigName("config")
-// 	viper.SetConfigType("yaml")
-// 	if err = viper.ReadInConfig(); err != nil {
-// 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
-// 	}
-// 	if err = viper.Unmarshal(config); err != nil {
-// 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
-// 	}
-
-// 	return config, nil
-// }
 
 func LoadAppConfig() (config *AppConfig, err error) {
 	config = &AppConfig{}
@@ -143,6 +123,21 @@ func LoadPgTestConfig() (config *PostgresTestConfig, err error) {
 	}
 	fmt.Printf("LoadPgTestConfig: %+v\n", config)
 
+	return config, nil
+}
+
+func LoadRedisCredentials() (config *RedisCredentials, err error) {
+	viper.AddConfigPath("./configs/") // расположение файла с настройками
+	viper.SetConfigName("redis")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
+	if err = viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
+	}
+	config = &RedisCredentials{}
+	if err = viper.Unmarshal(config); err != nil { // преобразование значений в переданный объект
+		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
+	}
 	return config, nil
 }
 

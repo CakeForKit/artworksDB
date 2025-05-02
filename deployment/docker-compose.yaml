@@ -12,6 +12,7 @@ services:
       - postgres
     networks:
       - postgres-db
+      - redis_artworks
 
   postgres:
     container_name: postgres_artworks
@@ -45,15 +46,29 @@ services:
     networks:
       - postgres-db
 
+  redis_artworks:
+    container_name: redis_artworks
+    hostname: redis_artworks
+    build:
+      context: ./redis
+      dockerfile: ./Dockerfile
+    env_file:
+      - ../configs/redis.env
+    networks:
+      - redis_artworks
+
 volumes:
-  data-volume:  # Имя тома
+  data-volume:
+    # Имя тома
     driver: local
-    driver_opts:
-      o: bind
-      type: none
-      device: ../data/db_data  # Папка на хосте
+    # driver_opts:
+    #   o: bind
+    #   type: none
+    #   device: ../data/db_data  # Папка на хосте
 
 
 networks:
   postgres-db:
     name: postgres-net
+  redis_artworks:
+    name: redis_artworks

@@ -111,7 +111,7 @@ authors AS (
 collections AS (
     SELECT id, title FROM Collection
 )
-INSERT INTO Artwork (id, title, technic, material, size, creationYear, authorID, collectionID) VALUES
+INSERT INTO Artworks (id, title, technic, material, size, creationYear, authorID, collectionID) VALUES
 (gen_random_uuid(), 'The Persistence of Memory', 'Oil painting', 'Canvas', '24 × 33 cm', 1931, 
     (SELECT id FROM authors WHERE name = 'Salvador Dali'), 
     (SELECT id FROM collections WHERE title = 'Post-Impressionism Collection')),
@@ -127,3 +127,70 @@ INSERT INTO Artwork (id, title, technic, material, size, creationYear, authorID,
 (gen_random_uuid(), 'Guernica', 'Oil painting', 'Canvas', '349 × 776 cm', 1937, 
     (SELECT id FROM authors WHERE name = 'Pablo Picasso'), 
     (SELECT id FROM collections WHERE title = 'Post-Impressionism Collection'));
+
+
+-- Добавляем 10 новых пользователей
+INSERT INTO Users (id, username, login, hashedPassword, createdAt, email, subscribeMail) VALUES
+(gen_random_uuid(), 'Alex Johnson', 'alexj', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '30 days', 'alex.johnson@example.com', TRUE),
+(gen_random_uuid(), 'Maria Garcia', 'mariag', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '25 days', 'maria.garcia@example.com', FALSE),
+(gen_random_uuid(), 'James Smith', 'jamess', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '20 days', 'james.smith@example.com', TRUE),
+(gen_random_uuid(), 'Emma Wilson', 'emmaw', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '15 days', 'emma.wilson@example.com', FALSE),
+(gen_random_uuid(), 'Michael Brown', 'michaelb', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '10 days', 'michael.brown@example.com', TRUE),
+(gen_random_uuid(), 'Sophia Davis', 'sophiad', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '8 days', 'sophia.davis@example.com', FALSE),
+(gen_random_uuid(), 'William Miller', 'williamm', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '5 days', 'william.miller@example.com', TRUE),
+(gen_random_uuid(), 'Olivia Wilson', 'oliviaw', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '3 days', 'olivia.wilson@example.com', FALSE),
+(gen_random_uuid(), 'Benjamin Taylor', 'benjamin', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '2 days', 'benjamin.taylor@example.com', TRUE),
+(gen_random_uuid(), 'Ava Anderson', 'avaa', '$2a$10$xJwL5v5Jz5U5Z5U5Z5U5Ze', NOW() - INTERVAL '1 day', 'ava.anderson@example.com', FALSE);
+
+
+-- Добавляем еще 3 события
+WITH employee_ids AS (
+    SELECT id FROM Employees ORDER BY createdAt LIMIT 2
+)
+INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID) VALUES
+(gen_random_uuid(), 'Surrealism Exhibition', NOW() + INTERVAL '5 days', NOW() + INTERVAL '15 days', TRUE, '789 Modern Art Blvd, Arts District', 80, (SELECT id FROM employee_ids OFFSET 0 LIMIT 1)),
+(gen_random_uuid(), 'Cubism Special', NOW() + INTERVAL '12 days', NOW() + INTERVAL '22 days', TRUE, '101 Art Center Rd, Downtown', 120, (SELECT id FROM employee_ids OFFSET 1 LIMIT 1)),
+(gen_random_uuid(), 'Expressionism Showcase', NOW() + INTERVAL '8 days', NOW() + INTERVAL '18 days', TRUE, '202 Gallery Lane, Museum Quarter', 90, (SELECT id FROM employee_ids OFFSET 0 LIMIT 1));
+
+
+-- Сначала создадим временные таблицы для хранения ID пользователей и событий
+WITH 
+user_ids AS (
+    SELECT id, username, email FROM Users ORDER BY createdAt LIMIT 10
+),
+event_ids AS (
+    SELECT id, title FROM Events ORDER BY dateBegin LIMIT 5
+),
+-- Создаем покупки билетов
+ticket_purchases AS (
+    INSERT INTO TicketPurchases (id, customerName, customerEmail, purchaseDate, eventID)
+    VALUES
+    -- Покупки для Renaissance Exhibition
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 0 LIMIT 1), (SELECT email FROM user_ids OFFSET 0 LIMIT 1), NOW() - INTERVAL '2 days', (SELECT id FROM event_ids WHERE title = 'Renaissance Exhibition')),
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 1 LIMIT 1), (SELECT email FROM user_ids OFFSET 1 LIMIT 1), NOW() - INTERVAL '1 day', (SELECT id FROM event_ids WHERE title = 'Renaissance Exhibition')),
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 2 LIMIT 1), (SELECT email FROM user_ids OFFSET 2 LIMIT 1), NOW(), (SELECT id FROM event_ids WHERE title = 'Renaissance Exhibition')),
+    -- Покупки для Van Gogh Special
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 3 LIMIT 1), (SELECT email FROM user_ids OFFSET 3 LIMIT 1), NOW() - INTERVAL '3 days', (SELECT id FROM event_ids WHERE title = 'Van Gogh Special')),
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 4 LIMIT 1), (SELECT email FROM user_ids OFFSET 4 LIMIT 1), NOW() - INTERVAL '2 days', (SELECT id FROM event_ids WHERE title = 'Van Gogh Special')),
+    -- Покупки для Surrealism Exhibition
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 5 LIMIT 1), (SELECT email FROM user_ids OFFSET 5 LIMIT 1), NOW() - INTERVAL '1 day', (SELECT id FROM event_ids WHERE title = 'Surrealism Exhibition')),
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 6 LIMIT 1), (SELECT email FROM user_ids OFFSET 6 LIMIT 1), NOW(), (SELECT id FROM event_ids WHERE title = 'Surrealism Exhibition')),
+    -- Покупки для Cubism Special
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 7 LIMIT 1), (SELECT email FROM user_ids OFFSET 7 LIMIT 1), NOW() - INTERVAL '4 days', (SELECT id FROM event_ids WHERE title = 'Cubism Special')),
+    -- Покупки для Expressionism Showcase
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 8 LIMIT 1), (SELECT email FROM user_ids OFFSET 8 LIMIT 1), NOW() - INTERVAL '3 days', (SELECT id FROM event_ids WHERE title = 'Expressionism Showcase')),
+    (gen_random_uuid(), (SELECT username FROM user_ids OFFSET 9 LIMIT 1), (SELECT email FROM user_ids OFFSET 9 LIMIT 1), NOW() - INTERVAL '2 days', (SELECT id FROM event_ids WHERE title = 'Expressionism Showcase')),
+    (gen_random_uuid(), 'Guest Visitor', 'guest1@example.com', NOW() - INTERVAL '1 day', (SELECT id FROM event_ids WHERE title = 'Expressionism Showcase'))
+    RETURNING id, customerEmail
+)
+-- Теперь связываем билеты с пользователями (кроме гостевого билета)
+INSERT INTO tickets_user (ticketID, userID)
+SELECT 
+    tp.id, 
+    u.id
+FROM 
+    ticket_purchases tp
+JOIN 
+    Users u ON tp.customerEmail = u.email
+WHERE 
+    tp.customerEmail != 'guest1@example.com';

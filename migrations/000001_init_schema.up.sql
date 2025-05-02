@@ -1,3 +1,4 @@
+-- Active: 1744740356603@@127.0.0.1@5432@artworks
 
 -- SELECT TABLE_NAME
 -- FROM INFORMATION_SCHEMA.TABLES
@@ -100,12 +101,57 @@ CREATE TABLE TicketPurchases (
     customerEmail VARCHAR(100),
     purchaseDate TIMESTAMP NOT NULL,
     eventID UUID NOT NULL,
-    userID UUID DEFAULT NULL,
-    FOREIGN KEY (eventID) REFERENCES Events(id),
-    FOREIGN KEY (userID) REFERENCES Users(id)
+    FOREIGN KEY (eventID) REFERENCES Events(id)
 );
+
 ALTER TABLE TicketPurchases ADD CONSTRAINT emptyCheck 
     CHECK(customerName != '' AND customerEmail != ''); 
+
+CREATE TABLE tickets_user (
+    ticketID UUID UNIQUE,
+    userID UUID,
+    PRIMARY KEY (ticketID, userID),
+    CONSTRAINT ticketID_notnull CHECK (ticketID IS NOT NULL),
+    FOREIGN KEY (ticketID) REFERENCES TicketPurchases(id),
+    CONSTRAINT userID_notnull CHECK (userID IS NOT NULL),
+    FOREIGN KEY (userID) REFERENCES Users(id)
+);
+
+
+CREATE OR REPLACE FUNCTION check_ticket_limit()
+RETURNS TRIGGER AS $$
+DECLARE
+    max_tickets INT;
+    sold_tickets INT;
+BEGIN
+
+    SELECT cntTickets INTO max_tickets
+    FROM Events
+    WHERE id = NEW.eventID;
+    
+    SELECT COUNT(*) INTO sold_tickets
+    FROM TicketPurchases
+    WHERE eventID = NEW.eventID;
+
+    IF TG_OP = 'INSERT' THEN
+        sold_tickets := sold_tickets + 1;
+    END IF;
+    
+    IF sold_tickets > max_tickets THEN
+        RAISE EXCEPTION 'Превышено максимальное количество билетов для события (доступно: %, пытается купить: %)', 
+                        max_tickets, sold_tickets;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+
+CREATE TRIGGER enforce_ticket_limit
+BEFORE INSERT OR UPDATE ON TicketPurchases
+FOR EACH ROW
+EXECUTE FUNCTION check_ticket_limit();
+
 
 
 CREATE OR REPLACE FUNCTION get_event_of_artwork(

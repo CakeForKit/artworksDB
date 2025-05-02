@@ -48,6 +48,65 @@ RETURNS TABLE (
 $$ LANGUAGE sql;
 
 
+select tp.id, tp.customername, tp.customeremail, tp.purchasedate, tp.eventid, tu.userid
+from TicketPurchases tp
+join tickets_user tu
+on tp.id = tu.ticketID
+where tu.userID = '8472a25c-464e-4730-9b2f-d4970a838310'
+
+INSERT INTO TicketPurchases (id, customerName, customerEmail, purchaseDate, eventID)
+VALUES ()
+
+
+SELECT 
+    e.id,
+    COUNT(tp.id) AS tickets_sold
+FROM Events e
+LEFT JOIN TicketPurchases tp 
+ON e.id = tp.eventID
+GROUP BY e.id
+ORDER BY 
+    e.dateBegin;
+
+SELECT COUNT(tp.id)
+    -- COUNT(tp.id) AS tickets_sold
+FROM Events e
+LEFT JOIN TicketPurchases tp 
+ON e.id = tp.eventID
+WHERE e.id = 'e851464a-3c58-4a19-b269-58dbf619f01d';
+
+-- Посмотрим количество билетов на каждое событие
+SELECT 
+    e.id, e.title AS event_title,
+    e.cntTickets AS max_tickets,
+    COUNT(tp.id) AS tickets_sold,
+    e.cntTickets - COUNT(tp.id) AS tickets_available
+FROM 
+    Events e
+LEFT JOIN 
+    TicketPurchases tp ON e.id = tp.eventID
+GROUP BY 
+    e.id, e.title, e.cntTickets
+ORDER BY 
+    e.dateBegin;
+
+-- Посмотрим распределение билетов среди пользователей
+SELECT 
+    u.id, u.username,
+    COUNT(tu.ticketID) AS tickets_purchased,
+    STRING_AGG(e.title, ', ') AS events_attending
+FROM 
+    Users u
+JOIN 
+    tickets_user tu ON u.id = tu.userID
+JOIN 
+    TicketPurchases tp ON tu.ticketID = tp.id
+JOIN 
+    Events e ON tp.eventID = e.id
+GROUP BY 
+    u.id, u.username
+ORDER BY 
+    tickets_purchased DESC;
 
 drop Function if exists get_event_of_artwork
 

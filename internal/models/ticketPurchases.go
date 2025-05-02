@@ -17,13 +17,21 @@ type TicketPurchase struct {
 	userID        uuid.UUID
 }
 
+type jsonTicketPurchase struct {
+	ID            uuid.UUID `json:"id"`
+	CustomerName  string    `json:"customerName"`
+	CustomerEmail string    `json:"customerEmail"`
+	PurchaseDate  time.Time `json:"purchaseDate"`
+	EventID       uuid.UUID `json:"eventId"`
+	UserID        uuid.UUID `json:"userId"`
+}
+
 var (
 	ErrTicketPurchaseEmptyName    = errors.New("empty customer name")
 	ErrTicketPurchaseNameTooLong  = errors.New("customer name exceeds maximum length (100 chars)")
 	ErrTicketPurchaseEmailTooLong = errors.New("customer email exceeds maximum length (100 chars)")
 	ErrTicketPurchaseInvalidEmail = errors.New("invalid customer email")
 	ErrTicketPurchaseEmptyEventID = errors.New("empty event ID")
-	ErrTicketPurchaseEmptyUserID  = errors.New("empty user ID")
 	ErrTicketPurchaseInvalidDate  = errors.New("invalid purchase date")
 )
 
@@ -63,8 +71,6 @@ func (tp *TicketPurchase) validate() error {
 		return ErrTicketPurchaseInvalidEmail
 	case tp.eventID == uuid.Nil:
 		return ErrTicketPurchaseEmptyEventID
-	case tp.userID == uuid.Nil:
-		return ErrTicketPurchaseEmptyUserID
 	case tp.purchaseDate.IsZero():
 		return ErrTicketPurchaseInvalidDate
 	}
