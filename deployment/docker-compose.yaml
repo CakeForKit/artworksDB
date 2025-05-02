@@ -1,24 +1,5 @@
 services:
 
-  postgres:
-    container_name: postgres_artworks
-    hostname: postgres
-    image: postgres:14.8-alpine3.18
-    env_file:
-      - ../configs/db.env
-    ports:
-      - "5432:5432"
-    volumes:
-      - data-volume:/var/lib/postgresql/data
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U puser -d artworks"]
-      interval: 30s
-      timeout: 30s
-      retries: 3
-      start_period: 60s
-    networks:
-      - postgres-db
-
   app:
     container_name: app_artworks
     build:
@@ -32,8 +13,46 @@ services:
     networks:
       - postgres-db
 
-volumes:  
-  data-volume: 
+  postgres:
+    container_name: postgres_artworks
+    hostname: postgres
+    image: postgres:14.8-alpine3.18
+    env_file:
+      - ../configs/db.env
+    ports:
+      - "5432:5432"
+    volumes:
+      - data-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U puser -d artworks" ]
+      interval: 30s
+      timeout: 30s
+      retries: 3
+      start_period: 60s
+    networks:
+      - postgres-db
+
+  migrator:
+    container_name: migrator_artworks
+    depends_on:
+      postgres:
+        condition: service_started
+    env_file:
+      - ../configs/db.env
+    build:
+      context: ../migrations
+      dockerfile: Dockerfile
+    networks:
+      - postgres-db
+
+volumes:
+  data-volume:  # Имя тома
+    driver: local
+    driver_opts:
+      o: bind
+      type: none
+      device: ../data/db_data  # Папка на хосте
+
 
 networks:
   postgres-db:

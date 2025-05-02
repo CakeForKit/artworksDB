@@ -4,10 +4,15 @@
 
 select * from Artwork_event
 
-select * from artworks
-
 select * 
-from events
+from artworks
+
+SELECT a.title, e.title, e.dateBegin, e.dateEnd
+FROM Events e
+JOIN Artwork_event ae
+ON e.id = ae.eventID
+JOIN artworks a
+ON ae.artworkID = a.id
 
 select a.id, a.title, e.title, e.dateBegin, e.dateEnd
 from artworks a
@@ -34,7 +39,8 @@ RETURNS TABLE (
 
     SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
     FROM Events e
-    JOIN Artwork_event ae ON e.id = ae.eventID
+    JOIN Artwork_event ae 
+    ON e.id = ae.eventID
     WHERE ae.artworkID = idArtwork
       AND e.dateBegin <= dateEndSee
       AND e.dateEnd >= dateBeginSee;
