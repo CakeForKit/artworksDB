@@ -31,6 +31,13 @@ type AuthUser interface {
 	RegisterUser(ctx context.Context, rur RegisterUserRequest) error
 }
 
+type authUser struct {
+	tokenMaker token.TokenMaker
+	config     cnfg.AppConfig
+	userrep    userrep.UserRep
+	hasher     hasher.Hasher
+}
+
 func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep) (AuthUser, error) {
 	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
 	if err != nil {
@@ -50,13 +57,6 @@ func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep) (AuthUser, error) 
 	}
 
 	return server, nil
-}
-
-type authUser struct {
-	tokenMaker token.TokenMaker
-	config     cnfg.AppConfig
-	userrep    userrep.UserRep
-	hasher     hasher.Hasher
 }
 
 func (s *authUser) LoginUser(ctx context.Context, lur LoginUserRequest) (string, error) {
