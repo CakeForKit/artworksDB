@@ -12,6 +12,11 @@ type Collection struct {
 	title string
 }
 
+type CollectionResponse struct {
+	ID    string `json:"id" example:"aa1e8400-e29b-41d4-a716-446655441111"`
+	Title string `json:"title" example:"Louvre Museum Collection"`
+}
+
 var (
 	ErrCollectionEmptyTitle   = errors.New("empty title")
 	ErrCollectionTitleTooLong = errors.New("title exceeds maximum length (255 chars)")
@@ -38,6 +43,13 @@ func (c *Collection) validate() error {
 		return ErrCollectionTitleTooLong
 	}
 	return nil
+}
+
+func (c *Collection) ToCollectionResponse() CollectionResponse {
+	return CollectionResponse{
+		ID:    c.id.String(),
+		Title: c.title,
+	}
 }
 
 func (c *Collection) GetID() uuid.UUID {

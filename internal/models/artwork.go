@@ -18,6 +18,17 @@ type Artwork struct {
 	collection   *Collection
 }
 
+type ArtworkResponse struct {
+	ID           string             `json:"id" example:"bb2e8400-e29b-41d4-a716-446655442222"`
+	Title        string             `json:"title" example:"Mona Lisa"`
+	CreationYear int                `json:"creationYear" example:"1503"`
+	Technic      string             `json:"technic" example:"Oil painting"`
+	Material     string             `json:"material" example:"Poplar wood"`
+	Size         string             `json:"size" example:"77 cm × 53 cm"`
+	Author       AuthorResponse     `json:"author"`
+	Collection   CollectionResponse `json:"collection"`
+}
+
 var (
 	ErrArtworkEmptyTitle        = errors.New("empty title")
 	ErrArtworkTitleTooLong      = errors.New("title exceeds maximum length (255 chars)")
@@ -106,6 +117,19 @@ func (a *Artwork) validateWithAuthor() error {
 	}
 
 	return nil
+}
+
+func (a *Artwork) ToArtworkResponse() ArtworkResponse {
+	return ArtworkResponse{
+		ID:           a.id.String(),
+		Title:        a.title,
+		CreationYear: a.creationYear,
+		Technic:      a.technic,
+		Material:     a.material,
+		Size:         a.size,
+		Author:       a.GetAuthor().ToAuthorResponse(),
+		Collection:   a.GetCollection().ToCollectionResponse(),
+	}
 }
 
 func (a *Artwork) GetID() uuid.UUID {

@@ -14,6 +14,13 @@ type Author struct {
 	deathYear int
 }
 
+type AuthorResponse struct {
+	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
+	Name      string `json:"name" example:"Leonardo da Vinci"`
+	BirthYear int    `json:"birthYear" example:"1452"`
+	DeathYear int    `json:"deathYear" example:"1519"`
+}
+
 var (
 	ErrAuthorEmptyName        = errors.New("empty name")
 	ErrAuthorNameTooLong      = errors.New("name exceeds maximum length (100 chars)")
@@ -50,6 +57,15 @@ func (a *Author) validate() error {
 		return ErrAuthorBirthAfterDeath
 	}
 	return nil
+}
+
+func (a *Author) ToAuthorResponse() AuthorResponse {
+	return AuthorResponse{
+		ID:        a.id.String(),
+		Name:      a.name,
+		BirthYear: a.birthYear,
+		DeathYear: a.deathYear,
+	}
 }
 
 func (auth *Author) GetID() uuid.UUID {

@@ -9,34 +9,35 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"os"
 
 	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/app"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"github.com/gin-gonic/gin"
-	swaggerFiles "github.com/swaggo/files"
-	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @Summary Получить приветствие____0
-// @Description Возвращает "Привет, мир!"
-// @Tags greeting
-// @Produce json
-// @Success 200 {object} map[string]string
-// @Router /hello [get]
 func main() {
-	r := gin.Default()
-	// route для Swagger - НЕ ТРОГАТЬ
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+	server, err := app.NewServer()
+	if err != nil {
+		log.Fatal("cannot create server:", err)
+	}
+	err = server.Start(":8080")
+	if err != nil {
+		log.Fatal("cannot start server:", err)
+	}
+	// r := gin.Default()
+	// // route для Swagger - НЕ ТРОГАТЬ
+	// url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
+	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
-	r.GET("/hello", func(c *gin.Context) {
-		c.JSON(200, gin.H{"message": "Привет, мир! Вау"})
-	})
+	// r.GET("/hello", func(c *gin.Context) {
+	// 	c.JSON(200, gin.H{"message": "Привет, мир! Вау"})
+	// })
 
-	r.Run(":8080")
+	// r.Run(":8080")
 }
 
 func main1() {

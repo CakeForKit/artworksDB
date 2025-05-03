@@ -15,26 +15,107 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/hello": {
+        "/artworks": {
             "get": {
-                "description": "Возвращает \"Привет, мир!\"",
+                "description": "Retrieves a list of all artworks",
+                "consumes": [
+                    "application/json"
+                ],
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "greeting"
+                    "artworks"
                 ],
-                "summary": "Получить приветствие____0",
+                "summary": "Get all artworks",
                 "responses": {
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "type": "object",
-                            "additionalProperties": {
-                                "type": "string"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ArtworkResponse"
                             }
                         }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": true
+                        }
                     }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "models.ArtworkResponse": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/models.AuthorResponse"
+                },
+                "collection": {
+                    "$ref": "#/definitions/models.CollectionResponse"
+                },
+                "creationYear": {
+                    "type": "integer",
+                    "example": 1503
+                },
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "material": {
+                    "type": "string",
+                    "example": "Poplar wood"
+                },
+                "size": {
+                    "type": "string",
+                    "example": "77 cm × 53 cm"
+                },
+                "technic": {
+                    "type": "string",
+                    "example": "Oil painting"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Mona Lisa"
+                }
+            }
+        },
+        "models.AuthorResponse": {
+            "type": "object",
+            "properties": {
+                "birthYear": {
+                    "type": "integer",
+                    "example": 1452
+                },
+                "deathYear": {
+                    "type": "integer",
+                    "example": 1519
+                },
+                "id": {
+                    "type": "string",
+                    "example": "550e8400-e29b-41d4-a716-446655440000"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Leonardo da Vinci"
+                }
+            }
+        },
+        "models.CollectionResponse": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "aa1e8400-e29b-41d4-a716-446655441111"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Louvre Museum Collection"
                 }
             }
         }
