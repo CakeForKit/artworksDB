@@ -1,13 +1,13 @@
 services:
-
   app:
     container_name: app_artworks
     build:
       context: ../
-      dockerfile: ./cmd/app/Dockerfile
-    # ports:
-    # env_file:
-    #   - app.env
+      dockerfile: ./cmd/app/Dockerfile 
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=release
     depends_on:
       - postgres
     networks:

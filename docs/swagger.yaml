@@ -1,0 +1,24 @@
+basePath: /
+host: localhost:8080
+info:
+  contact: {}
+  description: API для системы учета произведений искусств
+  title: Artworks
+  version: "1.0"
+paths:
+  /hello:
+    get:
+      description: Возвращает "Привет, мир!"
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            additionalProperties:
+              type: string
+            type: object
+      summary: Получить приветствие____0
+      tags:
+      - greeting
+swagger: "2.0"

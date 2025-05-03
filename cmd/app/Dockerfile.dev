@@ -1,0 +1,24 @@
+# Разработка с hot-reload
+FROM golang:1.24.2-alpine
+
+# Устанавливаем зависимости (добавляем swag)
+RUN apk add --no-cache git bash && \
+    go install github.com/swaggo/swag/cmd/swag@latest
+
+# Настраиваем окружение Go
+RUN go env -w GOPROXY=https://proxy.golang.org,direct && \
+    go env -w GOSUMDB=off
+
+WORKDIR /app
+
+# Копируем только файлы модулей сначала для эффективного кэширования
+COPY ./go.* .
+RUN go mod download
+
+# Устанавливаем правильную версию air 
+RUN go install github.com/air-verse/air@latest
+
+# Копируем конфиг air с настройкой для swag
+COPY .air.toml .
+
+CMD ["air", "-c", ".air.toml"]

@@ -1,0 +1,36 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "API для системы учета произведений искусств",
+        "title": "Artworks",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/hello": {
+            "get": {
+                "description": "Возвращает \"Привет, мир!\"",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "greeting"
+                ],
+                "summary": "Получить приветствие____0",
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "object",
+                            "additionalProperties": {
+                                "type": "string"
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+}
