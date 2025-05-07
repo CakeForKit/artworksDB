@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -16,36 +17,48 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// testHelper содержит общие методы для тестов
+var (
+	th     *testHelper
+	pgOnce sync.Once
+)
+
 type testHelper struct {
-	ctx    context.Context
-	urep   *userrep.PgUserRep
-	dbCnfg *cnfg.DatebaseConfig
+	ctx          context.Context
+	urep         *userrep.PgUserRep
+	dbCnfg       *cnfg.DatebaseConfig
+	pgTestConfig *cnfg.PostgresTestConfig
+	pgCreds      *cnfg.PostgresCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
-	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgOnce.Do(func() {
+		dbCnfg := cnfg.GetTestDatebaseConfig()
+		pgTestConfig := cnfg.GetPgTestConfig()
 
-	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
-	require.NoError(t, err)
+		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		require.NoError(t, err)
 
-	urep, err := userrep.NewPgUserRep(ctx, &pgCreds, dbCnfg)
-	require.NoError(t, err)
+		urep, err := userrep.NewPgUserRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
 
-	err = pgtest.MigrateUp(ctx)
+		th = &testHelper{
+			ctx:          ctx,
+			urep:         urep,
+			dbCnfg:       dbCnfg,
+			pgTestConfig: pgTestConfig,
+			pgCreds:      &pgCreds,
+		}
+	})
+	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
 		require.NoError(t, err)
 	})
 
-	return &testHelper{
-		ctx:    ctx,
-		urep:   urep,
-		dbCnfg: dbCnfg,
-	}
+	return th
 }
 
 func (th *testHelper) createTestUser(num int, subscribed bool) *models.User {

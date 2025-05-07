@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,14 +19,21 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	th     *testHelper
+	pgOnce sync.Once
+)
+
 type testHelper struct {
-	ctx        context.Context
-	erep       *eventrep.PgEventRep
-	dbCnfg     *cnfg.DatebaseConfig
-	employeeID uuid.UUID
+	ctx          context.Context
+	erep         *eventrep.PgEventRep
+	dbCnfg       *cnfg.DatebaseConfig
+	pgTestConfig *cnfg.PostgresTestConfig
+	pgCreds      *cnfg.PostgresCredentials
+	employeeID   uuid.UUID
 }
 
-func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) uuid.UUID {
+func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) {
 	admin, err := models.NewAdmin(
 		uuid.New(),
 		"admin",
@@ -42,7 +50,7 @@ func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCreden
 	require.NoError(t, err)
 
 	employee, err := models.NewEmployee(
-		uuid.New(),
+		employeeID,
 		"empTest",
 		"loginTest",
 		"hpTest",
@@ -55,38 +63,39 @@ func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCreden
 	require.NoError(t, err)
 	err = erep.Add(ctx, &employee)
 	require.NoError(t, err)
-
-	return employee.GetID()
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
-	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgOnce.Do(func() {
+		dbCnfg := cnfg.GetTestDatebaseConfig()
+		pgTestConfig := cnfg.GetPgTestConfig()
 
-	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		require.NoError(t, err)
+
+		erep, err := eventrep.NewPgEventRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
+
+		th = &testHelper{
+			ctx:          ctx,
+			erep:         erep,
+			employeeID:   uuid.New(),
+			dbCnfg:       dbCnfg,
+			pgTestConfig: pgTestConfig,
+			pgCreds:      &pgCreds,
+		}
+	})
+	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
 	require.NoError(t, err)
-
-	// Применяем миграции перед каждым тестом
-	err = pgtest.MigrateUp(ctx)
-	require.NoError(t, err)
-
-	erep, err := eventrep.NewPgEventRep(ctx, &pgCreds, dbCnfg)
-	require.NoError(t, err)
-
-	employeeID := addEmployee(t, ctx, &pgCreds, dbCnfg)
+	addEmployee(t, ctx, th.employeeID, th.pgCreds, th.dbCnfg)
 
 	t.Cleanup(func() {
-		// Очищаем базу после каждого теста
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
 		require.NoError(t, err)
 	})
 
-	return &testHelper{
-		ctx:        ctx,
-		erep:       erep,
-		dbCnfg:     dbCnfg,
-		employeeID: employeeID,
-	}
+	return th
 }
 
 func (th *testHelper) createTestEvent(num int) *models.Event {

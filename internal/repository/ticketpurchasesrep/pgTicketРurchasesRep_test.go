@@ -3,6 +3,7 @@ package ticketpurchasesrep_test
 import (
 	"context"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -19,17 +20,24 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	th     *testHelper
+	pgOnce sync.Once
+)
+
 // testHelper содержит общие методы для тестов
 type testHelper struct {
-	ctx      context.Context
-	tprep    *ticketpurchasesrep.PgTicketPurchasesRep
-	dbCnfg   *cnfg.DatebaseConfig
-	userIDs  []uuid.UUID
-	eventIDs []uuid.UUID
+	ctx          context.Context
+	tprep        *ticketpurchasesrep.PgTicketPurchasesRep
+	dbCnfg       *cnfg.DatebaseConfig
+	pgTestConfig *cnfg.PostgresTestConfig
+	pgCreds      *cnfg.PostgresCredentials
+	userIDs      []uuid.UUID
+	eventIDs     []uuid.UUID
+	employeeID   uuid.UUID
 }
 
-func addUser(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, num int) uuid.UUID {
-	userID := uuid.New()
+func addUser(t *testing.T, ctx context.Context, userID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, num int) {
 	user, err := models.NewUser(
 		userID,
 		fmt.Sprintf("user%d", num),
@@ -44,11 +52,9 @@ func addUser(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredential
 	require.NoError(t, err)
 	err = urep.Add(ctx, &user)
 	require.NoError(t, err)
-
-	return userID
 }
 
-func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) uuid.UUID {
+func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) {
 	admin, err := models.NewAdmin(
 		uuid.New(),
 		"admin",
@@ -65,7 +71,7 @@ func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCreden
 	require.NoError(t, err)
 
 	employee, err := models.NewEmployee(
-		uuid.New(),
+		employeeID,
 		"empTest",
 		"loginTest",
 		"hpTest",
@@ -78,13 +84,11 @@ func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCreden
 	require.NoError(t, err)
 	err = erep.Add(ctx, &employee)
 	require.NoError(t, err)
-
-	return employee.GetID()
 }
 
-func addEvent(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, employeeID uuid.UUID, num int) uuid.UUID {
+func addEvent(t *testing.T, ctx context.Context, eventID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, employeeID uuid.UUID, num int) {
 	event, err := models.NewEvent(
-		uuid.New(),
+		eventID,
 		fmt.Sprintf("Event %d", num),
 		time.Now().Add(time.Hour),
 		time.Now().Add(2*time.Hour),
@@ -98,43 +102,48 @@ func addEvent(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentia
 	require.NoError(t, err)
 	err = erep.Add(ctx, &event)
 	require.NoError(t, err)
-
-	return event.GetID()
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
-	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgOnce.Do(func() {
+		dbCnfg := cnfg.GetTestDatebaseConfig()
+		pgTestConfig := cnfg.GetPgTestConfig()
 
-	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		require.NoError(t, err)
+
+		tprep, err := ticketpurchasesrep.NewPgTicketPurchasesRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
+
+		th = &testHelper{
+			ctx:          ctx,
+			tprep:        tprep,
+			dbCnfg:       dbCnfg,
+			pgTestConfig: pgTestConfig,
+			pgCreds:      &pgCreds,
+			userIDs:      []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+			eventIDs:     []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+			employeeID:   uuid.New(),
+		}
+	})
+	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
 	require.NoError(t, err)
 
-	err = pgtest.MigrateUp(ctx)
-	require.NoError(t, err)
-
-	employeeID := addEmployee(t, ctx, &pgCreds, dbCnfg)
-	userID1 := addUser(t, ctx, &pgCreds, dbCnfg, 1)
-	userID2 := addUser(t, ctx, &pgCreds, dbCnfg, 2)
-	userID3 := addUser(t, ctx, &pgCreds, dbCnfg, 3)
-	eventID1 := addEvent(t, ctx, &pgCreds, dbCnfg, employeeID, 1)
-	eventID2 := addEvent(t, ctx, &pgCreds, dbCnfg, employeeID, 2)
-	eventID3 := addEvent(t, ctx, &pgCreds, dbCnfg, employeeID, 3)
+	addEmployee(t, ctx, th.employeeID, th.pgCreds, th.dbCnfg)
+	addUser(t, ctx, th.userIDs[0], th.pgCreds, th.dbCnfg, 1)
+	addUser(t, ctx, th.userIDs[1], th.pgCreds, th.dbCnfg, 2)
+	addUser(t, ctx, th.userIDs[2], th.pgCreds, th.dbCnfg, 3)
+	addEvent(t, ctx, th.eventIDs[0], th.pgCreds, th.dbCnfg, th.employeeID, 1)
+	addEvent(t, ctx, th.eventIDs[1], th.pgCreds, th.dbCnfg, th.employeeID, 2)
+	addEvent(t, ctx, th.eventIDs[2], th.pgCreds, th.dbCnfg, th.employeeID, 3)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
 		require.NoError(t, err)
 	})
 
-	tprep, err := ticketpurchasesrep.NewPgTicketPurchasesRep(ctx, &pgCreds, dbCnfg)
-	require.NoError(t, err)
-
-	return &testHelper{
-		ctx:      ctx,
-		tprep:    tprep,
-		dbCnfg:   dbCnfg,
-		userIDs:  []uuid.UUID{userID1, userID2, userID3},
-		eventIDs: []uuid.UUID{eventID1, eventID2, eventID3},
-	}
+	return th
 }
 
 func (th *testHelper) createTestTicketPurchase(num int, eventID uuid.UUID, userID uuid.UUID) *models.TicketPurchase {

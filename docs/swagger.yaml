@@ -1,0 +1,62 @@
+basePath: /
+definitions:
+  models.ArtworkResponse:
+    properties:
+      author:
+        $ref: '#/definitions/models.AuthorResponse'
+      collection:
+        $ref: '#/definitions/models.CollectionResponse'
+      creationYear:
+        example: 1503
+        type: integer
+      id:
+        example: bb2e8400-e29b-41d4-a716-446655442222
+        type: string
+      material:
+        example: Poplar wood
+        type: string
+      size:
+        example: 77 cm × 53 cm
+        type: string
+      technic:
+        example: Oil painting
+        type: string
+      title:
+        example: Mona Lisa
+        type: string
+    type: object
+  models.AuthorResponse:
+    properties:
+      birthYear:
+        example: 1452
+        type: integer
+      deathYear:
+        example: 1519
+        type: integer
+      id:
+        example: 550e8400-e29b-41d4-a716-446655440000
+        type: string
+      name:
+        example: Leonardo da Vinci
+        type: string
+    type: object
+  models.CollectionResponse:
+    properties:
+      id:
+        example: aa1e8400-e29b-41d4-a716-446655441111
+        type: string
+      title:
+        example: Louvre Museum Collection
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: API для системы учета произведений искусств
+  title: Museum
+  version: "1.0"
+paths:
+  /artworks:
+    get:
+      responses: {}
+swagger: "2.0"
