@@ -33,7 +33,6 @@ type testHelper struct {
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	pgOnce.Do(func() {
-
 		dbCnfg := cnfg.GetTestDatebaseConfig()
 		pgTestConfig := cnfg.GetPgTestConfig()
 

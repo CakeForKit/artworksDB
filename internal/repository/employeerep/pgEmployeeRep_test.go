@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 	"time"
 
@@ -18,53 +19,65 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	th     *testHelper
+	pgOnce sync.Once
+)
+
 type testHelper struct {
-	ctx     context.Context
-	erep    *employeerep.PgEmployeeRep
-	dbCnfg  *cnfg.DatebaseConfig
-	adminID uuid.UUID
+	ctx          context.Context
+	erep         *employeerep.PgEmployeeRep
+	dbCnfg       *cnfg.DatebaseConfig
+	pgTestConfig *cnfg.PostgresTestConfig
+	pgCreds      *cnfg.PostgresCredentials
+	adminID      uuid.UUID
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
-	dbCnfg := cnfg.GetTestDatebaseConfig()
-	pgTestConfig := cnfg.GetPgTestConfig()
+	pgOnce.Do(func() {
+		dbCnfg := cnfg.GetTestDatebaseConfig()
+		pgTestConfig := cnfg.GetPgTestConfig()
 
-	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
-	require.NoError(t, err)
+		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		require.NoError(t, err)
 
-	err = pgtest.MigrateUp(ctx, pgTestConfig, &pgCreds)
-	require.NoError(t, err)
+		erep, err := employeerep.NewPgEmployeeRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
 
-	erep, err := employeerep.NewPgEmployeeRep(ctx, &pgCreds, dbCnfg)
+		th = &testHelper{
+			ctx:          ctx,
+			erep:         erep,
+			adminID:      uuid.New(),
+			dbCnfg:       dbCnfg,
+			pgTestConfig: pgTestConfig,
+			pgCreds:      &pgCreds,
+		}
+	})
+	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
 	require.NoError(t, err)
 
 	admin, err := models.NewAdmin(
-		uuid.New(),
+		th.adminID,
 		"admin",
 		"adminL",
 		"hashPadmin",
 		time.Now().UTC().Truncate(time.Microsecond),
 		true,
 	)
-	// fmt.Printf("ADMIN: %+v\n", admin)
 	require.NoError(t, err)
-	arep, err := adminrep.NewPgAdminRep(ctx, &pgCreds, dbCnfg)
+	arep, err := adminrep.NewPgAdminRep(ctx, th.pgCreds, th.dbCnfg)
 	require.NoError(t, err)
 	err = arep.Add(ctx, &admin)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx, pgTestConfig, &pgCreds)
+		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
 		require.NoError(t, err)
 	})
 
-	return &testHelper{
-		ctx:     ctx,
-		erep:    erep,
-		dbCnfg:  dbCnfg,
-		adminID: admin.GetID(),
-	}
+	return th
+
 }
 
 func (th *testHelper) createTestEmployee(num int) *models.Employee {

@@ -1,0 +1,5 @@
+[build]
+cmd = "swag init -g ./cmd/app/main.go --output ./docs && go build -o ./tmp/main ./cmd/app/main.go"
+bin = "tmp/main"
+include_ext = ["go", "yaml", "yml", "env"]
+exclude_dir = ["vendor", "tmp", "docs"]
