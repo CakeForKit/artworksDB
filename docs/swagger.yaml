@@ -53,29 +53,10 @@ host: localhost:8080
 info:
   contact: {}
   description: API для системы учета произведений искусств
-  title: Artworks
+  title: Museum
   version: "1.0"
 paths:
   /artworks:
     get:
-      consumes:
-      - application/json
-      description: Retrieves a list of all artworks
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.ArtworkResponse'
-            type: array
-        "500":
-          description: Internal Server Error
-          schema:
-            additionalProperties: true
-            type: object
-      summary: Get all artworks
-      tags:
-      - artworks
+      responses: {}
 swagger: "2.0"

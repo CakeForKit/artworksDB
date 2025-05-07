@@ -3,7 +3,6 @@ package pgtest
 import (
 	"context"
 	"fmt"
-	"sync"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"github.com/docker/go-connections/nat"
@@ -12,18 +11,18 @@ import (
 )
 
 var (
-	pgContainer  testcontainers.Container
-	pgCreds      cnfg.PostgresCredentials
-	pgTestConfig cnfg.PostgresTestConfig
-	pgOnce       sync.Once
-	pgSetupErr   error
+// pgContainer  testcontainers.Container
+// pgCreds      cnfg.PostgresCredentials
+// pgTestConfig cnfg.PostgresTestConfig
+// pgOnce       sync.Once
+// pgSetupErr error
 )
 
 func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.PostgresCredentials, error) {
-	pgOnce.Do(func() {
-		pgTestConfig = *cnfg.GetPgTestConfig()
-		pgContainer, pgCreds, pgSetupErr = NewTestPostgres(ctx, &pgTestConfig)
-	})
+	// pgOnce.Do(func() {
+	pgTestConfig := *cnfg.GetPgTestConfig()
+	pgContainer, pgCreds, pgSetupErr := NewTestPostgres(ctx, &pgTestConfig)
+	// })
 	return pgContainer, pgCreds, pgSetupErr
 }
 

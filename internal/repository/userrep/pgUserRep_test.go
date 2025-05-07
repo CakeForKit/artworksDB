@@ -26,6 +26,7 @@ type testHelper struct {
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgTestConfig := cnfg.GetPgTestConfig()
 
 	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 	require.NoError(t, err)
@@ -33,11 +34,11 @@ func setupTestHelper(t *testing.T) *testHelper {
 	urep, err := userrep.NewPgUserRep(ctx, &pgCreds, dbCnfg)
 	require.NoError(t, err)
 
-	err = pgtest.MigrateUp(ctx)
+	err = pgtest.MigrateUp(ctx, pgTestConfig, &pgCreds)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, pgTestConfig, &pgCreds)
 		require.NoError(t, err)
 	})
 

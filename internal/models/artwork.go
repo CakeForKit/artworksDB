@@ -29,6 +29,26 @@ type ArtworkResponse struct {
 	Collection   CollectionResponse `json:"collection"`
 }
 
+type CreateArtworkRequest struct {
+	Title        string `json:"title" binding:"required"`
+	CreationYear int    `json:"creationYear" binding:"required"`
+	Technic      string `json:"technic" binding:"required"`
+	Material     string `json:"material" binding:"required"`
+	Size         string `json:"size" binding:"required"`
+	AuthorID     string `json:"authorId" binding:"required,uuid"`
+	CollectionID string `json:"collectionId" binding:"required,uuid"`
+}
+
+type UpdateArtworkRequest struct {
+	Title        *string `json:"title,omitempty"`
+	CreationYear *int    `json:"creationYear,omitempty"`
+	Technic      *string `json:"technic,omitempty"`
+	Material     *string `json:"material,omitempty"`
+	Size         *string `json:"size,omitempty"`
+	AuthorID     *string `json:"authorId,omitempty" validate:"omitempty,uuid"`
+	CollectionID *string `json:"collectionId,omitempty" validate:"omitempty,uuid"`
+}
+
 var (
 	ErrArtworkEmptyTitle        = errors.New("empty title")
 	ErrArtworkTitleTooLong      = errors.New("title exceeds maximum length (255 chars)")
@@ -131,6 +151,29 @@ func (a *Artwork) ToArtworkResponse() ArtworkResponse {
 		Collection:   a.GetCollection().ToCollectionResponse(),
 	}
 }
+
+// func ToArtworkModel(req CreateArtworkRequest) (Artwork, error) {
+// 	authorID, err := uuid.Parse(req.AuthorID)
+// 	if err != nil {
+// 		return Artwork{}, err
+// 	}
+
+// 	collectionID, err := uuid.Parse(req.CollectionID)
+// 	if err != nil {
+// 		return Artwork{}, err
+// 	}
+
+// 	return Artwork{
+// 		id:           uuid.New(),
+// 		title:        req.Title,
+// 		creationYear: req.CreationYear,
+// 		technic:      req.Technic,
+// 		material:     req.Material,
+// 		size:         req.Size,
+// 		author:       &Author{ID: authorID},
+// 		collection:   &Collection{ID: collectionID},
+// 	}, nil
+// }
 
 func (a *Artwork) GetID() uuid.UUID {
 	return a.id

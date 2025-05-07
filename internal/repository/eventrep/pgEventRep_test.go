@@ -62,12 +62,13 @@ func addEmployee(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCreden
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgTestConfig := cnfg.GetPgTestConfig()
 
 	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 	require.NoError(t, err)
 
 	// Применяем миграции перед каждым тестом
-	err = pgtest.MigrateUp(ctx)
+	err = pgtest.MigrateUp(ctx, pgTestConfig, &pgCreds)
 	require.NoError(t, err)
 
 	erep, err := eventrep.NewPgEventRep(ctx, &pgCreds, dbCnfg)
@@ -77,7 +78,7 @@ func setupTestHelper(t *testing.T) *testHelper {
 
 	t.Cleanup(func() {
 		// Очищаем базу после каждого теста
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, pgTestConfig, &pgCreds)
 		require.NoError(t, err)
 	})
 

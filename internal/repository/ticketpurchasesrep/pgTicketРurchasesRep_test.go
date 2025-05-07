@@ -105,11 +105,12 @@ func addEvent(t *testing.T, ctx context.Context, pgCreds *cnfg.PostgresCredentia
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgTestConfig := cnfg.GetPgTestConfig()
 
 	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 	require.NoError(t, err)
 
-	err = pgtest.MigrateUp(ctx)
+	err = pgtest.MigrateUp(ctx, pgTestConfig, &pgCreds)
 	require.NoError(t, err)
 
 	employeeID := addEmployee(t, ctx, &pgCreds, dbCnfg)
@@ -121,7 +122,7 @@ func setupTestHelper(t *testing.T) *testHelper {
 	eventID3 := addEvent(t, ctx, &pgCreds, dbCnfg, employeeID, 3)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, pgTestConfig, &pgCreds)
 		require.NoError(t, err)
 	})
 

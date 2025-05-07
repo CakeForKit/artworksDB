@@ -10,6 +10,7 @@ import (
 
 type ArtworkService interface {
 	GetAllArtworks(ctx context.Context) ([]*models.Artwork, error)
+	// GetAllAuthors
 	Add(ctx context.Context, aw *models.Artwork) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error)

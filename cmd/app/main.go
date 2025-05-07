@@ -1,4 +1,4 @@
-// @title Artworks
+// @title Museum
 // @version 1.0
 // @description API для системы учета произведений искусств
 // @host localhost:8080

@@ -21,6 +21,12 @@ type AuthorResponse struct {
 	DeathYear int    `json:"deathYear" example:"1519"`
 }
 
+type AuthorRequest struct {
+	Name      string `json:"name" binding:"required,min=2,max=100"`                      // Обязательное, 2-100 символов
+	BirthYear int    `json:"birthYear" binding:"required,gte=1000"`                      // Обязательное, >= 1000
+	DeathYear *int   `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear"` // Опциональное, >= BirthYear
+}
+
 var (
 	ErrAuthorEmptyName        = errors.New("empty name")
 	ErrAuthorNameTooLong      = errors.New("name exceeds maximum length (100 chars)")

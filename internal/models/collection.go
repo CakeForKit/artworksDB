@@ -17,6 +17,10 @@ type CollectionResponse struct {
 	Title string `json:"title" example:"Louvre Museum Collection"`
 }
 
+type CollectionRequest struct {
+	Title string `json:"title" binding:"required,min=2,max=255"`
+}
+
 var (
 	ErrCollectionEmptyTitle   = errors.New("empty title")
 	ErrCollectionTitleTooLong = errors.New("title exceeds maximum length (255 chars)")

@@ -7,6 +7,14 @@ select * from Artwork_event
 select * 
 from artworks
 
+SELECT a . title , e . title , e . dateBegin , e . dateEnd
+FROM Events e
+JOIN Artwork_event ae
+ON e . id = ae . eventID
+JOIN artworks a
+ON ae . artworkID = a. id
+
+-- Запрос для тестирования
 SELECT a.title, e.title, e.dateBegin, e.dateEnd
 FROM Events e
 JOIN Artwork_event ae

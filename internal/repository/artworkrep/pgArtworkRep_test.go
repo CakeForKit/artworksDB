@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"sync"
 	"testing"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -15,36 +16,50 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
+var (
+	th     *testHelper
+	pgOnce sync.Once
+)
+
 // testHelper содержит общие методы для тестов
 type testHelper struct {
-	ctx    context.Context
-	arep   *artworkrep.PgArtworkRep
-	dbCnfg *cnfg.DatebaseConfig
+	ctx          context.Context
+	arep         *artworkrep.PgArtworkRep
+	dbCnfg       *cnfg.DatebaseConfig
+	pgTestConfig *cnfg.PostgresTestConfig
+	pgCreds      *cnfg.PostgresCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
-	dbCnfg := cnfg.GetTestDatebaseConfig()
+	pgOnce.Do(func() {
 
-	_, pgCreds, err := pgtest.GetTestPostgres(ctx)
-	require.NoError(t, err)
+		dbCnfg := cnfg.GetTestDatebaseConfig()
+		pgTestConfig := cnfg.GetPgTestConfig()
 
-	err = pgtest.MigrateUp(ctx)
+		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
+		require.NoError(t, err)
+
+		arep, err := artworkrep.NewPgArtworkRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
+
+		th = &testHelper{
+			ctx:          ctx,
+			arep:         arep,
+			dbCnfg:       dbCnfg,
+			pgTestConfig: pgTestConfig,
+			pgCreds:      &pgCreds,
+		}
+	})
+	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx)
+		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
 		require.NoError(t, err)
 	})
 
-	arep, err := artworkrep.NewPgArtworkRep(ctx, &pgCreds, dbCnfg)
-	require.NoError(t, err)
-
-	return &testHelper{
-		ctx:    ctx,
-		arep:   arep,
-		dbCnfg: dbCnfg,
-	}
+	return th
 }
 
 func (th *testHelper) createTestAuthor(num int) *models.Author {

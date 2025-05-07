@@ -17,35 +17,7 @@ const docTemplate = `{
     "paths": {
         "/artworks": {
             "get": {
-                "description": "Retrieves a list of all artworks",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "artworks"
-                ],
-                "summary": "Get all artworks",
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/models.ArtworkResponse"
-                            }
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "type": "object",
-                            "additionalProperties": true
-                        }
-                    }
-                }
+                "responses": {}
             }
         }
     },
@@ -128,7 +100,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Artworks",
+	Title:            "Museum",
 	Description:      "API для системы учета произведений искусств",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
