@@ -1,12 +1,29 @@
 -- Active: 1744740356603@@127.0.0.1@5432@artworks
--- SELECT TABLE_NAME
--- FROM INFORMATION_SCHEMA.TABLES
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE schemaname = 'public';
 
 select * from Artwork_event
 
 select * 
-from artworks
+from public.artworks
 
+-- Исследуемый запрос
+EXPLAIN ANALYZE
+SELECT public.Artworks.title, Author.name
+FROM public.Artworks
+JOIN public.Author
+ON Artworks.authorID = Author.id
+
+CREATE INDEX idx_artworks_authorid ON Artworks(authorID);
+
+DROP INDEX IF EXISTS idx_artworks_authorid;
+
+-- Все индексы в базе
+SELECT * FROM pg_indexes
+WHERE schemaname = 'public';
+
+EXPLAIN ANALYZE
 SELECT a.title, e.title, e.dateBegin, e.dateEnd
 FROM Events e
 JOIN Artwork_event ae

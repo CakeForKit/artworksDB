@@ -35,7 +35,7 @@ func main1() {
 	defer container.Terminate(ctx)
 	fmt.Printf("Creds: %+v\n", pgCreds)
 
-	if err = pgtest.MigrateUp(ctx, pgTestConfig, &pgCreds); err != nil {
+	if err = pgtest.MigrateUp(ctx, pgTestConfig.MigrationDir, &pgCreds); err != nil {
 		fmt.Printf("%v\n", err)
 		return
 	}

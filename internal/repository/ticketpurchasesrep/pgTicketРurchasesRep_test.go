@@ -27,14 +27,13 @@ var (
 
 // testHelper содержит общие методы для тестов
 type testHelper struct {
-	ctx          context.Context
-	tprep        *ticketpurchasesrep.PgTicketPurchasesRep
-	dbCnfg       *cnfg.DatebaseConfig
-	pgTestConfig *cnfg.PostgresTestConfig
-	pgCreds      *cnfg.PostgresCredentials
-	userIDs      []uuid.UUID
-	eventIDs     []uuid.UUID
-	employeeID   uuid.UUID
+	ctx        context.Context
+	tprep      *ticketpurchasesrep.PgTicketPurchasesRep
+	dbCnfg     *cnfg.DatebaseConfig
+	pgCreds    *cnfg.PostgresCredentials
+	userIDs    []uuid.UUID
+	eventIDs   []uuid.UUID
+	employeeID uuid.UUID
 }
 
 func addUser(t *testing.T, ctx context.Context, userID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, num int) {
@@ -108,7 +107,6 @@ func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	pgOnce.Do(func() {
 		dbCnfg := cnfg.GetTestDatebaseConfig()
-		pgTestConfig := cnfg.GetPgTestConfig()
 
 		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 		require.NoError(t, err)
@@ -117,17 +115,17 @@ func setupTestHelper(t *testing.T) *testHelper {
 		require.NoError(t, err)
 
 		th = &testHelper{
-			ctx:          ctx,
-			tprep:        tprep,
-			dbCnfg:       dbCnfg,
-			pgTestConfig: pgTestConfig,
-			pgCreds:      &pgCreds,
-			userIDs:      []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
-			eventIDs:     []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
-			employeeID:   uuid.New(),
+			ctx:        ctx,
+			tprep:      tprep,
+			dbCnfg:     dbCnfg,
+			pgCreds:    &pgCreds,
+			userIDs:    []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+			eventIDs:   []uuid.UUID{uuid.New(), uuid.New(), uuid.New()},
+			employeeID: uuid.New(),
 		}
 	})
-	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
+	pgTestConfig := cnfg.GetPgTestConfig()
+	err := pgtest.MigrateUp(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 	require.NoError(t, err)
 
 	addEmployee(t, ctx, th.employeeID, th.pgCreds, th.dbCnfg)
@@ -139,7 +137,7 @@ func setupTestHelper(t *testing.T) *testHelper {
 	addEvent(t, ctx, th.eventIDs[2], th.pgCreds, th.dbCnfg, th.employeeID, 3)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
+		err := pgtest.MigrateDown(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 		require.NoError(t, err)
 	})
 
