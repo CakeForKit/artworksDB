@@ -19,6 +19,7 @@ require (
 	github.com/spf13/viper v1.20.1
 	github.com/swaggo/swag v1.16.4
 	github.com/testcontainers/testcontainers-go v0.36.0
+	gonum.org/v1/plot v0.16.0
 )
 
 require (
@@ -109,7 +110,6 @@ require (
 	golang.org/x/sys v0.31.0 // indirect
 	golang.org/x/text v0.25.0 // indirect
 	golang.org/x/tools v0.24.0 // indirect
-	gonum.org/v1/plot v0.16.0 // indirect
 	google.golang.org/grpc v1.70.0 // indirect
 	google.golang.org/protobuf v1.36.5 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect

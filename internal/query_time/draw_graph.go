@@ -51,7 +51,7 @@ func readAvg(filename string) (float64, error) {
 	stdErr := math.Sqrt(D) / math.Sqrt(float64(len(timeMeasures)))
 	rse := stdErr / avg
 	if rse > 5 {
-		return 0, fmt.Errorf("rse > 5%")
+		return 0, fmt.Errorf("rse > 5%%")
 	}
 	return avg, nil
 }
