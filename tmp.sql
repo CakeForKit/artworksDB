@@ -3,21 +3,25 @@ SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE schemaname = 'public';
 
-select * from Artwork_event
+select count(*)  from Artwork_event;
+select count(*) from artworks;
 
-select * 
-from public.artworks
+select count(*) from Events;
 
 -- Исследуемый запрос
 EXPLAIN ANALYZE
-SELECT public.Artworks.title, Author.name
-FROM public.Artworks
-JOIN public.Author
-ON Artworks.authorID = Author.id
+SELECT Artworks.title
+FROM Artworks
+JOIN Artwork_event
+ON Artwork_event.artworkID = Artworks.id
+WHERE Artwork_event.eventID = (select *
+                                from random_event_id()
+                                limit 1);
 
-CREATE INDEX idx_artworks_authorid ON Artworks(authorID);
+CREATE INDEX idx_Artwork_event_eventID ON Artwork_event(eventID);
+DROP INDEX IF EXISTS idx_Artwork_event_eventID;
 
-DROP INDEX IF EXISTS idx_artworks_authorid;
+SELECT id FROM Events ORDER BY random() LIMIT 1
 
 -- Все индексы в базе
 SELECT * FROM pg_indexes

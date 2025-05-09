@@ -20,7 +20,7 @@ func MigrateUp(ctx context.Context, migrationDir string, pgCreds *cnfg.PostgresC
 	sourceUrl := fmt.Sprintf("file://%s", migrationDir)
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 	m, err := migrate.New(sourceUrl, dbUrl)
-	fmt.Printf("sourceUrl=%s, dbUrl=%s\n", sourceUrl, dbUrl)
+	fmt.Printf("Migrations: sourceUrl=%s, dbUrl=%s\n", sourceUrl, dbUrl)
 	if err != nil {
 		return fmt.Errorf("sourceUrl=%s, dbUrl=%s - %w", sourceUrl, dbUrl, err)
 	}
