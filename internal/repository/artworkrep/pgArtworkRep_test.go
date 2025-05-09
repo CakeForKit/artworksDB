@@ -23,18 +23,16 @@ var (
 
 // testHelper содержит общие методы для тестов
 type testHelper struct {
-	ctx          context.Context
-	arep         *artworkrep.PgArtworkRep
-	dbCnfg       *cnfg.DatebaseConfig
-	pgTestConfig *cnfg.PostgresTestConfig
-	pgCreds      *cnfg.PostgresCredentials
+	ctx     context.Context
+	arep    *artworkrep.PgArtworkRep
+	dbCnfg  *cnfg.DatebaseConfig
+	pgCreds *cnfg.PostgresCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	pgOnce.Do(func() {
 		dbCnfg := cnfg.GetTestDatebaseConfig()
-		pgTestConfig := cnfg.GetPgTestConfig()
 
 		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 		require.NoError(t, err)
@@ -43,18 +41,18 @@ func setupTestHelper(t *testing.T) *testHelper {
 		require.NoError(t, err)
 
 		th = &testHelper{
-			ctx:          ctx,
-			arep:         arep,
-			dbCnfg:       dbCnfg,
-			pgTestConfig: pgTestConfig,
-			pgCreds:      &pgCreds,
+			ctx:     ctx,
+			arep:    arep,
+			dbCnfg:  dbCnfg,
+			pgCreds: &pgCreds,
 		}
 	})
-	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
+	pgTestConfig := cnfg.GetPgTestConfig()
+	err := pgtest.MigrateUp(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 	require.NoError(t, err)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
+		err := pgtest.MigrateDown(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 		require.NoError(t, err)
 	})
 

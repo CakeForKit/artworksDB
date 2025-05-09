@@ -1,20 +1,33 @@
 -- Active: 1744740356603@@127.0.0.1@5432@artworks
--- SELECT TABLE_NAME
--- FROM INFORMATION_SCHEMA.TABLES
+SELECT *
+FROM INFORMATION_SCHEMA.TABLES
+WHERE schemaname = 'public';
 
-select * from Artwork_event
+select count(*)  from Artwork_event;
+select count(*) from artworks;
 
-select * 
-from artworks
+select count(*) from Events;
 
-SELECT a . title , e . title , e . dateBegin , e . dateEnd
-FROM Events e
-JOIN Artwork_event ae
-ON e . id = ae . eventID
-JOIN artworks a
-ON ae . artworkID = a. id
+-- Исследуемый запрос
+EXPLAIN ANALYZE
+SELECT Artworks.title
+FROM Artworks
+JOIN Artwork_event
+ON Artwork_event.artworkID = Artworks.id
+WHERE Artwork_event.eventID = (select *
+                                from random_event_id()
+                                limit 1);
 
--- Запрос для тестирования
+CREATE INDEX idx_Artwork_event_eventID ON Artwork_event(eventID);
+DROP INDEX IF EXISTS idx_Artwork_event_eventID;
+
+SELECT id FROM Events ORDER BY random() LIMIT 1
+
+-- Все индексы в базе
+SELECT * FROM pg_indexes
+WHERE schemaname = 'public';
+
+EXPLAIN ANALYZE
 SELECT a.title, e.title, e.dateBegin, e.dateEnd
 FROM Events e
 JOIN Artwork_event ae

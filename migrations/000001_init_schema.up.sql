@@ -91,8 +91,11 @@ ALTER TABLE Events ADD CONSTRAINT dateBeginEndCheck
 CREATE TABLE Artwork_event (
     artworkID UUID NOT NULL,
     eventID UUID NOT NULL,
-    FOREIGN KEY (artworkID) REFERENCES Artworks(id),
-    FOREIGN KEY (eventID) REFERENCES Events(id)
+    PRIMARY KEY (artworkID, eventID),
+    CONSTRAINT artworkID_notnull CHECK (artworkID IS NOT NULL),
+    FOREIGN KEY (artworkID) REFERENCES Artworks(id) ON DELETE CASCADE,
+    CONSTRAINT eventID_notnull CHECK (eventID IS NOT NULL),
+    FOREIGN KEY (eventID) REFERENCES Events(id) ON DELETE CASCADE
 );
 
 CREATE TABLE TicketPurchases (
@@ -112,9 +115,9 @@ CREATE TABLE tickets_user (
     userID UUID,
     PRIMARY KEY (ticketID, userID),
     CONSTRAINT ticketID_notnull CHECK (ticketID IS NOT NULL),
-    FOREIGN KEY (ticketID) REFERENCES TicketPurchases(id),
+    FOREIGN KEY (ticketID) REFERENCES TicketPurchases(id) ON DELETE CASCADE,
     CONSTRAINT userID_notnull CHECK (userID IS NOT NULL),
-    FOREIGN KEY (userID) REFERENCES Users(id)
+    FOREIGN KEY (userID) REFERENCES Users(id) ON DELETE CASCADE
 );
 
 

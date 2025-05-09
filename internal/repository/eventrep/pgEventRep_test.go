@@ -25,12 +25,11 @@ var (
 )
 
 type testHelper struct {
-	ctx          context.Context
-	erep         *eventrep.PgEventRep
-	dbCnfg       *cnfg.DatebaseConfig
-	pgTestConfig *cnfg.PostgresTestConfig
-	pgCreds      *cnfg.PostgresCredentials
-	employeeID   uuid.UUID
+	ctx        context.Context
+	erep       *eventrep.PgEventRep
+	dbCnfg     *cnfg.DatebaseConfig
+	pgCreds    *cnfg.PostgresCredentials
+	employeeID uuid.UUID
 }
 
 func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) {
@@ -69,7 +68,6 @@ func setupTestHelper(t *testing.T) *testHelper {
 	ctx := context.Background()
 	pgOnce.Do(func() {
 		dbCnfg := cnfg.GetTestDatebaseConfig()
-		pgTestConfig := cnfg.GetPgTestConfig()
 
 		_, pgCreds, err := pgtest.GetTestPostgres(ctx)
 		require.NoError(t, err)
@@ -78,20 +76,20 @@ func setupTestHelper(t *testing.T) *testHelper {
 		require.NoError(t, err)
 
 		th = &testHelper{
-			ctx:          ctx,
-			erep:         erep,
-			employeeID:   uuid.New(),
-			dbCnfg:       dbCnfg,
-			pgTestConfig: pgTestConfig,
-			pgCreds:      &pgCreds,
+			ctx:        ctx,
+			erep:       erep,
+			employeeID: uuid.New(),
+			dbCnfg:     dbCnfg,
+			pgCreds:    &pgCreds,
 		}
 	})
-	err := pgtest.MigrateUp(ctx, th.pgTestConfig, th.pgCreds)
+	pgTestConfig := cnfg.GetPgTestConfig()
+	err := pgtest.MigrateUp(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 	require.NoError(t, err)
 	addEmployee(t, ctx, th.employeeID, th.pgCreds, th.dbCnfg)
 
 	t.Cleanup(func() {
-		err := pgtest.MigrateDown(ctx, th.pgTestConfig, th.pgCreds)
+		err := pgtest.MigrateDown(ctx, pgTestConfig.MigrationDir, th.pgCreds)
 		require.NoError(t, err)
 	})
 
