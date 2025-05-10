@@ -8,6 +8,10 @@ select count(*) from artworks;
 
 select count(*) from Events;
 
+select * from users where login = 'kateLogin';
+
+select * from admins;
+
 -- Исследуемый запрос
 EXPLAIN ANALYZE
 SELECT Artworks.title

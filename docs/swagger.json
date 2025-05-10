@@ -7,15 +7,399 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/",
+    "basePath": "/api/v1",
     "paths": {
-        "/artworks": {
+        "/auth-admin/login": {
+            "post": {
+                "description": "Authenticates a admin and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-admin"
+                ],
+                "summary": "Login admin",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginAdminRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The admin has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-admin/register": {
+            "post": {
+                "description": "Register a new admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-admin"
+                ],
+                "summary": "Register admin",
+                "parameters": [
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterAdminRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The admin registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-employee/login": {
+            "post": {
+                "description": "Authenticates a employee and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-employee"
+                ],
+                "summary": "Login employee",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The employee has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-employee/register": {
+            "post": {
+                "description": "Register a new employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-employee"
+                ],
+                "summary": "Register employee",
+                "parameters": [
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The employee registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-user/login": {
+            "post": {
+                "description": "Authenticates a user and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-user"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-user/register": {
+            "post": {
+                "description": "Register a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth-user"
+                ],
+                "summary": "Register user",
+                "parameters": [
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/employee/artworks/all": {
             "get": {
-                "responses": {}
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all artworks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee"
+                ],
+                "summary": "Get all artworks by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.ArtworkResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
             }
         }
     },
     "definitions": {
+        "auth.LoginAdminRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "auth.LoginEmployeeRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "elogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                }
+            }
+        },
+        "auth.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4
+                }
+            }
+        },
+        "auth.RegisterAdminRequest": {
+            "type": "object",
+            "required": [
+                "adminname",
+                "login",
+                "password"
+            ],
+            "properties": {
+                "adminname": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6
+                }
+            }
+        },
+        "auth.RegisterEmployeeRequest": {
+            "type": "object",
+            "required": [
+                "adminID",
+                "login",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "adminID": {
+                    "description": "Valid    bool      `json:\"valid\" binding:\"required,boolean\" example:\"true\"`",
+                    "type": "string",
+                    "example": "8f005053-5b95-4a6a-bdcd-7395ee3ed204"
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "elogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "ename"
+                }
+            }
+        },
+        "auth.RegisterUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "login",
+                "password",
+                "subscribe_email",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4
+                },
+                "subscribe_email": {
+                    "type": "boolean"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50
+                }
+            }
+        },
         "models.ArtworkResponse": {
             "type": "object",
             "properties": {

@@ -139,11 +139,11 @@ func TestAuthUserService(t *testing.T) {
 			}
 
 			err = service.RegisterUser(ctx, RegisterUserRequest{
-				Username:      validUsername,
-				Login:         validLogin,
-				Password:      validPassword,
-				Mail:          validEmail,
-				SubscribeMail: true,
+				Username:       validUsername,
+				Login:          validLogin,
+				Password:       validPassword,
+				Email:          validEmail,
+				SubscribeEmail: true,
 			})
 
 			require.NoError(t, err)

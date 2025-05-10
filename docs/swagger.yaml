@@ -1,5 +1,111 @@
-basePath: /
+basePath: /api/v1
 definitions:
+  auth.LoginAdminRequest:
+    properties:
+      login:
+        maxLength: 50
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  auth.LoginEmployeeRequest:
+    properties:
+      login:
+        example: elogin
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        example: "12345678"
+        minLength: 4
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  auth.LoginUserRequest:
+    properties:
+      login:
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        minLength: 4
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  auth.RegisterAdminRequest:
+    properties:
+      adminname:
+        maxLength: 50
+        type: string
+      login:
+        maxLength: 50
+        type: string
+      password:
+        minLength: 6
+        type: string
+    required:
+    - adminname
+    - login
+    - password
+    type: object
+  auth.RegisterEmployeeRequest:
+    properties:
+      adminID:
+        description: Valid    bool      `json:"valid" binding:"required,boolean" example:"true"`
+        example: 8f005053-5b95-4a6a-bdcd-7395ee3ed204
+        type: string
+      login:
+        example: elogin
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        example: "12345678"
+        minLength: 4
+        type: string
+      username:
+        example: ename
+        maxLength: 50
+        type: string
+    required:
+    - adminID
+    - login
+    - password
+    - username
+    type: object
+  auth.RegisterUserRequest:
+    properties:
+      email:
+        maxLength: 100
+        minLength: 6
+        type: string
+      login:
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        minLength: 4
+        type: string
+      subscribe_email:
+        type: boolean
+      username:
+        maxLength: 50
+        type: string
+    required:
+    - email
+    - login
+    - password
+    - subscribe_email
+    - username
+    type: object
   models.ArtworkResponse:
     properties:
       author:
@@ -56,7 +162,163 @@ info:
   title: Museum
   version: "1.0"
 paths:
-  /artworks:
+  /auth-admin/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a admin and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginAdminRequest'
+      responses:
+        "200":
+          description: The admin has been authenticated
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Login admin
+      tags:
+      - auth-admin
+  /auth-admin/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new admin
+      parameters:
+      - description: Register credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterAdminRequest'
+      responses:
+        "200":
+          description: The admin registered
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Register admin
+      tags:
+      - auth-admin
+  /auth-employee/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a employee and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginEmployeeRequest'
+      responses:
+        "200":
+          description: The employee has been authenticated
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Login employee
+      tags:
+      - auth-employee
+  /auth-employee/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new employee
+      parameters:
+      - description: Register credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterEmployeeRequest'
+      responses:
+        "200":
+          description: The employee registered
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Register employee
+      tags:
+      - auth-employee
+  /auth-user/login:
+    post:
+      consumes:
+      - application/json
+      description: Authenticates a user and return access token
+      parameters:
+      - description: Login credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.LoginUserRequest'
+      responses:
+        "200":
+          description: The user has been authenticated
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Login user
+      tags:
+      - auth-user
+  /auth-user/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new user
+      parameters:
+      - description: Register credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterUserRequest'
+      responses:
+        "200":
+          description: The user registered
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Register user
+      tags:
+      - auth-user
+  /employee/artworks/all:
     get:
-      responses: {}
+      consumes:
+      - application/json
+      description: Retrieves a list of all artworks
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/models.ArtworkResponse'
+            type: array
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: Get all artworks by employee
+      tags:
+      - employee
 swagger: "2.0"

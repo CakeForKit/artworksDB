@@ -2,32 +2,133 @@
 // @version 1.0
 // @description API для системы учета произведений искусств
 // @host localhost:8080
-// @BasePath /
+// @BasePath /api/v1
 package main
 
 import (
 	"context"
 	"errors"
 	"fmt"
-	"log"
 	"os"
 
 	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/app"
+	artworksapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/artworks_api"
+	authadminapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_admin_api"
+	authemployeeapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_employee_api"
+	authuserapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_user_api"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
 func main() {
-	server, err := app.NewServer()
+	ctx := context.Background()
+	engine := gin.New()
+	engine.Use(gin.Logger())
+	engine.Use(gin.Recovery())
+
+	apiGroup := engine.Group("/api/v1")
+
+	// для Swagger - НЕ ТРОГАТЬ
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
+	// ----- Config ------
+	pgCreds, err := cnfg.LoadPgCredentials()
 	if err != nil {
-		log.Fatal("cannot create server:", err)
+		panic(fmt.Errorf("cannot load PgCredentials: %v", err))
 	}
-	err = server.Start(":8080")
+	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
 	if err != nil {
-		log.Fatal("cannot start server:", err)
+		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
 	}
+	appCnfg, err := cnfg.LoadAppConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load AppConfig: %v", err))
+	}
+	// ------------------
+
+	// User
+	{
+		// ----- User Auth -----
+		userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
+		if err != nil {
+			panic(err)
+		}
+		authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
+		if err != nil {
+			panic(err)
+		}
+
+		authUserRouter := authuserapi.AuthUserRouter{}
+		authUserRouter.Init(apiGroup, authUserServ)
+		// ---------------------
+	}
+	// Employee
+	{
+		// ----- Employee Auth -----
+		employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
+		if err != nil {
+			panic(err)
+		}
+		authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
+		if err != nil {
+			panic(err)
+		}
+		authEmployeeRouter := authemployeeapi.AuthEmployeeRouter{}
+		authEmployeeRouter.Init(apiGroup, authEmployeeServ)
+		// ---------------------
+
+		// ----- Employee work -----
+		employeeGroup := apiGroup.Group("/employee")
+		employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ))
+
+		artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+		if err != nil {
+			panic(err)
+		}
+		artworkServ := artworkserv.NewArtworkService(artworkRep)
+		artworkRouter := artworksapi.ArtworksRouter{}
+		artworkRouter.Init(employeeGroup, artworkServ)
+		// -------------------------
+	}
+	// ----- Admin Auth -----
+	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authAdminServ, err := auth.NewAuthAdmin(*appCnfg, adminRep)
+	if err != nil {
+		panic(err)
+	}
+	authAdminRouter := authadminapi.AuthAdminRouter{}
+	authAdminRouter.Init(apiGroup, authAdminServ)
+	// ----------------------
+
+	// ----- Admin work -----
+	adminGroup := apiGroup.Group("/admin")
+	adminGroup.Use(middleware.AuthMiddleware(authAdminServ))
+	// ----------------------
+	engine.Run(":8080")
+
+	// server, err := api.NewServer()
+	// if err != nil {
+	// 	log.Fatal("cannot create server:", err)
+	// }
+	// err = server.Start(":8080")
+	// if err != nil {
+	// 	log.Fatal("cannot start server:", err)
+	// }
+
 	// r := gin.Default()
 	// // route для Swagger - НЕ ТРОГАТЬ
 	// url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")

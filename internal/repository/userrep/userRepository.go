@@ -4,8 +4,8 @@ import (
 	"context"
 	"errors"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep/mockuserrep"
 	"github.com/google/uuid"
 )
 
@@ -28,6 +28,6 @@ type UserRep interface {
 	Close()
 }
 
-func NewUserRep() UserRep {
-	return &mockuserrep.MockUserRep{}
+func NewUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
+	return NewPgUserRep(ctx, pgCreds, dbConf)
 }

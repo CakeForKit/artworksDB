@@ -9,8 +9,8 @@ import (
 
 type TokenMaker interface {
 	// duration - корректный срок действия, return - одписанную строку токена или ошибку
-	CreateToken(id uuid.UUID, duration time.Duration) (string, error)
-	VerifyToken(token string) (*Payload, error)
+	CreateToken(id uuid.UUID, role string, duration time.Duration) (string, error)
+	VerifyToken(token string, role string) (*Payload, error)
 }
 
 var (

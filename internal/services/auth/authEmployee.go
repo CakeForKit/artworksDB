@@ -14,35 +14,26 @@ import (
 )
 
 type LoginEmployeeRequest struct {
-	Login    string
-	Password string
+	Login    string `json:"login" binding:"required,alphanum,min=4,max=50" example:"elogin"`
+	Password string `json:"password" binding:"required,min=4" example:"12345678"`
 }
 
 type RegisterEmployeeRequest struct {
-	Username string
-	Login    string
-	Password string
-	Valid    bool
-	AdminID  uuid.UUID
+	Username string `json:"username" binding:"required,alphanum,max=50" example:"ename"`
+	Login    string `json:"login" binding:"required,alphanum,min=4,max=50" example:"elogin"`
+	Password string `json:"password" binding:"required,min=4" example:"12345678"`
+	// Valid    bool      `json:"valid" binding:"required,boolean" example:"true"`
+	AdminID uuid.UUID `json:"adminID" binding:"required,uuid" example:"8f005053-5b95-4a6a-bdcd-7395ee3ed204"`
+}
+
+type LoginEmployeeResponse struct {
+	AccessToken string `json:"access_token"`
 }
 
 type AuthEmployee interface {
 	LoginEmployee(ctx context.Context, ler LoginEmployeeRequest) (string, error)
 	RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest) error
-}
-
-func NewAuthEmployee(config cnfg.AppConfig) (AuthEmployee, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
-	}
-
-	service := &authEmployee{
-		tokenMaker: tokenMaker,
-		config:     config,
-	}
-
-	return service, nil
+	VerifyByToken(tokenStr string) (*token.Payload, error)
 }
 
 type authEmployee struct {
@@ -50,6 +41,27 @@ type authEmployee struct {
 	config      cnfg.AppConfig
 	employeerep employeerep.EmployeeRep
 	hasher      hasher.Hasher
+}
+
+func NewAuthEmployee(config cnfg.AppConfig, erep employeerep.EmployeeRep) (AuthEmployee, error) {
+	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+	if err != nil {
+		return nil, fmt.Errorf("cannot create token maker: %w", err)
+	}
+
+	hasher, err := hasher.NewHasher()
+	if err != nil {
+		return nil, err
+	}
+
+	service := &authEmployee{
+		tokenMaker:  tokenMaker,
+		config:      config,
+		hasher:      hasher,
+		employeerep: erep,
+	}
+
+	return service, nil
 }
 
 func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeRequest) (string, error) {
@@ -65,6 +77,7 @@ func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeReque
 
 	accessToken, err := s.tokenMaker.CreateToken(
 		employee.GetID(),
+		token.EmployeeRole,
 		s.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -84,7 +97,7 @@ func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmploye
 		rer.Login,
 		hashedPassword,
 		time.Now(),
-		rer.Valid,
+		true,
 		rer.AdminID,
 	)
 	if err != nil {
@@ -92,4 +105,8 @@ func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmploye
 	}
 	err = s.employeerep.Add(ctx, &employee)
 	return err
+}
+
+func (s *authEmployee) VerifyByToken(tokenStr string) (*token.Payload, error) {
+	return s.tokenMaker.VerifyToken(tokenStr, token.EmployeeRole)
 }

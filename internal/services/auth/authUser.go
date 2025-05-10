@@ -14,21 +14,26 @@ import (
 )
 
 type LoginUserRequest struct {
-	Login    string
-	Password string
+	Login    string `json:"login" binding:"required,alphanum,min=4,max=50"`
+	Password string `json:"password" binding:"required,min=4"`
+}
+
+type LoginUserResponse struct {
+	AccessToken string `json:"access_token"`
 }
 
 type RegisterUserRequest struct {
-	Username      string
-	Login         string
-	Password      string
-	Mail          string
-	SubscribeMail bool
+	Username       string `json:"username" binding:"required,alphanum,max=50"`
+	Login          string `json:"login" binding:"required,alphanum,min=4,max=50"`
+	Password       string `json:"password" binding:"required,min=4"`
+	Email          string `json:"email" binding:"required,email,min=6,max=100"`
+	SubscribeEmail bool   `json:"subscribe_email" binding:"required,boolean"`
 }
 
 type AuthUser interface {
 	LoginUser(ctx context.Context, lur LoginUserRequest) (string, error)
 	RegisterUser(ctx context.Context, rur RegisterUserRequest) error
+	VerifyByToken(token string) (*token.Payload, error)
 }
 
 type authUser struct {
@@ -72,6 +77,7 @@ func (s *authUser) LoginUser(ctx context.Context, lur LoginUserRequest) (string,
 
 	accessToken, err := s.tokenMaker.CreateToken(
 		user.GetID(),
+		token.UserRole,
 		s.config.AccessTokenDuration,
 	)
 	if err != nil {
@@ -91,12 +97,16 @@ func (s *authUser) RegisterUser(ctx context.Context, rur RegisterUserRequest) er
 		rur.Login,
 		hashedPassword,
 		time.Now(),
-		rur.Mail,
-		rur.SubscribeMail,
+		rur.Email,
+		rur.SubscribeEmail,
 	)
 	if err != nil {
 		return nil
 	}
 	err = s.userrep.Add(ctx, &user)
 	return err
+}
+
+func (s *authUser) VerifyByToken(tokenStr string) (*token.Payload, error) {
+	return s.tokenMaker.VerifyToken(tokenStr, token.UserRole)
 }
