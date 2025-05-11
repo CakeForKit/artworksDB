@@ -35,7 +35,7 @@ func NewSearcher(artRep artworkrep.ArtworkRep, eventRep eventrep.EventRep) Searc
 }
 
 func (s *searcher) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
-	return s.artworkRep.GetAll(ctx)
+	return s.artworkRep.GetAllArtworks(ctx)
 }
 
 // func (s *searcher) GetByID(id uuid.UUID) (*models.Artwork, error) {

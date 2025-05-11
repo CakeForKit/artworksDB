@@ -3,9 +3,11 @@ definitions:
   auth.LoginAdminRequest:
     properties:
       login:
+        example: admin
         maxLength: 50
         type: string
       password:
+        example: "12345678"
         minLength: 6
         type: string
     required:
@@ -30,10 +32,12 @@ definitions:
   auth.LoginUserRequest:
     properties:
       login:
+        example: ulogin
         maxLength: 50
         minLength: 4
         type: string
       password:
+        example: "12345678"
         minLength: 4
         type: string
     required:
@@ -43,12 +47,15 @@ definitions:
   auth.RegisterAdminRequest:
     properties:
       adminname:
+        example: admin
         maxLength: 50
         type: string
       login:
+        example: admin
         maxLength: 50
         type: string
       password:
+        example: "12345678"
         minLength: 6
         type: string
     required:
@@ -58,10 +65,6 @@ definitions:
     type: object
   auth.RegisterEmployeeRequest:
     properties:
-      adminID:
-        description: Valid    bool      `json:"valid" binding:"required,boolean" example:"true"`
-        example: 8f005053-5b95-4a6a-bdcd-7395ee3ed204
-        type: string
       login:
         example: elogin
         maxLength: 50
@@ -76,7 +79,6 @@ definitions:
         maxLength: 50
         type: string
     required:
-    - adminID
     - login
     - password
     - username
@@ -84,19 +86,24 @@ definitions:
   auth.RegisterUserRequest:
     properties:
       email:
+        example: uuser@test.ru
         maxLength: 100
         minLength: 6
         type: string
       login:
+        example: ulogin
         maxLength: 50
         minLength: 4
         type: string
       password:
+        example: "12345678"
         minLength: 4
         type: string
       subscribe_email:
+        example: true
         type: boolean
       username:
+        example: uname
         maxLength: 50
         type: string
     required:
@@ -106,12 +113,47 @@ definitions:
     - subscribe_email
     - username
     type: object
-  models.ArtworkResponse:
+  jsonreqresp.ArtworkRequest:
     properties:
       author:
-        $ref: '#/definitions/models.AuthorResponse'
+        $ref: '#/definitions/jsonreqresp.AuthorRequest'
+      collectionId:
+        $ref: '#/definitions/jsonreqresp.CollectionRequest'
+      creationYear:
+        example: 1889
+        maximum: 2100
+        type: integer
+      material:
+        example: Холст, масляные краски
+        maxLength: 100
+        type: string
+      size:
+        example: 73.7 × 92.1 см
+        maxLength: 50
+        type: string
+      technic:
+        example: Масло, холст
+        maxLength: 100
+        type: string
+      title:
+        example: Звёздная ночь
+        maxLength: 255
+        type: string
+    required:
+    - author
+    - collectionId
+    - creationYear
+    - material
+    - size
+    - technic
+    - title
+    type: object
+  jsonreqresp.ArtworkResponse:
+    properties:
+      author:
+        $ref: '#/definitions/jsonreqresp.AuthorResponse'
       collection:
-        $ref: '#/definitions/models.CollectionResponse'
+        $ref: '#/definitions/jsonreqresp.CollectionResponse'
       creationYear:
         example: 1503
         type: integer
@@ -131,7 +173,31 @@ definitions:
         example: Mona Lisa
         type: string
     type: object
-  models.AuthorResponse:
+  jsonreqresp.AuthorRequest:
+    properties:
+      birthYear:
+        description: Обязательное, >= 1000
+        example: 1853
+        minimum: 1000
+        type: integer
+      deathYear:
+        description: Опциональное, >= BirthYear
+        example: 1890
+        type: integer
+      id:
+        example: ba1df957-ed5e-4694-8766-c5ec5806e5e7
+        type: string
+      name:
+        description: Обязательное, 2-100 символов
+        example: Винсент Ван Гог
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - birthYear
+    - name
+    type: object
+  jsonreqresp.AuthorResponse:
     properties:
       birthYear:
         example: 1452
@@ -146,7 +212,21 @@ definitions:
         example: Leonardo da Vinci
         type: string
     type: object
-  models.CollectionResponse:
+  jsonreqresp.CollectionRequest:
+    properties:
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      title:
+        description: Обязательное, 2-255 символов
+        example: Музей современного искусства
+        maxLength: 255
+        minLength: 2
+        type: string
+    required:
+    - title
+    type: object
+  jsonreqresp.CollectionResponse:
     properties:
       id:
         example: aa1e8400-e29b-41d4-a716-446655441111
@@ -155,6 +235,74 @@ definitions:
         example: Louvre Museum Collection
         type: string
     type: object
+  jsonreqresp.EmployeeResponse:
+    properties:
+      adminId:
+        example: bb2e8400-e29b-41d4-a716-446655443333
+        type: string
+      createdAt:
+        example: "2023-01-01T00:00:00Z"
+        type: string
+      id:
+        example: bb2e8400-e29b-41d4-a716-446655442222
+        type: string
+      login:
+        example: johndoe@example.com
+        type: string
+      username:
+        example: john doe
+        type: string
+      valid:
+        example: true
+        type: boolean
+    type: object
+  jsonreqresp.UpdateArtworkRequest:
+    properties:
+      author:
+        $ref: '#/definitions/jsonreqresp.AuthorRequest'
+      collectionId:
+        $ref: '#/definitions/jsonreqresp.CollectionRequest'
+      creationYear:
+        example: 1889
+        maximum: 2100
+        type: integer
+      id:
+        type: string
+      material:
+        example: Холст, масляные краски
+        maxLength: 100
+        type: string
+      size:
+        example: 73.7 × 92.1 см
+        maxLength: 50
+        type: string
+      technic:
+        example: Масло, холст
+        maxLength: 100
+        type: string
+      title:
+        example: Звёздная ночь
+        maxLength: 255
+        type: string
+    required:
+    - author
+    - collectionId
+    - creationYear
+    - id
+    - material
+    - size
+    - technic
+    - title
+    type: object
+  jsonreqresp.UpdateValidEmployeeRequest:
+    properties:
+      id:
+        example: bb2e8400-e29b-41d4-a716-446655442222
+        type: string
+      valid:
+        example: true
+        type: boolean
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -162,6 +310,91 @@ info:
   title: Museum
   version: "1.0"
 paths:
+  /admin/employeelist/all:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all employees
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.EmployeeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: Get all employees by admin
+      tags:
+      - admin
+  /admin/employeelist/change-rights:
+    put:
+      consumes:
+      - application/json
+      description: Change employee valid field
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.UpdateValidEmployeeRequest'
+      responses:
+        "200":
+          description: Success update
+        "404":
+          description: Employee not found
+      security:
+      - ApiKeyAuth: []
+      summary: Change employee rights
+      tags:
+      - admin
+  /admin/employeelist/register-employee:
+    post:
+      consumes:
+      - application/json
+      description: Register a new employee
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Register credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/auth.RegisterEmployeeRequest'
+      responses:
+        "200":
+          description: The employee registered
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+        "409":
+          description: Attempt to re-register
+      security:
+      - ApiKeyAuth: []
+      summary: Register employee
+      tags:
+      - admin
   /auth-admin/login:
     post:
       consumes:
@@ -181,6 +414,8 @@ paths:
           description: Wrong input parameters
         "401":
           description: Auth error
+        "403":
+          description: Has no rights
       summary: Login admin
       tags:
       - auth-admin
@@ -225,29 +460,9 @@ paths:
           description: Wrong input parameters
         "401":
           description: Auth error
+        "403":
+          description: Has no rights
       summary: Login employee
-      tags:
-      - auth-employee
-  /auth-employee/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new employee
-      parameters:
-      - description: Register credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.RegisterEmployeeRequest'
-      responses:
-        "200":
-          description: The employee registered
-        "400":
-          description: Wrong input parameters
-        "401":
-          description: Auth error
-      summary: Register employee
       tags:
       - auth-employee
   /auth-user/login:
@@ -291,9 +506,41 @@ paths:
           description: Wrong input parameters
         "401":
           description: Auth error
+        "409":
+          description: Attempt to re-register
       summary: Register user
       tags:
       - auth-user
+  /employee/artworks/add:
+    post:
+      consumes:
+      - application/json
+      description: Add artwork with [new] author and [new] collection. If author or
+        collection ID = "", an it will be created.
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: New Artwork with [new] author and [new] collection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ArtworkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Artworks added
+        "400":
+          description: Wrong input parameters
+      security:
+      - ApiKeyAuth: []
+      summary: Add artwork by employee
+      tags:
+      - employee
   /employee/artworks/all:
     get:
       consumes:
@@ -312,13 +559,41 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.ArtworkResponse'
+              $ref: '#/definitions/jsonreqresp.ArtworkResponse'
             type: array
-        "401":
-          description: Unauthorized
       security:
       - ApiKeyAuth: []
       summary: Get all artworks by employee
+      tags:
+      - employee
+  /employee/artworks/update:
+    put:
+      consumes:
+      - application/json
+      description: Update artwork with [new] author and [new] collection. If author
+        or collection ID = "", an it will be created.
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Updating Artwork with [new] author and [new] collection
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.UpdateArtworkRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artwork updated
+        "400":
+          description: Wrong input parameters
+      security:
+      - ApiKeyAuth: []
+      summary: Update artwork by employee
       tags:
       - employee
 swagger: "2.0"

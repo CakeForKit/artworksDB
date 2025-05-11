@@ -14,8 +14,9 @@ type TokenMaker interface {
 }
 
 var (
-	ErrInvalidToken = errors.New("token is invalid")
-	ErrExpiredToken = errors.New("token has expired")
+	ErrInvalidToken  = errors.New("token is invalid")
+	ErrExpiredToken  = errors.New("token has expired")
+	ErrIncorrectRole = errors.New("incorrect role")
 )
 
 func NewTokenMaker(symmetricKey string) (TokenMaker, error) {

@@ -2,8 +2,10 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -12,19 +14,6 @@ type Author struct {
 	name      string
 	birthYear int
 	deathYear int
-}
-
-type AuthorResponse struct {
-	ID        string `json:"id" example:"550e8400-e29b-41d4-a716-446655440000"`
-	Name      string `json:"name" example:"Leonardo da Vinci"`
-	BirthYear int    `json:"birthYear" example:"1452"`
-	DeathYear int    `json:"deathYear" example:"1519"`
-}
-
-type AuthorRequest struct {
-	Name      string `json:"name" binding:"required,min=2,max=100"`                      // Обязательное, 2-100 символов
-	BirthYear int    `json:"birthYear" binding:"required,gte=1000"`                      // Обязательное, >= 1000
-	DeathYear *int   `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear"` // Опциональное, >= BirthYear
 }
 
 var (
@@ -59,19 +48,39 @@ func (a *Author) validate() error {
 		return ErrAuthorInvalidBirthYear
 	case a.deathYear < 0:
 		return ErrAuthorInvalidDeathYear
-	case a.deathYear > 0 && a.birthYear > a.deathYear:
+	case a.deathYear > 0 && (a.birthYear > a.deathYear):
 		return ErrAuthorBirthAfterDeath
 	}
 	return nil
 }
 
-func (a *Author) ToAuthorResponse() AuthorResponse {
-	return AuthorResponse{
+func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
+	return jsonreqresp.AuthorResponse{
 		ID:        a.id.String(),
 		Name:      a.name,
 		BirthYear: a.birthYear,
 		DeathYear: a.deathYear,
 	}
+}
+
+func FromAuthorRequest(req jsonreqresp.AuthorRequest) (Author, error) {
+	var authorID uuid.UUID
+	if req.ID == "" {
+		authorID = uuid.New()
+	} else {
+		var err error
+		authorID, err = uuid.Parse(req.ID)
+		if err != nil {
+			return Author{}, fmt.Errorf("FromAuthorRequest: %w", err)
+		}
+	}
+
+	return NewAuthor(
+		authorID,
+		req.Name,
+		req.BirthYear,
+		req.DeathYear,
+	)
 }
 
 func (auth *Author) GetID() uuid.UUID {

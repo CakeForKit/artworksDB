@@ -12,19 +12,19 @@ import (
 	"os"
 
 	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
-	artworksapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/artworks_api"
-	authadminapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_admin_api"
-	authemployeeapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_employee_api"
-	authuserapi "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api/auth_user_api"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/employeeserv"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -69,38 +69,45 @@ func main() {
 			panic(err)
 		}
 
-		authUserRouter := authuserapi.AuthUserRouter{}
+		authUserRouter := api.AuthUserRouter{}
 		authUserRouter.Init(apiGroup, authUserServ)
 		// ---------------------
 	}
-	// Employee
-	{
-		// ----- Employee Auth -----
-		employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
-		if err != nil {
-			panic(err)
-		}
-		authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
-		if err != nil {
-			panic(err)
-		}
-		authEmployeeRouter := authemployeeapi.AuthEmployeeRouter{}
-		authEmployeeRouter.Init(apiGroup, authEmployeeServ)
-		// ---------------------
 
-		// ----- Employee work -----
-		employeeGroup := apiGroup.Group("/employee")
-		employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ))
-
-		artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
-		if err != nil {
-			panic(err)
-		}
-		artworkServ := artworkserv.NewArtworkService(artworkRep)
-		artworkRouter := artworksapi.ArtworksRouter{}
-		artworkRouter.Init(employeeGroup, artworkServ)
-		// -------------------------
+	// ----- Employee Auth -----
+	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
 	}
+	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
+	if err != nil {
+		panic(err)
+	}
+	authEmployeeRouter := api.AuthEmployeeRouter{}
+	authEmployeeRouter.Init(apiGroup, authEmployeeServ)
+	// ---------------------
+
+	// ----- Employee work -----
+	employeeGroup := apiGroup.Group("/employee")
+	employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ))
+
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
+	artworkRouter := api.ArtworksRouter{}
+	artworkRouter.Init(employeeGroup, artworkServ)
+	// -------------------------
+
 	// ----- Admin Auth -----
 	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
@@ -110,13 +117,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authAdminRouter := authadminapi.AuthAdminRouter{}
+	authAdminRouter := api.AuthAdminRouter{}
 	authAdminRouter.Init(apiGroup, authAdminServ)
 	// ----------------------
 
 	// ----- Admin work -----
 	adminGroup := apiGroup.Group("/admin")
 	adminGroup.Use(middleware.AuthMiddleware(authAdminServ))
+
+	employeeServ := employeeserv.NewEmployeeService(employeeRep)
+
+	employeeRouter := api.EmployeeListRouter{}
+	employeeRouter.Init(adminGroup, employeeServ, authEmployeeServ)
 	// ----------------------
 	engine.Run(":8080")
 

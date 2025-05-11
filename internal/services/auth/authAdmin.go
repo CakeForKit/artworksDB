@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -14,8 +15,8 @@ import (
 )
 
 type LoginAdminRequest struct {
-	Login    string `json:"login" binding:"required,alphanum,max=50"`
-	Password string `json:"password" binding:"required,min=6"`
+	Login    string `json:"login" binding:"required,alphanum,max=50" example:"admin"`
+	Password string `json:"password" binding:"required,min=6" example:"12345678"`
 }
 
 type LoginAdminResponse struct {
@@ -23,9 +24,9 @@ type LoginAdminResponse struct {
 }
 
 type RegisterAdminRequest struct {
-	Adminname string `json:"adminname" binding:"required,alphanum,max=50"`
-	Login     string `json:"login" binding:"required,alphanum,max=50"`
-	Password  string `json:"password" binding:"required,min=6"`
+	Adminname string `json:"adminname" binding:"required,alphanum,max=50" example:"admin"`
+	Login     string `json:"login" binding:"required,alphanum,max=50" example:"admin"`
+	Password  string `json:"password" binding:"required,min=6" example:"12345678"`
 }
 
 type AuthAdmin interface {
@@ -33,6 +34,10 @@ type AuthAdmin interface {
 	RegisterAdmin(ctx context.Context, rur RegisterAdminRequest) error
 	VerifyByToken(token string) (*token.Payload, error)
 }
+
+var (
+	ErrAdminNotValid = errors.New("the Admin has no rights")
+)
 
 type authAdmin struct {
 	tokenMaker token.TokenMaker
@@ -65,12 +70,17 @@ func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep) (AuthAdmin, err
 func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (string, error) {
 	admin, err := s.adminrep.GetByLogin(ctx, lur.Login)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("LoginAdmin: %v", err)
+	}
+	fmt.Printf("LoginAdmin: %+v\n", admin)
+
+	if !admin.IsValid() {
+		return "", ErrAdminNotValid
 	}
 
 	err = s.hasher.CheckPassword(lur.Password, admin.GetHashedPassword())
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("LoginAdmin: %v", err)
 	}
 
 	accessToken, err := s.tokenMaker.CreateToken(
@@ -79,7 +89,7 @@ func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (stri
 		s.config.AccessTokenDuration,
 	)
 	if err != nil {
-		return "", err
+		return "", fmt.Errorf("LoginAdmin: %v", err)
 	}
 	return accessToken, nil
 }
@@ -87,7 +97,7 @@ func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (stri
 func (s *authAdmin) RegisterAdmin(ctx context.Context, rur RegisterAdminRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rur.Password)
 	if err != nil {
-		return err
+		return fmt.Errorf("LoginAdmin: %v", err)
 	}
 	admin, err := models.NewAdmin(
 		uuid.New(),
@@ -101,7 +111,10 @@ func (s *authAdmin) RegisterAdmin(ctx context.Context, rur RegisterAdminRequest)
 		return nil
 	}
 	err = s.adminrep.Add(ctx, &admin)
-	return err
+	if err != nil {
+		return fmt.Errorf("LoginAdmin: %v", err)
+	}
+	return nil
 }
 
 func (s *authAdmin) VerifyByToken(tokenStr string) (*token.Payload, error) {

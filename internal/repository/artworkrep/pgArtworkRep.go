@@ -41,11 +41,11 @@ func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbC
 			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrOpenConnect, err)
+			resErr = fmt.Errorf("NewPgArtworkRep: %w: %v", ErrOpenConnect, err)
 			return
 		}
 		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrPing, err)
+			resErr = fmt.Errorf("NewPgArtworkRep: %w: %v", ErrPing, err)
 			db.Close()
 			return
 		}
@@ -72,7 +72,7 @@ func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, er
 		if err := rows.Scan(&id, &title, &technic, &material, &size, &creationYear,
 			&authorID, &authorName, &authorBirthYear, &authorDeathYear,
 			&collectionID, &collectionTitle); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+			return nil, fmt.Errorf("parseArtworksRows: scan error: %v", err)
 		}
 		author, err := models.NewAuthor(authorID, authorName, authorBirthYear, authorDeathYear)
 		if err != nil {
@@ -89,12 +89,12 @@ func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, er
 		resArtworks = append(resArtworks, &user)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %v", err)
+		return nil, fmt.Errorf("parseArtworksRows: rows iteration error: %v", err)
 	}
 	return resArtworks, nil
 }
 
-func (pg *PgArtworkRep) GetAll(ctx context.Context) ([]*models.Artwork, error) {
+func (pg *PgArtworkRep) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select(
 		"art.id", "art.title", "art.technic", "art.material",
@@ -107,18 +107,18 @@ func (pg *PgArtworkRep) GetAll(ctx context.Context) ([]*models.Artwork, error) {
 		Join("collection col ON art.collectionid = col.id").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
@@ -140,23 +140,23 @@ func (pg *PgArtworkRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Artw
 		Where(sq.Eq{"art.id": id}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrExpectedOneArtwork, err)
 	}
 	return arts[0], nil
 }
@@ -175,23 +175,23 @@ func (pg *PgArtworkRep) GetByTitle(ctx context.Context, title string) ([]*models
 		Where(sq.Eq{"art.title": title}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %v", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrExpectedOneArtwork, err)
 	}
 	return arts, nil
 }
@@ -210,23 +210,23 @@ func (pg *PgArtworkRep) GetByAuthor(ctx context.Context, author *models.Author) 
 		Where(sq.Eq{"au.id": author.GetID()}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %v", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrExpectedOneArtwork, err)
 	}
 	return arts, nil
 }
@@ -248,23 +248,23 @@ func (pg *PgArtworkRep) GetByCreationTime(ctx context.Context, yearBeg int, year
 		}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %v", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrExpectedOneArtwork, err)
 	}
 	return arts, nil
 }
@@ -289,151 +289,47 @@ func (pg *PgArtworkRep) GetByEvent(ctx context.Context, event models.Event) ([]*
 		Where(sq.Expr("EXISTS (?)", existsSubQuery)). // Используем Expr для EXISTS
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %v", err)
 	}
 	if len(arts) == 0 {
 		return nil, ErrArtworkNotFound
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrExpectedOneArtwork, err)
 	}
 	return arts, nil
 }
 
-func (pg *PgArtworkRep) checkAuthorByID(ctx context.Context, id uuid.UUID) (bool, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id").
-		From("Author").
-		Where(sq.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	return rows.Next(), nil
-}
-
-func (pg *PgArtworkRep) addAuthor(ctx context.Context, e *models.Author) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-
-	query, args, err := psql.Insert("Author").
-		Columns("id", "name", "birthYear", "deathYear").
-		Values(e.GetID(), e.GetName(), e.GetBirthYear(), e.GetDeathYear()).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no Author added", ErrRowsAffected)
-	}
-	return nil
-}
-
-func (pg *PgArtworkRep) checkCollectionByID(ctx context.Context, id uuid.UUID) (bool, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id").
-		From("Collection").
-		Where(sq.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	return rows.Next(), nil
-}
-
-func (pg *PgArtworkRep) addCollection(ctx context.Context, e *models.Collection) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-
-	query, args, err := psql.Insert("Collection").
-		Columns("id", "title").
-		Values(e.GetID(), e.GetTitle()).
-		ToSql()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no Collection added", ErrRowsAffected)
-	}
-	return nil
-}
-
 func (pg *PgArtworkRep) Add(ctx context.Context, e *models.Artwork) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	authorExist, err := pg.checkAuthorByID(ctx, e.GetAuthor().GetID())
-	if err != nil {
-		return fmt.Errorf("check author: %v", err)
-	}
-	if !authorExist {
-		err = pg.addAuthor(ctx, e.GetAuthor())
-		if err != nil {
-			return fmt.Errorf("add author: %v", err)
-		}
-	}
-	collectionExist, err := pg.checkCollectionByID(ctx, e.GetCollection().GetID())
-	if err != nil {
-		return fmt.Errorf("check collection: %v", err)
-	}
-	if !collectionExist {
-		err = pg.addCollection(ctx, e.GetCollection())
-		if err != nil {
-			return fmt.Errorf("add collection: %v", err)
-		}
-	}
 	query, args, err := psql.Insert("Artworks").
 		Columns("id", "title", "technic", "material", "size", "creationYear", "authorID", "collectionID").
 		Values(e.GetID(), e.GetTitle(), e.GetTechnic(), e.GetMaterial(), e.GetSize(), e.GetCreationYear(), e.GetAuthor().GetID(), e.GetCollection().GetID()).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgArtworkRep.Add: %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgArtworkRep.Add: %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgArtworkRep.Add: %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no artowrk added", ErrRowsAffected)
+		return fmt.Errorf("PgArtworkRep.Add: %w: no artowrk added", ErrRowsAffected)
 	}
 	return nil
 }
@@ -444,75 +340,54 @@ func (pg *PgArtworkRep) Delete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgArtworkRep.Delete: %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgArtworkRep.Delete: %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgArtworkRep.Delete: %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no user with id %s", ErrRowsAffected, id)
+		return fmt.Errorf("PgArtworkRep.Delete: %w: no user with id %s", ErrRowsAffected, id)
 	}
 	return nil
 }
 
 func (pg *PgArtworkRep) Update(ctx context.Context,
 	id uuid.UUID,
-	funcUpdate func(*models.Artwork) (*models.Artwork, error)) (*models.Artwork, error) {
-	user, err := pg.GetByID(ctx, id)
-	if err != nil {
-		return nil, err
-	}
+	updatedArtwork *ArtworkUpdate) error {
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	updatedArtwork, err := funcUpdate(user)
-	if err != nil {
-		return nil, fmt.Errorf("funcUpdate: %v", err)
-	}
-	updatedAuthorID := updatedArtwork.GetAuthor().GetID()
-	updatedCollectionID := updatedArtwork.GetCollection().GetID()
-	res, err := pg.checkAuthorByID(ctx, updatedAuthorID)
-	if err != nil {
-		return nil, fmt.Errorf("funcUpdate: %v", err)
-	} else if !res {
-		return nil, fmt.Errorf("funcUpdate: %v", ErrNoAuthor)
-	}
-	res, err = pg.checkCollectionByID(ctx, updatedCollectionID)
-	if err != nil {
-		return nil, fmt.Errorf("funcUpdate: %v", err)
-	} else if !res {
-		return nil, fmt.Errorf("funcUpdate: %v", ErrNoCollection)
-	}
+
 	query, args, err := psql.Update("Artworks").
-		Set("title", updatedArtwork.GetTitle()).
-		Set("material", updatedArtwork.GetMaterial()).
-		Set("technic", updatedArtwork.GetTechnic()).
-		Set("size", updatedArtwork.GetSize()).
-		Set("creationYear", updatedArtwork.GetCreationYear()).
-		Set("authorID", updatedAuthorID).
-		Set("collectionID", updatedCollectionID).
+		Set("title", updatedArtwork.Title).
+		Set("material", updatedArtwork.Material).
+		Set("technic", updatedArtwork.Technic).
+		Set("size", updatedArtwork.Size).
+		Set("creationYear", updatedArtwork.CreationYear).
+		Set("authorID", updatedArtwork.AuthorID).
+		Set("collectionID", updatedArtwork.CollectionID).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgArtworkRep.Update: %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgArtworkRep.Update: %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgArtworkRep.Update: %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no artworks updated", ErrRowsAffected)
+		return fmt.Errorf("PgArtworkRep.Update: %w: no artworks updated", ErrRowsAffected)
 	}
-	return updatedArtwork, nil
+	return nil
 }
 
 func (pg *PgArtworkRep) Ping(ctx context.Context) error {

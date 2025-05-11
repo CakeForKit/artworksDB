@@ -41,11 +41,11 @@ func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, db
 			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrOpenConnect, err)
+			resErr = fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrOpenConnect, err)
 			return
 		}
 		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrPing, err)
+			resErr = fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrPing, err)
 			db.Close()
 			return
 		}
@@ -71,7 +71,7 @@ func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee,
 		var createdAt time.Time
 		var valid bool
 		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &valid, &adminID); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+			return nil, fmt.Errorf("parseEmployeesRows: scan error: %v", err)
 		}
 		employee, err := models.NewEmployee(id, username, login, hashedPassword, createdAt, valid, adminID)
 		if err != nil {
@@ -80,7 +80,7 @@ func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee,
 		resEmployees = append(resEmployees, &employee)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %v", err)
+		return nil, fmt.Errorf("parseEmployeesRows: rows iteration error: %v", err)
 	}
 	return resEmployees, nil
 }
@@ -91,18 +91,18 @@ func (pg *PgEmployeeRep) GetAll(ctx context.Context) ([]*models.Employee, error)
 		From("employees").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetAll %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetAll %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgEmployeeRep.GetAll %v", err)
 	}
 	if len(employees) == 0 {
 		return nil, ErrEmployeeNotFound
@@ -117,22 +117,22 @@ func (pg *PgEmployeeRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Emp
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByID %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByID %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgEmployeeRep.GetByID %v", err)
 	}
 	if len(employees) == 0 {
 		return nil, ErrEmployeeNotFound
 	} else if len(employees) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneEmployee, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByID %w: %v", ErrExpectedOneEmployee, err)
 	}
 	return employees[0], nil
 }
@@ -144,46 +144,52 @@ func (pg *PgEmployeeRep) GetByLogin(ctx context.Context, login string) (*models.
 		Where(sq.Eq{"login": login}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByLogin %w: %v", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByLogin %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	employees, err := pg.parseEmployeesRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgEmployeeRep.GetByLogin %v", err)
 	}
 	if len(employees) == 0 {
 		return nil, ErrEmployeeNotFound
 	} else if len(employees) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneEmployee, err)
+		return nil, fmt.Errorf("PgEmployeeRep.GetByLogin %w: %v", ErrExpectedOneEmployee, err)
 	}
 	return employees[0], nil
 }
 
 func (pg *PgEmployeeRep) Add(ctx context.Context, e *models.Employee) error {
+	_, err := pg.GetByLogin(ctx, e.GetLogin())
+	if err == nil {
+		return ErrDuplicateLoginEmp
+	} else if err != ErrEmployeeNotFound {
+		return fmt.Errorf("PgEmployeeRep.Add %v", err)
+	}
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Insert("Employees").
 		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid", "adminID").
 		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true, e.GetAdminID()).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgEmployeeRep.Add %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgEmployeeRep.Add %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgEmployeeRep.Add %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no employee added", ErrRowsAffected)
+		return fmt.Errorf("PgEmployeeRep.Add %w: no employee added", ErrRowsAffected)
 	}
 	return nil
 }
@@ -194,19 +200,19 @@ func (pg *PgEmployeeRep) Delete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgEmployeeRep.Delete %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgEmployeeRep.Delete %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgEmployeeRep.Delete %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no employee with id %s", ErrRowsAffected, id)
+		return fmt.Errorf("PgEmployeeRep.Delete %w: no employee with id %s", ErrRowsAffected, id)
 	}
 	return nil
 }
@@ -216,13 +222,13 @@ func (pg *PgEmployeeRep) Update(ctx context.Context,
 	funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error) {
 	employee, err := pg.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgEmployeeRep.Update %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEmployee, err := funcUpdate(employee)
 	if err != nil {
-		return nil, fmt.Errorf("funcUpdate: %v", err)
+		return nil, fmt.Errorf("PgEmployeeRep.Update funcUpdate: %v", err)
 	}
 	query, args, err := psql.Update("Employees").
 		Set("username", updatedEmployee.GetUsername()).
@@ -232,19 +238,19 @@ func (pg *PgEmployeeRep) Update(ctx context.Context,
 		Set("adminID", updatedEmployee.GetAdminID()).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEmployeeRep.Update %w: %v", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEmployeeRep.Update %w: %v", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return nil, fmt.Errorf("PgEmployeeRep.Update %w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no employee added", ErrRowsAffected)
+		return nil, fmt.Errorf("PgEmployeeRep.Update %w: no employee added", ErrRowsAffected)
 	}
 	return updatedEmployee, nil
 }

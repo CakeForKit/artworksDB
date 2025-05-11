@@ -125,9 +125,8 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 		Username: "new_user",
 		Login:    "new_login",
 		Password: "new_password",
-		Valid:    true,
-		AdminID:  uuid.New(),
 	}
+	adminID := uuid.New()
 
 	tests := []struct {
 		name          string
@@ -177,7 +176,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 				hasher:      hasher,
 			}
 
-			err := service.RegisterEmployee(ctx, tt.request)
+			err := service.RegisterEmployee(ctx, tt.request, adminID)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

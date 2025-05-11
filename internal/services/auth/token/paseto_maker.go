@@ -29,7 +29,6 @@ func NewPasetoMaker(symmetricKey string) (TokenMaker, error) {
 
 func (maker *PasetoMaker) CreateToken(userID uuid.UUID, role string, duration time.Duration) (string, error) {
 	payload, err := NewPayload(userID, role, duration)
-	fmt.Printf("New payload - %+v", payload)
 	if err != nil {
 		return "", err
 	}
@@ -44,7 +43,6 @@ func (maker *PasetoMaker) VerifyToken(token string, role string) (*Payload, erro
 	if err != nil {
 		return nil, ErrInvalidToken
 	}
-	fmt.Printf("payload - %+v", payload)
 
 	err = payload.Valid(role)
 	if err != nil {

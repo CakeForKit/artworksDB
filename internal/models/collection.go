@@ -2,23 +2,16 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
 type Collection struct {
 	id    uuid.UUID
 	title string
-}
-
-type CollectionResponse struct {
-	ID    string `json:"id" example:"aa1e8400-e29b-41d4-a716-446655441111"`
-	Title string `json:"title" example:"Louvre Museum Collection"`
-}
-
-type CollectionRequest struct {
-	Title string `json:"title" binding:"required,min=2,max=255"`
 }
 
 var (
@@ -49,11 +42,25 @@ func (c *Collection) validate() error {
 	return nil
 }
 
-func (c *Collection) ToCollectionResponse() CollectionResponse {
-	return CollectionResponse{
+func (c *Collection) ToCollectionResponse() jsonreqresp.CollectionResponse {
+	return jsonreqresp.CollectionResponse{
 		ID:    c.id.String(),
 		Title: c.title,
 	}
+}
+
+func FromCollectionRequest(req jsonreqresp.CollectionRequest) (Collection, error) {
+	var id uuid.UUID
+	if req.ID == "" {
+		id = uuid.New()
+	} else {
+		var err error
+		id, err = uuid.Parse(req.ID)
+		if err != nil {
+			return Collection{}, fmt.Errorf("FromAuthorRequest: %w", err)
+		}
+	}
+	return NewCollection(id, req.Title)
 }
 
 func (c *Collection) GetID() uuid.UUID {

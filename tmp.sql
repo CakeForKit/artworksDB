@@ -8,9 +8,19 @@ select count(*) from artworks;
 
 select count(*) from Events;
 
-select * from users where login = 'kateLogin';
+select * from artworks;
 
-select * from admins;
+select *
+from artworks art 
+join author a 
+on a.id = art.authorid
+join collection c 
+on c.id = art.collectionid;
+where creationYear = 1889;
+
+delete from artworks where id = '44a315d0-663c-4813-92a6-d7977c2f2aba';
+
+update employees set valid = false where login = 'notvalid';
 
 -- Исследуемый запрос
 EXPLAIN ANALYZE

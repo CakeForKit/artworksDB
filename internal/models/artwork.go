@@ -2,8 +2,10 @@ package models
 
 import (
 	"errors"
+	"fmt"
 	"strings"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -16,37 +18,6 @@ type Artwork struct {
 	size         string
 	author       *Author
 	collection   *Collection
-}
-
-type ArtworkResponse struct {
-	ID           string             `json:"id" example:"bb2e8400-e29b-41d4-a716-446655442222"`
-	Title        string             `json:"title" example:"Mona Lisa"`
-	CreationYear int                `json:"creationYear" example:"1503"`
-	Technic      string             `json:"technic" example:"Oil painting"`
-	Material     string             `json:"material" example:"Poplar wood"`
-	Size         string             `json:"size" example:"77 cm × 53 cm"`
-	Author       AuthorResponse     `json:"author"`
-	Collection   CollectionResponse `json:"collection"`
-}
-
-type CreateArtworkRequest struct {
-	Title        string `json:"title" binding:"required"`
-	CreationYear int    `json:"creationYear" binding:"required"`
-	Technic      string `json:"technic" binding:"required"`
-	Material     string `json:"material" binding:"required"`
-	Size         string `json:"size" binding:"required"`
-	AuthorID     string `json:"authorId" binding:"required,uuid"`
-	CollectionID string `json:"collectionId" binding:"required,uuid"`
-}
-
-type UpdateArtworkRequest struct {
-	Title        *string `json:"title,omitempty"`
-	CreationYear *int    `json:"creationYear,omitempty"`
-	Technic      *string `json:"technic,omitempty"`
-	Material     *string `json:"material,omitempty"`
-	Size         *string `json:"size,omitempty"`
-	AuthorID     *string `json:"authorId,omitempty" validate:"omitempty,uuid"`
-	CollectionID *string `json:"collectionId,omitempty" validate:"omitempty,uuid"`
 }
 
 var (
@@ -131,7 +102,7 @@ func (a *Artwork) validateWithAuthor() error {
 
 	birthYear := a.author.GetBirthYear()
 	deathYear := a.author.GetDeathYear()
-
+	fmt.Printf("deathYear = %d\n", deathYear)
 	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
 		return ErrArtworkYearNotInRange
 	}
@@ -139,8 +110,8 @@ func (a *Artwork) validateWithAuthor() error {
 	return nil
 }
 
-func (a *Artwork) ToArtworkResponse() ArtworkResponse {
-	return ArtworkResponse{
+func (a *Artwork) ToArtworkResponse() jsonreqresp.ArtworkResponse {
+	return jsonreqresp.ArtworkResponse{
 		ID:           a.id.String(),
 		Title:        a.title,
 		CreationYear: a.creationYear,
@@ -152,28 +123,27 @@ func (a *Artwork) ToArtworkResponse() ArtworkResponse {
 	}
 }
 
-// func ToArtworkModel(req CreateArtworkRequest) (Artwork, error) {
-// 	authorID, err := uuid.Parse(req.AuthorID)
-// 	if err != nil {
-// 		return Artwork{}, err
-// 	}
+func FromArtworkRequest(req jsonreqresp.ArtworkRequest) (Artwork, error) {
+	author, err := FromAuthorRequest(req.Author)
+	if err != nil {
+		return Artwork{}, fmt.Errorf("FromArtworkRequest: %w", err)
+	}
+	collection, err := FromCollectionRequest(req.Collection)
+	if err != nil {
+		return Artwork{}, fmt.Errorf("FromArtworkRequest: %w", err)
+	}
 
-// 	collectionID, err := uuid.Parse(req.CollectionID)
-// 	if err != nil {
-// 		return Artwork{}, err
-// 	}
-
-// 	return Artwork{
-// 		id:           uuid.New(),
-// 		title:        req.Title,
-// 		creationYear: req.CreationYear,
-// 		technic:      req.Technic,
-// 		material:     req.Material,
-// 		size:         req.Size,
-// 		author:       &Author{ID: authorID},
-// 		collection:   &Collection{ID: collectionID},
-// 	}, nil
-// }
+	return NewArtwork(
+		uuid.New(),
+		req.Title,
+		req.Technic,
+		req.Material,
+		req.Size,
+		req.CreationYear,
+		&author,
+		&collection,
+	)
+}
 
 func (a *Artwork) GetID() uuid.UUID {
 	return a.id

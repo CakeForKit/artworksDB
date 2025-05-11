@@ -245,7 +245,7 @@ func (q *queryTime) dropIndex() error {
 
 func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) error {
 	projectRoot := cnfg.GetProjectRoot()
-	dir := filepath.Join(projectRoot, "/measure_results/")
+	dir := filepath.Join(projectRoot, "/measure_results/data/")
 	ctx := context.Background()
 
 	cntForOneMeasure := 20

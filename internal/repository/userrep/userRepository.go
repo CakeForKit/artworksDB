@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	ErrUserNotFound    = errors.New("the User was not found in the repository")
-	ErrFailedToAddUser = errors.New("failed to add the User to the repository")
-	ErrUpdateUser      = errors.New("failed to update the User in the repository")
+	ErrUserNotFound       = errors.New("the User was not found in the repository")
+	ErrFailedToAddUser    = errors.New("failed to add the User to the repository")
+	ErrDuplicateLoginUser = errors.New("a user with this login already exists")
+	ErrUpdateUser         = errors.New("failed to update the User in the repository")
 )
 
 type UserRep interface {

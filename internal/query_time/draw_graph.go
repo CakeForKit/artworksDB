@@ -65,6 +65,7 @@ func DrawGraph(start int, stop int, step int) error {
 	notIndexVals := make([]float64, 0)
 	indexVals := make([]float64, 0)
 
+	fmt.Printf("cnt rows | not Index | Index\n")
 	for i := start; i < stop; i += step {
 		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/%d_notIndex.txt", i))
 		tmNotIndex, err := readAvg(filenameNotIndex)
@@ -79,6 +80,7 @@ func DrawGraph(start int, stop int, step int) error {
 		cntRowsVals = append(cntRowsVals, i)
 		notIndexVals = append(notIndexVals, tmNotIndex)
 		indexVals = append(indexVals, tmIndex)
+		fmt.Printf("%d | %.3f | %.3f \n", i, tmNotIndex, tmIndex)
 	}
 
 	pnotIndex := make(plotter.XYs, len(cntRowsVals))

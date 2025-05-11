@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"time"
 
@@ -23,7 +24,7 @@ type RegisterEmployeeRequest struct {
 	Login    string `json:"login" binding:"required,alphanum,min=4,max=50" example:"elogin"`
 	Password string `json:"password" binding:"required,min=4" example:"12345678"`
 	// Valid    bool      `json:"valid" binding:"required,boolean" example:"true"`
-	AdminID uuid.UUID `json:"adminID" binding:"required,uuid" example:"8f005053-5b95-4a6a-bdcd-7395ee3ed204"`
+	// AdminID uuid.UUID `json:"adminID" binding:"required,uuid" example:"8f005053-5b95-4a6a-bdcd-7395ee3ed204"`
 }
 
 type LoginEmployeeResponse struct {
@@ -32,9 +33,13 @@ type LoginEmployeeResponse struct {
 
 type AuthEmployee interface {
 	LoginEmployee(ctx context.Context, ler LoginEmployeeRequest) (string, error)
-	RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest) error
+	RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest, adminID uuid.UUID) error
 	VerifyByToken(tokenStr string) (*token.Payload, error)
 }
+
+var (
+	ErrEmployeeNotValid = errors.New("the Employee has no rights")
+)
 
 type authEmployee struct {
 	tokenMaker  token.TokenMaker
@@ -70,6 +75,10 @@ func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeReque
 		return "", err
 	}
 
+	if !employee.IsValid() {
+		return "", ErrEmployeeNotValid
+	}
+
 	err = s.hasher.CheckPassword(ler.Password, employee.GetHashedPassword())
 	if err != nil {
 		return "", err
@@ -86,7 +95,7 @@ func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeReque
 	return accessToken, nil
 }
 
-func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest) error {
+func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmployeeRequest, adminID uuid.UUID) error {
 	hashedPassword, err := s.hasher.HashPassword(rer.Password)
 	if err != nil {
 		return err
@@ -98,7 +107,7 @@ func (s *authEmployee) RegisterEmployee(ctx context.Context, rer RegisterEmploye
 		hashedPassword,
 		time.Now(),
 		true,
-		rer.AdminID,
+		adminID,
 	)
 	if err != nil {
 		return err

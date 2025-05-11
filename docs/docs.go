@@ -15,6 +15,141 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/admin/employeelist/all": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all employees",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get all employees by admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EmployeeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/admin/employeelist/change-rights": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Change employee valid field",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Change employee rights",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateValidEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success update"
+                    },
+                    "404": {
+                        "description": "Employee not found"
+                    }
+                }
+            }
+        },
+        "/admin/employeelist/register-employee": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Register a new employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Register employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The employee registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    },
+                    "409": {
+                        "description": "Attempt to re-register"
+                    }
+                }
+            }
+        },
         "/auth-admin/login": {
             "post": {
                 "description": "Authenticates a admin and return access token",
@@ -45,6 +180,9 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Auth error"
+                    },
+                    "403": {
+                        "description": "Has no rights"
                     }
                 }
             }
@@ -113,40 +251,9 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Auth error"
-                    }
-                }
-            }
-        },
-        "/auth-employee/register": {
-            "post": {
-                "description": "Register a new employee",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth-employee"
-                ],
-                "summary": "Register employee",
-                "parameters": [
-                    {
-                        "description": "Register credentials",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.RegisterEmployeeRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The employee registered"
                     },
-                    "400": {
-                        "description": "Wrong input parameters"
-                    },
-                    "401": {
-                        "description": "Auth error"
+                    "403": {
+                        "description": "Has no rights"
                     }
                 }
             }
@@ -215,6 +322,55 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Auth error"
+                    },
+                    "409": {
+                        "description": "Attempt to re-register"
+                    }
+                }
+            }
+        },
+        "/employee/artworks/add": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add artwork with [new] author and [new] collection. If author or collection ID = \"\", an it will be created.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee"
+                ],
+                "summary": "Add artwork by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "New Artwork with [new] author and [new] collection",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Artworks added"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
                     }
                 }
             }
@@ -252,12 +408,55 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.ArtworkResponse"
+                                "$ref": "#/definitions/jsonreqresp.ArtworkResponse"
                             }
                         }
+                    }
+                }
+            }
+        },
+        "/employee/artworks/update": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update artwork with [new] author and [new] collection. If author or collection ID = \"\", an it will be created.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "employee"
+                ],
+                "summary": "Update artwork by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
                     },
-                    "401": {
-                        "description": "Unauthorized"
+                    {
+                        "description": "Updating Artwork with [new] author and [new] collection",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork updated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
                     }
                 }
             }
@@ -273,11 +472,13 @@ const docTemplate = `{
             "properties": {
                 "login": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "admin"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "12345678"
                 }
             }
         },
@@ -311,11 +512,13 @@ const docTemplate = `{
                 "login": {
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 4
+                    "minLength": 4,
+                    "example": "ulogin"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 4
+                    "minLength": 4,
+                    "example": "12345678"
                 }
             }
         },
@@ -329,32 +532,29 @@ const docTemplate = `{
             "properties": {
                 "adminname": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "admin"
                 },
                 "login": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "admin"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "12345678"
                 }
             }
         },
         "auth.RegisterEmployeeRequest": {
             "type": "object",
             "required": [
-                "adminID",
                 "login",
                 "password",
                 "username"
             ],
             "properties": {
-                "adminID": {
-                    "description": "Valid    bool      ` + "`" + `json:\"valid\" binding:\"required,boolean\" example:\"true\"` + "`" + `",
-                    "type": "string",
-                    "example": "8f005053-5b95-4a6a-bdcd-7395ee3ed204"
-                },
                 "login": {
                     "type": "string",
                     "maxLength": 50,
@@ -386,34 +586,84 @@ const docTemplate = `{
                 "email": {
                     "type": "string",
                     "maxLength": 100,
-                    "minLength": 6
+                    "minLength": 6,
+                    "example": "uuser@test.ru"
                 },
                 "login": {
                     "type": "string",
                     "maxLength": 50,
-                    "minLength": 4
+                    "minLength": 4,
+                    "example": "ulogin"
                 },
                 "password": {
                     "type": "string",
-                    "minLength": 4
+                    "minLength": 4,
+                    "example": "12345678"
                 },
                 "subscribe_email": {
-                    "type": "boolean"
+                    "type": "boolean",
+                    "example": true
                 },
                 "username": {
                     "type": "string",
-                    "maxLength": 50
+                    "maxLength": 50,
+                    "example": "uname"
                 }
             }
         },
-        "models.ArtworkResponse": {
+        "jsonreqresp.ArtworkRequest": {
+            "type": "object",
+            "required": [
+                "author",
+                "collectionId",
+                "creationYear",
+                "material",
+                "size",
+                "technic",
+                "title"
+            ],
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/jsonreqresp.AuthorRequest"
+                },
+                "collectionId": {
+                    "$ref": "#/definitions/jsonreqresp.CollectionRequest"
+                },
+                "creationYear": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "example": 1889
+                },
+                "material": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Холст, масляные краски"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "73.7 × 92.1 см"
+                },
+                "technic": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Масло, холст"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.ArtworkResponse": {
             "type": "object",
             "properties": {
                 "author": {
-                    "$ref": "#/definitions/models.AuthorResponse"
+                    "$ref": "#/definitions/jsonreqresp.AuthorResponse"
                 },
                 "collection": {
-                    "$ref": "#/definitions/models.CollectionResponse"
+                    "$ref": "#/definitions/jsonreqresp.CollectionResponse"
                 },
                 "creationYear": {
                     "type": "integer",
@@ -441,7 +691,38 @@ const docTemplate = `{
                 }
             }
         },
-        "models.AuthorResponse": {
+        "jsonreqresp.AuthorRequest": {
+            "type": "object",
+            "required": [
+                "birthYear",
+                "name"
+            ],
+            "properties": {
+                "birthYear": {
+                    "description": "Обязательное, \u003e= 1000",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "example": 1853
+                },
+                "deathYear": {
+                    "description": "Опциональное, \u003e= BirthYear",
+                    "type": "integer",
+                    "example": 1890
+                },
+                "id": {
+                    "type": "string",
+                    "example": "ba1df957-ed5e-4694-8766-c5ec5806e5e7"
+                },
+                "name": {
+                    "description": "Обязательное, 2-100 символов",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Винсент Ван Гог"
+                }
+            }
+        },
+        "jsonreqresp.AuthorResponse": {
             "type": "object",
             "properties": {
                 "birthYear": {
@@ -462,7 +743,26 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CollectionResponse": {
+        "jsonreqresp.CollectionRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
+                }
+            }
+        },
+        "jsonreqresp.CollectionResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -472,6 +772,97 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Louvre Museum Collection"
+                }
+            }
+        },
+        "jsonreqresp.EmployeeResponse": {
+            "type": "object",
+            "properties": {
+                "adminId": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655443333"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "johndoe@example.com"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john doe"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.UpdateArtworkRequest": {
+            "type": "object",
+            "required": [
+                "author",
+                "collectionId",
+                "creationYear",
+                "id",
+                "material",
+                "size",
+                "technic",
+                "title"
+            ],
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/jsonreqresp.AuthorRequest"
+                },
+                "collectionId": {
+                    "$ref": "#/definitions/jsonreqresp.CollectionRequest"
+                },
+                "creationYear": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "example": 1889
+                },
+                "id": {
+                    "type": "string"
+                },
+                "material": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Холст, масляные краски"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "73.7 × 92.1 см"
+                },
+                "technic": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Масло, холст"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.UpdateValidEmployeeRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         }

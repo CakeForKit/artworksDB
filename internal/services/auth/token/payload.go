@@ -31,6 +31,7 @@ func NewPayload(personID uuid.UUID, role string, duration time.Duration) (*Paylo
 	payload := &Payload{
 		ID:        tokenID,
 		PersonID:  personID,
+		Role:      role,
 		IssuedAt:  time.Now(),
 		ExpiredAt: time.Now().Add(duration),
 	}
@@ -40,6 +41,8 @@ func NewPayload(personID uuid.UUID, role string, duration time.Duration) (*Paylo
 func (payload *Payload) Valid(role string) error {
 	if time.Now().After(payload.ExpiredAt) {
 		return ErrExpiredToken
+	} else if payload.Role != role {
+		return ErrIncorrectRole
 	}
 	return nil
 }

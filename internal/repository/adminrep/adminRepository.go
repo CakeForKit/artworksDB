@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	ErrAdminNotFound    = errors.New("the Admin was not found in the repository")
-	ErrFailedToAddAdmin = errors.New("failed to add the Admin to the repository")
-	ErrUpdateAdmin      = errors.New("failed to update the Admin in the repository")
+	ErrAdminNotFound     = errors.New("the Admin was not found in the repository")
+	ErrFailedToAddAdmin  = errors.New("failed to add the Admin to the repository")
+	ErrDuplicateLoginAdm = errors.New("an admin with this login already exists")
+	ErrUpdateAdmin       = errors.New("failed to update the Admin in the repository")
 )
 
 type AdminRep interface {
