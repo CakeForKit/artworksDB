@@ -67,12 +67,12 @@ func DrawGraph(start int, stop int, step int) error {
 
 	fmt.Printf("cnt rows | not Index | Index\n")
 	for i := start; i < stop; i += step {
-		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/%d_notIndex.txt", i))
+		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/data/%d_notIndex.txt", i))
 		tmNotIndex, err := readAvg(filenameNotIndex)
 		if err != nil {
 			return fmt.Errorf("DrawGraph: %v", err)
 		}
-		filenameIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/%d_Index.txt", i))
+		filenameIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/data/%d_Index.txt", i))
 		tmIndex, err := readAvg(filenameIndex)
 		if err != nil {
 			return fmt.Errorf("DrawGraph: %v", err)

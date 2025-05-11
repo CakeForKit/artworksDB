@@ -1,0 +1,35 @@
+      Node Type: Nested Loop
+        Node Type: Seq Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Bitmap Heap Scan
+          Node Type: Bitmap Index Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Seq Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Bitmap Heap Scan
+          Node Type: Bitmap Index Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Seq Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Bitmap Heap Scan
+          Node Type: Bitmap Index Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Seq Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Bitmap Heap Scan
+          Node Type: Bitmap Index Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Seq Scan
+        Node Type: Index Scan
+      Node Type: Nested Loop
+        Node Type: Bitmap Heap Scan
+          Node Type: Bitmap Index Scan
+        Node Type: Index Scan

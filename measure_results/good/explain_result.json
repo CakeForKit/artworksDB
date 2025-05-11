@@ -1,0 +1,4545 @@
+[
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 85.08,
+      "Plan Rows": 7,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.056,
+      "Actual Total Time": 0.169,
+      "Actual Rows": 4,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 27.00,
+          "Plan Rows": 7,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.020,
+          "Actual Total Time": 0.098,
+          "Actual Rows": 4,
+          "Actual Loops": 1,
+          "Filter": "(eventid = 'abe117d3-ad15-42bc-bca0-89b28eff8d47'::uuid)",
+          "Rows Removed by Filter": 996
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.29,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.016,
+          "Actual Total Time": 0.016,
+          "Actual Rows": 1,
+          "Actual Loops": 4,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.794,
+    "Triggers": [
+    ],
+    "Execution Time": 0.216
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.59,
+      "Total Cost": 53.38,
+      "Plan Rows": 5,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.040,
+      "Actual Total Time": 0.041,
+      "Actual Rows": 1,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.31,
+          "Total Cost": 11.89,
+          "Plan Rows": 5,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.017,
+          "Actual Total Time": 0.018,
+          "Actual Rows": 1,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = '0ca5d12b-d628-4c4b-8107-2cc00a83ee90'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 1,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.31,
+              "Plan Rows": 5,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.007,
+              "Actual Total Time": 0.007,
+              "Actual Rows": 1,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = '0ca5d12b-d628-4c4b-8107-2cc00a83ee90'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.29,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.021,
+          "Actual Total Time": 0.021,
+          "Actual Rows": 1,
+          "Actual Loops": 1,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.465,
+    "Triggers": [
+    ],
+    "Execution Time": 0.074
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 113.10,
+      "Plan Rows": 9,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.055,
+      "Actual Total Time": 0.232,
+      "Actual Rows": 6,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 38.44,
+          "Plan Rows": 9,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.026,
+          "Actual Total Time": 0.160,
+          "Actual Rows": 6,
+          "Actual Loops": 1,
+          "Filter": "(eventid = 'b29aec1c-0154-464c-9217-b100961c8fc3'::uuid)",
+          "Rows Removed by Filter": 1994
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.29,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.011,
+          "Actual Total Time": 0.011,
+          "Actual Rows": 1,
+          "Actual Loops": 6,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.489,
+    "Triggers": [
+    ],
+    "Execution Time": 0.279
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.63,
+      "Total Cost": 101.91,
+      "Plan Rows": 10,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.043,
+      "Actual Total Time": 0.090,
+      "Actual Rows": 4,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.36,
+          "Total Cost": 18.95,
+          "Plan Rows": 10,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.019,
+          "Actual Total Time": 0.031,
+          "Actual Rows": 4,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = 'dd4d683d-71ed-4ae0-a66d-20859cb5d18f'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 4,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.35,
+              "Plan Rows": 10,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.014,
+              "Actual Total Time": 0.014,
+              "Actual Rows": 4,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = 'dd4d683d-71ed-4ae0-a66d-20859cb5d18f'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.29,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.014,
+          "Actual Total Time": 0.014,
+          "Actual Rows": 1,
+          "Actual Loops": 4,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.558,
+    "Triggers": [
+    ],
+    "Execution Time": 0.125
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 181.77,
+      "Plan Rows": 15,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.107,
+      "Actual Total Time": 0.260,
+      "Actual Rows": 2,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 61.34,
+          "Plan Rows": 15,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.084,
+          "Actual Total Time": 0.223,
+          "Actual Rows": 2,
+          "Actual Loops": 1,
+          "Filter": "(eventid = 'b594eb0a-20b4-44a5-87fb-3a669a3e53eb'::uuid)",
+          "Rows Removed by Filter": 2998
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.03,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.017,
+          "Actual Total Time": 0.017,
+          "Actual Rows": 1,
+          "Actual Loops": 2,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.456,
+    "Triggers": [
+    ],
+    "Execution Time": 0.301
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.67,
+      "Total Cost": 147.02,
+      "Plan Rows": 15,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.046,
+      "Actual Total Time": 0.084,
+      "Actual Rows": 4,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.40,
+          "Total Cost": 26.58,
+          "Plan Rows": 15,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.022,
+          "Actual Total Time": 0.033,
+          "Actual Rows": 4,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = '81d1a0a3-5f4a-42a8-8228-691f57db0967'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 4,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.39,
+              "Plan Rows": 15,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.015,
+              "Actual Total Time": 0.016,
+              "Actual Rows": 4,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = '81d1a0a3-5f4a-42a8-8228-691f57db0967'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 8.03,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 0.012,
+          "Actual Rows": 1,
+          "Actual Loops": 4,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.469,
+    "Triggers": [
+    ],
+    "Execution Time": 0.117
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 232.82,
+      "Plan Rows": 20,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.062,
+      "Actual Total Time": 0.508,
+      "Actual Rows": 4,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 78.91,
+          "Plan Rows": 20,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.032,
+          "Actual Total Time": 0.441,
+          "Actual Rows": 4,
+          "Actual Loops": 1,
+          "Filter": "(eventid = '829b37fc-7712-4f58-a0e7-84e96f2bdb46'::uuid)",
+          "Rows Removed by Filter": 3996
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.69,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.016,
+          "Actual Total Time": 0.016,
+          "Actual Rows": 1,
+          "Actual Loops": 4,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.536,
+    "Triggers": [
+    ],
+    "Execution Time": 0.548
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.71,
+      "Total Cost": 186.78,
+      "Plan Rows": 20,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.051,
+      "Actual Total Time": 0.098,
+      "Actual Rows": 4,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.44,
+          "Total Cost": 32.87,
+          "Plan Rows": 20,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.026,
+          "Actual Total Time": 0.039,
+          "Actual Rows": 4,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = 'ea59776a-f2fc-456b-9b26-8ac4914148ce'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 4,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.43,
+              "Plan Rows": 20,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.016,
+              "Actual Total Time": 0.016,
+              "Actual Rows": 4,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = 'ea59776a-f2fc-456b-9b26-8ac4914148ce'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.69,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.014,
+          "Actual Total Time": 0.014,
+          "Actual Rows": 1,
+          "Actual Loops": 4,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.534,
+    "Triggers": [
+    ],
+    "Execution Time": 0.132
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 286.05,
+      "Plan Rows": 25,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.151,
+      "Actual Total Time": 0.477,
+      "Actual Rows": 8,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 98.66,
+          "Plan Rows": 25,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.125,
+          "Actual Total Time": 0.380,
+          "Actual Rows": 8,
+          "Actual Loops": 1,
+          "Filter": "(eventid = '5abd8ab5-0ccc-4305-b443-05215250d671'::uuid)",
+          "Rows Removed by Filter": 4992
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.49,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.011,
+          "Actual Total Time": 0.011,
+          "Actual Rows": 1,
+          "Actual Loops": 8,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.600,
+    "Triggers": [
+    ],
+    "Execution Time": 0.509
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.75,
+      "Total Cost": 227.33,
+      "Plan Rows": 25,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.058,
+      "Actual Total Time": 0.194,
+      "Actual Rows": 15,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.48,
+          "Total Cost": 39.94,
+          "Plan Rows": 25,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.032,
+          "Actual Total Time": 0.065,
+          "Actual Rows": 15,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = 'e7374869-bc00-445b-8eeb-7477dd4ad976'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 11,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.47,
+              "Plan Rows": 25,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.024,
+              "Actual Total Time": 0.024,
+              "Actual Rows": 15,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = 'e7374869-bc00-445b-8eeb-7477dd4ad976'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.49,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.008,
+          "Actual Rows": 1,
+          "Actual Loops": 15,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.580,
+    "Triggers": [
+    ],
+    "Execution Time": 0.233
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 0.28,
+      "Total Cost": 337.87,
+      "Plan Rows": 30,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.066,
+      "Actual Total Time": 0.581,
+      "Actual Rows": 14,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 0.00,
+          "Total Cost": 121.01,
+          "Plan Rows": 30,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.042,
+          "Actual Total Time": 0.453,
+          "Actual Rows": 14,
+          "Actual Loops": 1,
+          "Filter": "(eventid = '3071e8dd-6fbb-462d-a5ce-e2fddad31000'::uuid)",
+          "Rows Removed by Filter": 5986
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.23,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.009,
+          "Actual Rows": 1,
+          "Actual Loops": 14,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.452,
+    "Triggers": [
+    ],
+    "Execution Time": 0.618
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Nested Loop",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 4.79,
+      "Total Cost": 264.42,
+      "Plan Rows": 30,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.051,
+      "Actual Total Time": 0.176,
+      "Actual Rows": 11,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Plans": [
+        {
+          "Node Type": "Bitmap Heap Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artwork_event",
+          "Alias": "artwork_event",
+          "Startup Cost": 4.51,
+          "Total Cost": 47.56,
+          "Plan Rows": 30,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.025,
+          "Actual Total Time": 0.059,
+          "Actual Rows": 11,
+          "Actual Loops": 1,
+          "Recheck Cond": "(eventid = '1fe8096a-b206-4d78-9719-eae8cd10dd34'::uuid)",
+          "Rows Removed by Index Recheck": 0,
+          "Exact Heap Blocks": 9,
+          "Lossy Heap Blocks": 0,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Index Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Index Name": "idx_artwork_event_eventid",
+              "Startup Cost": 0.00,
+              "Total Cost": 4.51,
+              "Plan Rows": 30,
+              "Plan Width": 0,
+              "Actual Startup Time": 0.015,
+              "Actual Total Time": 0.015,
+              "Actual Rows": 11,
+              "Actual Loops": 1,
+              "Index Cond": "(eventid = '1fe8096a-b206-4d78-9719-eae8cd10dd34'::uuid)"
+            }
+          ]
+        },
+        {
+          "Node Type": "Index Scan",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Scan Direction": "Forward",
+          "Index Name": "artworks_pkey",
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.28,
+          "Total Cost": 7.23,
+          "Plan Rows": 1,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.010,
+          "Actual Total Time": 0.010,
+          "Actual Rows": 1,
+          "Actual Loops": 11,
+          "Index Cond": "(id = artwork_event.artworkid)",
+          "Rows Removed by Index Recheck": 0
+        }
+      ]
+    },
+    "Planning Time": 0.552,
+    "Triggers": [
+    ],
+    "Execution Time": 0.213
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 139.10,
+      "Total Cost": 355.70,
+      "Plan Rows": 35,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.879,
+      "Actual Total Time": 1.955,
+      "Actual Rows": 10,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.868,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 138.66,
+          "Total Cost": 138.66,
+          "Plan Rows": 35,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.506,
+          "Actual Total Time": 0.506,
+          "Actual Rows": 10,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 138.66,
+              "Plan Rows": 35,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.072,
+              "Actual Total Time": 0.502,
+              "Actual Rows": 10,
+              "Actual Loops": 1,
+              "Filter": "(eventid = 'd7f9023a-baf7-4b81-a06f-4528a4f19fac'::uuid)",
+              "Rows Removed by Filter": 6990
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.453,
+    "Triggers": [
+    ],
+    "Execution Time": 1.987
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 55.06,
+      "Total Cost": 271.66,
+      "Plan Rows": 35,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.395,
+      "Actual Total Time": 1.798,
+      "Actual Rows": 14,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 1.039,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 54.62,
+          "Total Cost": 54.62,
+          "Plan Rows": 35,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.107,
+          "Actual Total Time": 0.108,
+          "Actual Rows": 14,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.55,
+              "Total Cost": 54.62,
+              "Plan Rows": 35,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.049,
+              "Actual Total Time": 0.100,
+              "Actual Rows": 14,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '324b9c6e-015b-4dce-bdd3-d703660d16ce'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 12,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.54,
+                  "Plan Rows": 35,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.036,
+                  "Actual Total Time": 0.036,
+                  "Actual Rows": 14,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '324b9c6e-015b-4dce-bdd3-d703660d16ce'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.581,
+    "Triggers": [
+    ],
+    "Execution Time": 1.850
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 158.78,
+      "Total Cost": 375.37,
+      "Plan Rows": 40,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.755,
+      "Actual Total Time": 2.153,
+      "Actual Rows": 8,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.892,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 158.28,
+          "Total Cost": 158.28,
+          "Plan Rows": 40,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.649,
+          "Actual Total Time": 0.650,
+          "Actual Rows": 8,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 158.28,
+              "Plan Rows": 40,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.008,
+              "Actual Total Time": 0.646,
+              "Actual Rows": 8,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '4f50e61e-07db-4179-b051-b3a6de8c71ce'::uuid)",
+              "Rows Removed by Filter": 7992
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.505,
+    "Triggers": [
+    ],
+    "Execution Time": 2.187
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 61.42,
+      "Total Cost": 278.01,
+      "Plan Rows": 40,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.199,
+      "Actual Total Time": 1.486,
+      "Actual Rows": 15,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.826,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 60.92,
+          "Total Cost": 60.92,
+          "Plan Rows": 40,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.081,
+          "Actual Total Time": 0.081,
+          "Actual Rows": 15,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.59,
+              "Total Cost": 60.92,
+              "Plan Rows": 40,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.026,
+              "Actual Total Time": 0.075,
+              "Actual Rows": 15,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'c6d70718-927b-4d57-9bf9-35095ec0f9cc'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 12,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.58,
+                  "Plan Rows": 40,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.016,
+                  "Actual Total Time": 0.016,
+                  "Actual Rows": 15,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'c6d70718-927b-4d57-9bf9-35095ec0f9cc'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.502,
+    "Triggers": [
+    ],
+    "Execution Time": 1.525
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 181.12,
+      "Total Cost": 397.72,
+      "Plan Rows": 45,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.760,
+      "Actual Total Time": 2.143,
+      "Actual Rows": 24,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.010,
+          "Actual Total Time": 0.838,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 180.56,
+          "Total Cost": 180.56,
+          "Plan Rows": 45,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.719,
+          "Actual Total Time": 0.719,
+          "Actual Rows": 24,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 180.56,
+              "Plan Rows": 45,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.026,
+              "Actual Total Time": 0.712,
+              "Actual Rows": 24,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '168da449-7449-4f2e-a776-c6e311ee9b63'::uuid)",
+              "Rows Removed by Filter": 8976
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.489,
+    "Triggers": [
+    ],
+    "Execution Time": 2.176
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 69.10,
+      "Total Cost": 285.70,
+      "Plan Rows": 45,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.149,
+      "Actual Total Time": 1.486,
+      "Actual Rows": 14,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.826,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 68.54,
+          "Total Cost": 68.54,
+          "Plan Rows": 45,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.078,
+          "Actual Total Time": 0.079,
+          "Actual Rows": 14,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.63,
+              "Total Cost": 68.54,
+              "Plan Rows": 45,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.025,
+              "Actual Total Time": 0.073,
+              "Actual Rows": 14,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '18823d93-f0f7-452a-8bfe-bfb4b6e0216b'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 11,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.62,
+                  "Plan Rows": 45,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.018,
+                  "Actual Total Time": 0.018,
+                  "Actual Rows": 14,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '18823d93-f0f7-452a-8bfe-bfb4b6e0216b'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.485,
+    "Triggers": [
+    ],
+    "Execution Time": 1.542
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 198.88,
+      "Total Cost": 415.47,
+      "Plan Rows": 50,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.762,
+      "Actual Total Time": 2.193,
+      "Actual Rows": 21,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.883,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 198.25,
+          "Total Cost": 198.25,
+          "Plan Rows": 50,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.706,
+          "Actual Total Time": 0.706,
+          "Actual Rows": 21,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 198.25,
+              "Plan Rows": 50,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.041,
+              "Actual Total Time": 0.701,
+              "Actual Rows": 21,
+              "Actual Loops": 1,
+              "Filter": "(eventid = 'b5050060-4ebd-4aeb-94c6-f0aaf35c5c87'::uuid)",
+              "Rows Removed by Filter": 9979
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.461,
+    "Triggers": [
+    ],
+    "Execution Time": 2.225
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 76.23,
+      "Total Cost": 292.83,
+      "Plan Rows": 50,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.437,
+      "Actual Total Time": 1.524,
+      "Actual Rows": 14,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.835,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 75.61,
+          "Total Cost": 75.61,
+          "Plan Rows": 50,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.081,
+          "Actual Total Time": 0.081,
+          "Actual Rows": 14,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.67,
+              "Total Cost": 75.61,
+              "Plan Rows": 50,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.026,
+              "Actual Total Time": 0.075,
+              "Actual Rows": 14,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'd7f9023a-baf7-4b81-a06f-4528a4f19fac'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 12,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.66,
+                  "Plan Rows": 50,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.015,
+                  "Actual Total Time": 0.015,
+                  "Actual Rows": 14,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'd7f9023a-baf7-4b81-a06f-4528a4f19fac'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.477,
+    "Triggers": [
+    ],
+    "Execution Time": 1.563
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 218.51,
+      "Total Cost": 435.11,
+      "Plan Rows": 55,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.013,
+      "Actual Total Time": 2.372,
+      "Actual Rows": 17,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.010,
+          "Actual Total Time": 0.920,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 217.83,
+          "Total Cost": 217.83,
+          "Plan Rows": 55,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.853,
+          "Actual Total Time": 0.854,
+          "Actual Rows": 17,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 217.83,
+              "Plan Rows": 55,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.038,
+              "Actual Total Time": 0.847,
+              "Actual Rows": 17,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '07670c8e-0459-4b92-b463-f245d637a0ad'::uuid)",
+              "Rows Removed by Filter": 10983
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.548,
+    "Triggers": [
+    ],
+    "Execution Time": 2.414
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 83.36,
+      "Total Cost": 299.95,
+      "Plan Rows": 55,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.286,
+      "Actual Total Time": 1.619,
+      "Actual Rows": 17,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.877,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 82.67,
+          "Total Cost": 82.67,
+          "Plan Rows": 55,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.124,
+          "Actual Total Time": 0.125,
+          "Actual Rows": 17,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 9,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.71,
+              "Total Cost": 82.67,
+              "Plan Rows": 55,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.046,
+              "Actual Total Time": 0.115,
+              "Actual Rows": 17,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '07670c8e-0459-4b92-b463-f245d637a0ad'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 16,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.70,
+                  "Plan Rows": 55,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.034,
+                  "Actual Total Time": 0.034,
+                  "Actual Rows": 17,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '07670c8e-0459-4b92-b463-f245d637a0ad'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.587,
+    "Triggers": [
+    ],
+    "Execution Time": 1.662
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 240.83,
+      "Total Cost": 457.42,
+      "Plan Rows": 60,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.084,
+      "Actual Total Time": 2.482,
+      "Actual Rows": 22,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.844,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 240.08,
+          "Total Cost": 240.08,
+          "Plan Rows": 60,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.040,
+          "Actual Total Time": 1.040,
+          "Actual Rows": 22,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 240.08,
+              "Plan Rows": 60,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.253,
+              "Actual Total Time": 1.033,
+              "Actual Rows": 22,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '4425ef5f-dee9-4e21-9717-ab3238a4e6a8'::uuid)",
+              "Rows Removed by Filter": 11978
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.436,
+    "Triggers": [
+    ],
+    "Execution Time": 2.516
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 90.26,
+      "Total Cost": 306.85,
+      "Plan Rows": 60,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.202,
+      "Actual Total Time": 1.578,
+      "Actual Rows": 26,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.845,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 89.51,
+          "Total Cost": 89.51,
+          "Plan Rows": 60,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.127,
+          "Actual Total Time": 0.127,
+          "Actual Rows": 26,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.75,
+              "Total Cost": 89.51,
+              "Plan Rows": 60,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.019,
+              "Actual Total Time": 0.121,
+              "Actual Rows": 26,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '93666e8c-7640-4aba-b612-e6770bda4e2a'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 25,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.74,
+                  "Plan Rows": 60,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.012,
+                  "Actual Total Time": 0.012,
+                  "Actual Rows": 26,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '93666e8c-7640-4aba-b612-e6770bda4e2a'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.508,
+    "Triggers": [
+    ],
+    "Execution Time": 1.619
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 258.61,
+      "Total Cost": 475.21,
+      "Plan Rows": 65,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.969,
+      "Actual Total Time": 2.362,
+      "Actual Rows": 33,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.848,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 257.80,
+          "Total Cost": 257.80,
+          "Plan Rows": 65,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.930,
+          "Actual Total Time": 0.931,
+          "Actual Rows": 33,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 257.80,
+              "Plan Rows": 65,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.074,
+              "Actual Total Time": 0.924,
+              "Actual Rows": 33,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '4beb1789-5cc6-4ad7-af2a-9d9298e72de3'::uuid)",
+              "Rows Removed by Filter": 12967
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.449,
+    "Triggers": [
+    ],
+    "Execution Time": 2.397
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 97.39,
+      "Total Cost": 313.99,
+      "Plan Rows": 65,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.159,
+      "Actual Total Time": 1.621,
+      "Actual Rows": 22,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.926,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 96.58,
+          "Total Cost": 96.58,
+          "Plan Rows": 65,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.102,
+          "Actual Total Time": 0.102,
+          "Actual Rows": 22,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.79,
+              "Total Cost": 96.58,
+              "Plan Rows": 65,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.023,
+              "Actual Total Time": 0.095,
+              "Actual Rows": 22,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '8d8538d6-dd89-4086-8e48-c569237db240'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 21,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.77,
+                  "Plan Rows": 65,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.012,
+                  "Actual Total Time": 0.012,
+                  "Actual Rows": 22,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '8d8538d6-dd89-4086-8e48-c569237db240'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.498,
+    "Triggers": [
+    ],
+    "Execution Time": 1.661
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 280.91,
+      "Total Cost": 497.51,
+      "Plan Rows": 70,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.081,
+      "Actual Total Time": 2.510,
+      "Actual Rows": 29,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.891,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 280.04,
+          "Total Cost": 280.04,
+          "Plan Rows": 70,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.023,
+          "Actual Total Time": 1.023,
+          "Actual Rows": 29,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 280.04,
+              "Plan Rows": 70,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.033,
+              "Actual Total Time": 1.016,
+              "Actual Rows": 29,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '70eb0191-a783-4918-b1df-dc061cd9d860'::uuid)",
+              "Rows Removed by Filter": 13971
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.535,
+    "Triggers": [
+    ],
+    "Execution Time": 2.543
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 105.07,
+      "Total Cost": 321.67,
+      "Plan Rows": 70,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.274,
+      "Actual Total Time": 1.646,
+      "Actual Rows": 26,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 0.877,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 104.20,
+          "Total Cost": 104.20,
+          "Plan Rows": 70,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.171,
+          "Actual Total Time": 0.172,
+          "Actual Rows": 26,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.83,
+              "Total Cost": 104.20,
+              "Plan Rows": 70,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.039,
+              "Actual Total Time": 0.161,
+              "Actual Rows": 26,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '2fdabfc7-abc6-4afc-b022-50ccb2385663'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 25,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.81,
+                  "Plan Rows": 70,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.023,
+                  "Actual Total Time": 0.023,
+                  "Actual Rows": 26,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '2fdabfc7-abc6-4afc-b022-50ccb2385663'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.567,
+    "Triggers": [
+    ],
+    "Execution Time": 1.700
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 298.71,
+      "Total Cost": 515.31,
+      "Plan Rows": 75,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.125,
+      "Actual Total Time": 2.546,
+      "Actual Rows": 31,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.856,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 297.77,
+          "Total Cost": 297.77,
+          "Plan Rows": 75,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.100,
+          "Actual Total Time": 1.101,
+          "Actual Rows": 31,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 297.77,
+              "Plan Rows": 75,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.008,
+              "Actual Total Time": 1.093,
+              "Actual Rows": 31,
+              "Actual Loops": 1,
+              "Filter": "(eventid = 'a9c8b481-0250-435f-8fc8-52e05746b11a'::uuid)",
+              "Rows Removed by Filter": 14969
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.437,
+    "Triggers": [
+    ],
+    "Execution Time": 2.580
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 112.20,
+      "Total Cost": 328.80,
+      "Plan Rows": 75,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.213,
+      "Actual Total Time": 1.598,
+      "Actual Rows": 40,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.845,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 111.27,
+          "Total Cost": 111.27,
+          "Plan Rows": 75,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.163,
+          "Actual Total Time": 0.163,
+          "Actual Rows": 40,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.87,
+              "Total Cost": 111.27,
+              "Plan Rows": 75,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.026,
+              "Actual Total Time": 0.154,
+              "Actual Rows": 40,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '87049f44-b301-42df-b854-f7c64c80578c'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 35,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.85,
+                  "Plan Rows": 75,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.013,
+                  "Actual Total Time": 0.013,
+                  "Actual Rows": 40,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '87049f44-b301-42df-b854-f7c64c80578c'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.502,
+    "Triggers": [
+    ],
+    "Execution Time": 1.638
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 318.33,
+      "Total Cost": 534.92,
+      "Plan Rows": 80,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.379,
+      "Actual Total Time": 2.639,
+      "Actual Rows": 24,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.854,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 317.33,
+          "Total Cost": 317.33,
+          "Plan Rows": 80,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.163,
+          "Actual Total Time": 1.164,
+          "Actual Rows": 24,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 317.33,
+              "Plan Rows": 80,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.034,
+              "Actual Total Time": 1.157,
+              "Actual Rows": 24,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '355aba6e-e23c-466b-88e6-86fae40abf60'::uuid)",
+              "Rows Removed by Filter": 15976
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.586,
+    "Triggers": [
+    ],
+    "Execution Time": 2.672
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 118.55,
+      "Total Cost": 335.15,
+      "Plan Rows": 80,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.222,
+      "Actual Total Time": 1.682,
+      "Actual Rows": 28,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.932,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 117.55,
+          "Total Cost": 117.55,
+          "Plan Rows": 80,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.160,
+          "Actual Total Time": 0.161,
+          "Actual Rows": 28,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.90,
+              "Total Cost": 117.55,
+              "Plan Rows": 80,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.040,
+              "Actual Total Time": 0.151,
+              "Actual Rows": 28,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'e7c5ae48-bf78-4143-8095-dc8f81de0b86'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 24,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.88,
+                  "Plan Rows": 80,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.027,
+                  "Actual Total Time": 0.027,
+                  "Actual Rows": 28,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'e7c5ae48-bf78-4143-8095-dc8f81de0b86'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.508,
+    "Triggers": [
+    ],
+    "Execution Time": 1.737
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 340.62,
+      "Total Cost": 557.22,
+      "Plan Rows": 85,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.257,
+      "Actual Total Time": 2.656,
+      "Actual Rows": 31,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.840,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 339.56,
+          "Total Cost": 339.56,
+          "Plan Rows": 85,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.235,
+          "Actual Total Time": 1.235,
+          "Actual Rows": 31,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 339.56,
+              "Plan Rows": 85,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.052,
+              "Actual Total Time": 1.228,
+              "Actual Rows": 31,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '4286c2cc-17a9-467b-8a19-86b5c45d4091'::uuid)",
+              "Rows Removed by Filter": 16969
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.459,
+    "Triggers": [
+    ],
+    "Execution Time": 2.690
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 126.23,
+      "Total Cost": 342.83,
+      "Plan Rows": 85,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.330,
+      "Actual Total Time": 1.608,
+      "Actual Rows": 31,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.846,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 125.17,
+          "Total Cost": 125.17,
+          "Plan Rows": 85,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.168,
+          "Actual Total Time": 0.169,
+          "Actual Rows": 31,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.95,
+              "Total Cost": 125.17,
+              "Plan Rows": 85,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.046,
+              "Actual Total Time": 0.161,
+              "Actual Rows": 31,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '58c9f9e3-f360-4797-800a-bb30b633c79c'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 29,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.92,
+                  "Plan Rows": 85,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.036,
+                  "Actual Total Time": 0.036,
+                  "Actual Rows": 31,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '58c9f9e3-f360-4797-800a-bb30b633c79c'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.543,
+    "Triggers": [
+    ],
+    "Execution Time": 1.646
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 358.43,
+      "Total Cost": 575.02,
+      "Plan Rows": 90,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.416,
+      "Actual Total Time": 2.932,
+      "Actual Rows": 47,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.010,
+          "Actual Total Time": 0.879,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 357.30,
+          "Total Cost": 357.30,
+          "Plan Rows": 90,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.384,
+          "Actual Total Time": 1.385,
+          "Actual Rows": 47,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 357.30,
+              "Plan Rows": 90,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.049,
+              "Actual Total Time": 1.372,
+              "Actual Rows": 47,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '380da794-e566-476b-bb67-5ac8b50de427'::uuid)",
+              "Rows Removed by Filter": 17953
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.510,
+    "Triggers": [
+    ],
+    "Execution Time": 2.973
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 133.37,
+      "Total Cost": 349.97,
+      "Plan Rows": 90,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.206,
+      "Actual Total Time": 1.624,
+      "Actual Rows": 40,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.857,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 132.24,
+          "Total Cost": 132.24,
+          "Plan Rows": 90,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.180,
+          "Actual Total Time": 0.181,
+          "Actual Rows": 40,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 4.98,
+              "Total Cost": 132.24,
+              "Plan Rows": 90,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.039,
+              "Actual Total Time": 0.171,
+              "Actual Rows": 40,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'f9a7fe09-1a69-4552-9fdd-9ac7508575b8'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 37,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 4.96,
+                  "Plan Rows": 90,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.026,
+                  "Actual Total Time": 0.026,
+                  "Actual Rows": 40,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'f9a7fe09-1a69-4552-9fdd-9ac7508575b8'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.591,
+    "Triggers": [
+    ],
+    "Execution Time": 1.663
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 378.02,
+      "Total Cost": 594.62,
+      "Plan Rows": 95,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.517,
+      "Actual Total Time": 3.022,
+      "Actual Rows": 37,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.924,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 376.84,
+          "Total Cost": 376.84,
+          "Plan Rows": 95,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.479,
+          "Actual Total Time": 1.479,
+          "Actual Rows": 37,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 376.84,
+              "Plan Rows": 95,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.049,
+              "Actual Total Time": 1.469,
+              "Actual Rows": 37,
+              "Actual Loops": 1,
+              "Filter": "(eventid = 'c09951b9-8078-40b0-9c85-01ba50ca0b0a'::uuid)",
+              "Rows Removed by Filter": 18963
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.543,
+    "Triggers": [
+    ],
+    "Execution Time": 3.059
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 139.71,
+      "Total Cost": 356.31,
+      "Plan Rows": 95,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.202,
+      "Actual Total Time": 1.830,
+      "Actual Rows": 33,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.944,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 138.53,
+          "Total Cost": 138.53,
+          "Plan Rows": 95,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.176,
+          "Actual Total Time": 0.177,
+          "Actual Rows": 33,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.02,
+              "Total Cost": 138.53,
+              "Plan Rows": 95,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.030,
+              "Actual Total Time": 0.168,
+              "Actual Rows": 33,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'a43fea93-79af-46bf-b6c9-76d20ede2d0c'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 30,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.00,
+                  "Plan Rows": 95,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.017,
+                  "Actual Total Time": 0.017,
+                  "Actual Rows": 33,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'a43fea93-79af-46bf-b6c9-76d20ede2d0c'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.526,
+    "Triggers": [
+    ],
+    "Execution Time": 1.873
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 400.33,
+      "Total Cost": 616.92,
+      "Plan Rows": 100,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.466,
+      "Actual Total Time": 2.949,
+      "Actual Rows": 47,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.899,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 399.08,
+          "Total Cost": 399.08,
+          "Plan Rows": 100,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.439,
+          "Actual Total Time": 1.440,
+          "Actual Rows": 47,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 399.08,
+              "Plan Rows": 100,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.033,
+              "Actual Total Time": 1.429,
+              "Actual Rows": 47,
+              "Actual Loops": 1,
+              "Filter": "(eventid = 'bdd95cb6-3513-4ffd-8de7-957d23572b63'::uuid)",
+              "Rows Removed by Filter": 19953
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.460,
+    "Triggers": [
+    ],
+    "Execution Time": 2.984
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 147.39,
+      "Total Cost": 363.99,
+      "Plan Rows": 100,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.208,
+      "Actual Total Time": 1.612,
+      "Actual Rows": 42,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.851,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 146.14,
+          "Total Cost": 146.14,
+          "Plan Rows": 100,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.163,
+          "Actual Total Time": 0.164,
+          "Actual Rows": 42,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.06,
+              "Total Cost": 146.14,
+              "Plan Rows": 100,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.030,
+              "Actual Total Time": 0.154,
+              "Actual Rows": 42,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'f7e11fe7-e8d0-49c4-8209-33bc5df77754'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 35,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.04,
+                  "Plan Rows": 100,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.018,
+                  "Actual Total Time": 0.018,
+                  "Actual Rows": 42,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'f7e11fe7-e8d0-49c4-8209-33bc5df77754'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.518,
+    "Triggers": [
+    ],
+    "Execution Time": 1.655
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 418.14,
+      "Total Cost": 634.74,
+      "Plan Rows": 105,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.556,
+      "Actual Total Time": 3.012,
+      "Actual Rows": 42,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.904,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 416.82,
+          "Total Cost": 416.82,
+          "Plan Rows": 105,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.502,
+          "Actual Total Time": 1.502,
+          "Actual Rows": 42,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 416.82,
+              "Plan Rows": 105,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.058,
+              "Actual Total Time": 1.493,
+              "Actual Rows": 42,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '478116d6-d5cc-4f77-93a7-88b0a3c1e140'::uuid)",
+              "Rows Removed by Filter": 20958
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.461,
+    "Triggers": [
+    ],
+    "Execution Time": 3.049
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 154.53,
+      "Total Cost": 371.13,
+      "Plan Rows": 105,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.235,
+      "Actual Total Time": 1.626,
+      "Actual Rows": 39,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.835,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 153.22,
+          "Total Cost": 153.22,
+          "Plan Rows": 105,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.201,
+          "Actual Total Time": 0.202,
+          "Actual Rows": 39,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.10,
+              "Total Cost": 153.22,
+              "Plan Rows": 105,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.040,
+              "Actual Total Time": 0.191,
+              "Actual Rows": 39,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '7771c747-e291-47f4-8f5f-28572c8ad0ff'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 32,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.07,
+                  "Plan Rows": 105,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.026,
+                  "Actual Total Time": 0.026,
+                  "Actual Rows": 39,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '7771c747-e291-47f4-8f5f-28572c8ad0ff'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.504,
+    "Triggers": [
+    ],
+    "Execution Time": 1.667
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 440.43,
+      "Total Cost": 657.02,
+      "Plan Rows": 110,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.722,
+      "Actual Total Time": 3.404,
+      "Actual Rows": 55,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.012,
+          "Actual Total Time": 1.058,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 439.05,
+          "Total Cost": 439.05,
+          "Plan Rows": 110,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.684,
+          "Actual Total Time": 1.685,
+          "Actual Rows": 55,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 439.05,
+              "Plan Rows": 110,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.045,
+              "Actual Total Time": 1.661,
+              "Actual Rows": 55,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '380da794-e566-476b-bb67-5ac8b50de427'::uuid)",
+              "Rows Removed by Filter": 21945
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.530,
+    "Triggers": [
+    ],
+    "Execution Time": 3.446
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 162.21,
+      "Total Cost": 378.81,
+      "Plan Rows": 110,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.264,
+      "Actual Total Time": 1.736,
+      "Actual Rows": 44,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.857,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 160.83,
+          "Total Cost": 160.83,
+          "Plan Rows": 110,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.200,
+          "Actual Total Time": 0.200,
+          "Actual Rows": 44,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.14,
+              "Total Cost": 160.83,
+              "Plan Rows": 110,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.034,
+              "Actual Total Time": 0.189,
+              "Actual Rows": 44,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'dc53ae3d-6159-46e6-a987-5ef80745d0e8'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 36,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.11,
+                  "Plan Rows": 110,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.025,
+                  "Actual Total Time": 0.025,
+                  "Actual Rows": 44,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'dc53ae3d-6159-46e6-a987-5ef80745d0e8'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.532,
+    "Triggers": [
+    ],
+    "Execution Time": 1.779
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 458.25,
+      "Total Cost": 674.85,
+      "Plan Rows": 115,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.650,
+      "Actual Total Time": 3.074,
+      "Actual Rows": 46,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.858,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 456.81,
+          "Total Cost": 456.81,
+          "Plan Rows": 115,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.625,
+          "Actual Total Time": 1.625,
+          "Actual Rows": 46,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 456.81,
+              "Plan Rows": 115,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.036,
+              "Actual Total Time": 1.614,
+              "Actual Rows": 46,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '67c6898e-3394-48d8-9936-cae205a00224'::uuid)",
+              "Rows Removed by Filter": 22954
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.438,
+    "Triggers": [
+    ],
+    "Execution Time": 3.108
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 168.55,
+      "Total Cost": 385.15,
+      "Plan Rows": 115,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.269,
+      "Actual Total Time": 1.780,
+      "Actual Rows": 39,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.014,
+          "Actual Total Time": 0.963,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 167.11,
+          "Total Cost": 167.11,
+          "Plan Rows": 115,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.216,
+          "Actual Total Time": 0.217,
+          "Actual Rows": 39,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.18,
+              "Total Cost": 167.11,
+              "Plan Rows": 115,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.043,
+              "Actual Total Time": 0.207,
+              "Actual Rows": 39,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '0ddc6dce-89b4-43a7-9aef-c900d88c2d01'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 36,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.15,
+                  "Plan Rows": 115,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.025,
+                  "Actual Total Time": 0.025,
+                  "Actual Rows": 39,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '0ddc6dce-89b4-43a7-9aef-c900d88c2d01'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.922,
+    "Triggers": [
+    ],
+    "Execution Time": 1.841
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 477.84,
+      "Total Cost": 694.44,
+      "Plan Rows": 120,
+      "Plan Width": 516,
+      "Actual Startup Time": 1.836,
+      "Actual Total Time": 3.308,
+      "Actual Rows": 41,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.843,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 476.34,
+          "Total Cost": 476.34,
+          "Plan Rows": 120,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.787,
+          "Actual Total Time": 1.787,
+          "Actual Rows": 41,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 476.34,
+              "Plan Rows": 120,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.032,
+              "Actual Total Time": 1.779,
+              "Actual Rows": 41,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '5bba98a2-1086-40cb-89f7-9433ecdff09a'::uuid)",
+              "Rows Removed by Filter": 23959
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.471,
+    "Triggers": [
+    ],
+    "Execution Time": 3.342
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 175.69,
+      "Total Cost": 392.29,
+      "Plan Rows": 120,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.261,
+      "Actual Total Time": 1.654,
+      "Actual Rows": 56,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.008,
+          "Actual Total Time": 0.854,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 174.19,
+          "Total Cost": 174.19,
+          "Plan Rows": 120,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.200,
+          "Actual Total Time": 0.200,
+          "Actual Rows": 56,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.22,
+              "Total Cost": 174.19,
+              "Plan Rows": 120,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.027,
+              "Actual Total Time": 0.188,
+              "Actual Rows": 56,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '8185aa68-4402-4a8b-8f0a-4ee5aaca408e'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 46,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.19,
+                  "Plan Rows": 120,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.013,
+                  "Actual Total Time": 0.013,
+                  "Actual Rows": 56,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '8185aa68-4402-4a8b-8f0a-4ee5aaca408e'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.598,
+    "Triggers": [
+    ],
+    "Execution Time": 1.693
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 500.12,
+      "Total Cost": 716.72,
+      "Plan Rows": 125,
+      "Plan Width": 516,
+      "Actual Startup Time": 2.082,
+      "Actual Total Time": 3.472,
+      "Actual Rows": 42,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.009,
+          "Actual Total Time": 0.876,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 498.56,
+          "Total Cost": 498.56,
+          "Plan Rows": 125,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.984,
+          "Actual Total Time": 1.985,
+          "Actual Rows": 42,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 10,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 498.56,
+              "Plan Rows": 125,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.011,
+              "Actual Total Time": 1.973,
+              "Actual Rows": 42,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '18823d93-f0f7-452a-8bfe-bfb4b6e0216b'::uuid)",
+              "Rows Removed by Filter": 24958
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.553,
+    "Triggers": [
+    ],
+    "Execution Time": 3.507
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 183.37,
+      "Total Cost": 399.96,
+      "Plan Rows": 125,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.285,
+      "Actual Total Time": 1.698,
+      "Actual Rows": 60,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.843,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 181.80,
+          "Total Cost": 181.80,
+          "Plan Rows": 125,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.253,
+          "Actual Total Time": 0.253,
+          "Actual Rows": 60,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.26,
+              "Total Cost": 181.80,
+              "Plan Rows": 125,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.039,
+              "Actual Total Time": 0.239,
+              "Actual Rows": 60,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = 'cf019529-b629-4364-9f57-98dc6df6bbf5'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 51,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.22,
+                  "Plan Rows": 125,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.026,
+                  "Actual Total Time": 0.026,
+                  "Actual Rows": 60,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = 'cf019529-b629-4364-9f57-98dc6df6bbf5'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.549,
+    "Triggers": [
+    ],
+    "Execution Time": 1.738
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 517.95,
+      "Total Cost": 734.55,
+      "Plan Rows": 130,
+      "Plan Width": 516,
+      "Actual Startup Time": 2.030,
+      "Actual Total Time": 3.550,
+      "Actual Rows": 63,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.010,
+          "Actual Total Time": 0.944,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 516.33,
+          "Total Cost": 516.33,
+          "Plan Rows": 130,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.978,
+          "Actual Total Time": 1.978,
+          "Actual Rows": 63,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 516.33,
+              "Plan Rows": 130,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.109,
+              "Actual Total Time": 1.964,
+              "Actual Rows": 63,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '25be4afe-6f74-4687-9ee4-1c51db00d798'::uuid)",
+              "Rows Removed by Filter": 25937
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.514,
+    "Triggers": [
+    ],
+    "Execution Time": 3.591
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 190.50,
+      "Total Cost": 407.10,
+      "Plan Rows": 130,
+      "Plan Width": 516,
+      "Actual Startup Time": 0.299,
+      "Actual Total Time": 1.784,
+      "Actual Rows": 59,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.007,
+          "Actual Total Time": 0.917,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 188.88,
+          "Total Cost": 188.88,
+          "Plan Rows": 130,
+          "Plan Width": 16,
+          "Actual Startup Time": 0.248,
+          "Actual Total Time": 0.249,
+          "Actual Rows": 59,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Bitmap Heap Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 5.29,
+              "Total Cost": 188.88,
+              "Plan Rows": 130,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.033,
+              "Actual Total Time": 0.235,
+              "Actual Rows": 59,
+              "Actual Loops": 1,
+              "Recheck Cond": "(eventid = '73e62e7e-b174-42e3-a1e4-67b0d2be5142'::uuid)",
+              "Rows Removed by Index Recheck": 0,
+              "Exact Heap Blocks": 46,
+              "Lossy Heap Blocks": 0,
+              "Plans": [
+                {
+                  "Node Type": "Bitmap Index Scan",
+                  "Parent Relationship": "Outer",
+                  "Parallel Aware": false,
+                  "Async Capable": false,
+                  "Index Name": "idx_artwork_event_eventid",
+                  "Startup Cost": 0.00,
+                  "Total Cost": 5.26,
+                  "Plan Rows": 130,
+                  "Plan Width": 0,
+                  "Actual Startup Time": 0.019,
+                  "Actual Total Time": 0.019,
+                  "Actual Rows": 59,
+                  "Actual Loops": 1,
+                  "Index Cond": "(eventid = '73e62e7e-b174-42e3-a1e4-67b0d2be5142'::uuid)"
+                }
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.515,
+    "Triggers": [
+    ],
+    "Execution Time": 1.826
+  }
+][
+  {
+    "Plan": {
+      "Node Type": "Hash Join",
+      "Parallel Aware": false,
+      "Async Capable": false,
+      "Join Type": "Inner",
+      "Startup Cost": 540.23,
+      "Total Cost": 756.82,
+      "Plan Rows": 135,
+      "Plan Width": 516,
+      "Actual Startup Time": 2.074,
+      "Actual Total Time": 3.479,
+      "Actual Rows": 50,
+      "Actual Loops": 1,
+      "Inner Unique": true,
+      "Hash Cond": "(artworks.id = artwork_event.artworkid)",
+      "Plans": [
+        {
+          "Node Type": "Seq Scan",
+          "Parent Relationship": "Outer",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Relation Name": "artworks",
+          "Alias": "artworks",
+          "Startup Cost": 0.00,
+          "Total Cost": 212.93,
+          "Plan Rows": 1393,
+          "Plan Width": 532,
+          "Actual Startup Time": 0.063,
+          "Actual Total Time": 0.917,
+          "Actual Rows": 10000,
+          "Actual Loops": 1
+        },
+        {
+          "Node Type": "Hash",
+          "Parent Relationship": "Inner",
+          "Parallel Aware": false,
+          "Async Capable": false,
+          "Startup Cost": 538.54,
+          "Total Cost": 538.54,
+          "Plan Rows": 135,
+          "Plan Width": 16,
+          "Actual Startup Time": 1.966,
+          "Actual Total Time": 1.966,
+          "Actual Rows": 50,
+          "Actual Loops": 1,
+          "Hash Buckets": 1024,
+          "Original Hash Buckets": 1024,
+          "Hash Batches": 1,
+          "Original Hash Batches": 1,
+          "Peak Memory Usage": 11,
+          "Plans": [
+            {
+              "Node Type": "Seq Scan",
+              "Parent Relationship": "Outer",
+              "Parallel Aware": false,
+              "Async Capable": false,
+              "Relation Name": "artwork_event",
+              "Alias": "artwork_event",
+              "Startup Cost": 0.00,
+              "Total Cost": 538.54,
+              "Plan Rows": 135,
+              "Plan Width": 16,
+              "Actual Startup Time": 0.072,
+              "Actual Total Time": 1.952,
+              "Actual Rows": 50,
+              "Actual Loops": 1,
+              "Filter": "(eventid = '22d553c5-dc1b-4885-8354-4eb8f97408a8'::uuid)",
+              "Rows Removed by Filter": 26950
+            }
+          ]
+        }
+      ]
+    },
+    "Planning Time": 0.461,
+    "Triggers": [
+    ],
+    "Execution Time": 3.515
+  }
+]
