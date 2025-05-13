@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -12,6 +11,10 @@ import (
 type Collection struct {
 	id    uuid.UUID
 	title string
+}
+
+type CollectionUpdateReq struct {
+	Title string `json:"title" example:"Louvre Museum Collection"`
 }
 
 var (
@@ -49,19 +52,19 @@ func (c *Collection) ToCollectionResponse() jsonreqresp.CollectionResponse {
 	}
 }
 
-func FromCollectionRequest(req jsonreqresp.CollectionRequest) (Collection, error) {
-	var id uuid.UUID
-	if req.ID == "" {
-		id = uuid.New()
-	} else {
-		var err error
-		id, err = uuid.Parse(req.ID)
-		if err != nil {
-			return Collection{}, fmt.Errorf("FromAuthorRequest: %w", err)
-		}
-	}
-	return NewCollection(id, req.Title)
-}
+// func FromCollectionRequest(req jsonreqresp.CollectionAddRequest) (Collection, error) {
+// 	var id uuid.UUID
+// 	if req.ID == "" {
+// 		id = uuid.New()
+// 	} else {
+// 		var err error
+// 		id, err = uuid.Parse(req.ID)
+// 		if err != nil {
+// 			return Collection{}, fmt.Errorf("FromAuthorRequest: %w", err)
+// 		}
+// 	}
+// 	return NewCollection(id, req.Title)
+// }
 
 func (c *Collection) GetID() uuid.UUID {
 	return c.id
@@ -69,4 +72,14 @@ func (c *Collection) GetID() uuid.UUID {
 
 func (c *Collection) GetTitle() string {
 	return c.title
+}
+
+func (c *Collection) Update(updateReq CollectionUpdateReq) error {
+	copyC := *c
+	copyC.title = updateReq.Title
+	if err := copyC.validate(); err != nil {
+		return err
+	}
+	*c = copyC
+	return nil
 }

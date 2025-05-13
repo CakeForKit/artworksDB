@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
@@ -14,11 +15,9 @@ import (
 
 type ArtworkService interface {
 	GetAllArtworks(ctx context.Context) ([]*models.Artwork, error)
-	GetAllAuthors(ctx context.Context) ([]*models.Author, error)
-	GetAllCollections(ctx context.Context) ([]*models.Collection, error)
-	Add(ctx context.Context, aw *models.Artwork) error
-	Delete(ctx context.Context, id uuid.UUID) error
-	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) error
+	Add(ctx context.Context, artworkReq jsonreqresp.AddArtworkRequest) error
+	Delete(ctx context.Context, idArt uuid.UUID) error
+	Update(ctx context.Context, idArt uuid.UUID, updateFields jsonreqresp.ArtworkUpdate) error
 }
 
 var (
@@ -44,78 +43,56 @@ func (a *artworkService) GetAllArtworks(ctx context.Context) ([]*models.Artwork,
 	return a.artworkRep.GetAllArtworks(ctx)
 }
 
-func (a *artworkService) GetAllAuthors(ctx context.Context) ([]*models.Author, error) {
-	return a.authorRep.GetAllAuthors(ctx)
-}
-func (a *artworkService) GetAllCollections(ctx context.Context) ([]*models.Collection, error) {
-	return a.collectionRep.GetAllCollections(ctx)
+func (a *artworkService) Add(ctx context.Context, artworkReq jsonreqresp.AddArtworkRequest) error {
+	author, err := a.authorRep.GetByID(ctx, uuid.MustParse(artworkReq.AuthorID))
+	if err != nil {
+		return fmt.Errorf("artworkService.Add: %v", err)
+	}
+	collection, err := a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(artworkReq.CollectionID))
+	if err != nil {
+		return fmt.Errorf("artworkService.Add: %v", err)
+	}
+
+	artwork, err := models.NewArtwork(
+		uuid.New(),
+		artworkReq.Title,
+		artworkReq.Technic,
+		artworkReq.Material,
+		artworkReq.Size,
+		artworkReq.CreationYear,
+		author,
+		collection,
+	)
+	if err != nil {
+		return fmt.Errorf("artworkService.Add: %w: %v", models.ErrValidateArtwork, err)
+	}
+
+	err = a.artworkRep.Add(ctx, &artwork)
+	if err != nil {
+		return fmt.Errorf("artworkService.Add: %v", err)
+	}
+
+	return nil
 }
 
-func (a *artworkService) Add(ctx context.Context, aw *models.Artwork) error {
-	authorExist, err := a.authorRep.CheckAuthorByID(ctx, aw.GetAuthor().GetID())
-	if err != nil {
-		return fmt.Errorf("artworkService.Add: %w", err)
-	}
-	if !authorExist {
-		err = a.authorRep.AddAuthor(ctx, aw.GetAuthor())
-		if err != nil {
-			return fmt.Errorf("artworkService.Add: %w", err)
-		}
-	}
-	collectionExist, err := a.collectionRep.CheckCollectionByID(ctx, aw.GetCollection().GetID())
-	if err != nil {
-		return fmt.Errorf("artworkService.Add: %w", err)
-	}
-	if !collectionExist {
-		err = a.collectionRep.AddCollection(ctx, aw.GetCollection())
-		if err != nil {
-			return fmt.Errorf("artworkService.Add: %w", err)
-		}
-	}
-	return a.artworkRep.Add(ctx, aw)
+func (a *artworkService) Delete(ctx context.Context, idArt uuid.UUID) error {
+	return a.artworkRep.Delete(ctx, idArt)
 }
 
-func (a *artworkService) Delete(ctx context.Context, id uuid.UUID) error {
-	return a.artworkRep.Delete(ctx, id)
-}
-
-func (a *artworkService) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) error {
-	art, err := a.artworkRep.GetByID(ctx, id)
+func (a *artworkService) Update(ctx context.Context, idArt uuid.UUID, updateFields jsonreqresp.ArtworkUpdate) error {
+	_, err := a.authorRep.GetByID(ctx, uuid.MustParse(updateFields.AuthorID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Update: %w", err)
+		return fmt.Errorf("artworkService.Add: %v", err)
 	}
-	updatedArtwork, err := funcUpdate(art)
+	_, err = a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(updateFields.CollectionID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Update funcUpdate: %w", err)
+		return fmt.Errorf("artworkService.Add: %v", err)
 	}
-	updatedAuthorID := updatedArtwork.GetAuthor().GetID()
-	updatedCollectionID := updatedArtwork.GetCollection().GetID()
-	res, err := a.authorRep.CheckAuthorByID(ctx, updatedAuthorID)
-	if err != nil {
-		return fmt.Errorf("artworkService.Update: %w", err)
-	} else if !res {
-		err = a.authorRep.AddAuthor(ctx, updatedArtwork.GetAuthor())
-		if err != nil {
-			return fmt.Errorf("artworkService.Update: %w", err)
-		}
-	}
-	res, err = a.collectionRep.CheckCollectionByID(ctx, updatedCollectionID)
-	if err != nil {
-		return fmt.Errorf("artworkService.Update: %w", err)
-	} else if !res {
-		err = a.collectionRep.AddCollection(ctx, updatedArtwork.GetCollection())
-		if err != nil {
-			return fmt.Errorf("artworkService.Update: %w", err)
-		}
-	}
-	updateReq := artworkrep.ArtworkUpdate{
-		Title:        updatedArtwork.GetTitle(),
-		CreationYear: updatedArtwork.GetCreationYear(),
-		Technic:      updatedArtwork.GetTechnic(),
-		Material:     updatedArtwork.GetMaterial(),
-		Size:         updatedArtwork.GetSize(),
-		AuthorID:     updatedAuthorID,
-		CollectionID: updatedCollectionID,
-	}
-	return a.artworkRep.Update(ctx, id, &updateReq)
+	return a.artworkRep.Update(
+		ctx,
+		idArt,
+		func(a *models.Artwork) (*models.Artwork, error) {
+			err := a.Update(updateFields)
+			return a, err
+		})
 }

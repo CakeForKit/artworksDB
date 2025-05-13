@@ -113,12 +113,14 @@ definitions:
     - subscribe_email
     - username
     type: object
-  jsonreqresp.ArtworkRequest:
+  jsonreqresp.AddArtworkRequest:
     properties:
-      author:
-        $ref: '#/definitions/jsonreqresp.AuthorRequest'
-      collectionId:
-        $ref: '#/definitions/jsonreqresp.CollectionRequest'
+      authorID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      collectionID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
       creationYear:
         example: 1889
         maximum: 2100
@@ -140,12 +142,82 @@ definitions:
         maxLength: 255
         type: string
     required:
-    - author
-    - collectionId
+    - authorID
+    - collectionID
     - creationYear
     - material
     - size
     - technic
+    - title
+    type: object
+  jsonreqresp.AddAuthorRequest:
+    properties:
+      birthYear:
+        description: Обязательное, >= 1000
+        example: 1853
+        minimum: 1000
+        type: integer
+      deathYear:
+        description: Опциональное, >= BirthYear
+        example: 1890
+        type: integer
+      name:
+        description: Обязательное, 2-100 символов
+        example: Винсент Ван Гог
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - birthYear
+    - name
+    type: object
+  jsonreqresp.AddCollectionRequest:
+    properties:
+      title:
+        description: Обязательное, 2-255 символов
+        example: Музей современного искусства
+        maxLength: 255
+        minLength: 2
+        type: string
+    required:
+    - title
+    type: object
+  jsonreqresp.AddEventRequest:
+    properties:
+      address:
+        example: ул. Пречистенка, 12/2
+        maxLength: 500
+        type: string
+      artworkIDs:
+        items:
+          type: string
+        type: array
+      canVisit:
+        example: true
+        type: boolean
+      cntTickets:
+        example: 100
+        minimum: 0
+        type: integer
+      dateBegin:
+        example: "2023-06-15T10:00:00Z"
+        type: string
+      dateEnd:
+        example: "2023-09-20T18:00:00Z"
+        type: string
+      employeeID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      title:
+        example: Ночная выставка
+        maxLength: 255
+        type: string
+    required:
+    - address
+    - cntTickets
+    - dateBegin
+    - dateEnd
+    - employeeID
     - title
     type: object
   jsonreqresp.ArtworkResponse:
@@ -173,30 +245,6 @@ definitions:
         example: Mona Lisa
         type: string
     type: object
-  jsonreqresp.AuthorRequest:
-    properties:
-      birthYear:
-        description: Обязательное, >= 1000
-        example: 1853
-        minimum: 1000
-        type: integer
-      deathYear:
-        description: Опциональное, >= BirthYear
-        example: 1890
-        type: integer
-      id:
-        example: ba1df957-ed5e-4694-8766-c5ec5806e5e7
-        type: string
-      name:
-        description: Обязательное, 2-100 символов
-        example: Винсент Ван Гог
-        maxLength: 100
-        minLength: 2
-        type: string
-    required:
-    - birthYear
-    - name
-    type: object
   jsonreqresp.AuthorResponse:
     properties:
       birthYear:
@@ -212,20 +260,6 @@ definitions:
         example: Leonardo da Vinci
         type: string
     type: object
-  jsonreqresp.CollectionRequest:
-    properties:
-      id:
-        example: cfd9ff5d-cb37-407c-b043-288a482e9239
-        type: string
-      title:
-        description: Обязательное, 2-255 символов
-        example: Музей современного искусства
-        maxLength: 255
-        minLength: 2
-        type: string
-    required:
-    - title
-    type: object
   jsonreqresp.CollectionResponse:
     properties:
       id:
@@ -234,6 +268,46 @@ definitions:
       title:
         example: Louvre Museum Collection
         type: string
+    type: object
+  jsonreqresp.ConArtworkEventRequest:
+    properties:
+      artworkID:
+        type: string
+      eventID:
+        type: string
+    required:
+    - artworkID
+    - eventID
+    type: object
+  jsonreqresp.DeleteArtworkRequest:
+    properties:
+      id:
+        type: string
+    required:
+    - id
+    type: object
+  jsonreqresp.DeleteAuthorRequest:
+    properties:
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+    required:
+    - id
+    type: object
+  jsonreqresp.DeleteCollectionRequest:
+    properties:
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+    required:
+    - id
+    type: object
+  jsonreqresp.DeleteEventRequest:
+    properties:
+      id:
+        type: string
+    required:
+    - id
     type: object
   jsonreqresp.EmployeeResponse:
     properties:
@@ -256,12 +330,48 @@ definitions:
         example: true
         type: boolean
     type: object
+  jsonreqresp.EventResponse:
+    properties:
+      address:
+        example: ул. Пречистенка, 12/2
+        type: string
+      artworkIDs:
+        items:
+          type: string
+        type: array
+      canVisit:
+        example: true
+        type: boolean
+      cntTickets:
+        example: 150
+        type: integer
+      dateBegin:
+        example: "2023-06-15T10:00:00Z"
+        type: string
+      dateEnd:
+        example: "2023-09-20T18:00:00Z"
+        type: string
+      employeeID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      id:
+        example: bb2e8400-e29b-41d4-a716-446655442222
+        type: string
+      title:
+        example: Выставка импрессионистов
+        type: string
+      valid:
+        example: true
+        type: boolean
+    type: object
   jsonreqresp.UpdateArtworkRequest:
     properties:
-      author:
-        $ref: '#/definitions/jsonreqresp.AuthorRequest'
-      collectionId:
-        $ref: '#/definitions/jsonreqresp.CollectionRequest'
+      authorID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      collectionID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
       creationYear:
         example: 1889
         maximum: 2100
@@ -285,13 +395,90 @@ definitions:
         maxLength: 255
         type: string
     required:
-    - author
-    - collectionId
+    - authorID
+    - collectionID
     - creationYear
     - id
     - material
     - size
     - technic
+    - title
+    type: object
+  jsonreqresp.UpdateAuthorRequest:
+    properties:
+      birthYear:
+        description: Обязательное, >= 1000
+        example: 1853
+        minimum: 1000
+        type: integer
+      deathYear:
+        description: Опциональное, >= BirthYear
+        example: 1890
+        type: integer
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      name:
+        description: Обязательное, 2-100 символов
+        example: Винсент Ван Гог
+        maxLength: 100
+        minLength: 2
+        type: string
+    required:
+    - birthYear
+    - id
+    - name
+    type: object
+  jsonreqresp.UpdateCollectionRequest:
+    properties:
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      title:
+        description: Обязательное, 2-255 символов
+        example: Музей современного искусства
+        maxLength: 255
+        minLength: 2
+        type: string
+    required:
+    - id
+    - title
+    type: object
+  jsonreqresp.UpdateEventRequest:
+    properties:
+      address:
+        example: ул. Пречистенка, 12/2
+        maxLength: 500
+        type: string
+      canVisit:
+        example: true
+        type: boolean
+      cntTickets:
+        example: 100
+        minimum: 0
+        type: integer
+      dateBegin:
+        example: "2023-06-15T10:00:00Z"
+        type: string
+      dateEnd:
+        example: "2023-09-20T18:00:00Z"
+        type: string
+      id:
+        example: 44a315d0-663c-4813-92a6-d7977c2f2aba
+        type: string
+      title:
+        example: Ночная выставка
+        maxLength: 255
+        type: string
+      valid:
+        example: true
+        type: boolean
+    required:
+    - address
+    - cntTickets
+    - dateBegin
+    - dateEnd
+    - id
     - title
     type: object
   jsonreqresp.UpdateValidEmployeeRequest:
@@ -511,37 +698,37 @@ paths:
       summary: Register user
       tags:
       - auth-user
-  /employee/artworks/add:
-    post:
+  /employee/artworks:
+    delete:
       consumes:
       - application/json
-      description: Add artwork with [new] author and [new] collection. If author or
-        collection ID = "", an it will be created.
+      description: Deletes an existing artwork
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: New Artwork with [new] author and [new] collection
+      - description: Artwork delete data
         in: body
         name: request
         required: true
         schema:
-          $ref: '#/definitions/jsonreqresp.ArtworkRequest'
+          $ref: '#/definitions/jsonreqresp.DeleteArtworkRequest'
       produces:
       - application/json
       responses:
-        "201":
-          description: Artworks added
+        "200":
+          description: OK
         "400":
-          description: Wrong input parameters
+          description: Bad Request
+        "404":
+          description: Not Found
       security:
       - ApiKeyAuth: []
-      summary: Add artwork by employee
+      summary: Delete an artwork
       tags:
-      - employee
-  /employee/artworks/all:
+      - Artworks
     get:
       consumes:
       - application/json
@@ -565,13 +752,41 @@ paths:
       - ApiKeyAuth: []
       summary: Get all artworks by employee
       tags:
-      - employee
-  /employee/artworks/update:
+      - Artworks
+    post:
+      consumes:
+      - application/json
+      description: Add artwork with already created author and collection.
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: New Artwork with already created author and collection.
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.AddArtworkRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Artworks added
+        "400":
+          description: Wrong input parameters
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: Add artwork by employee
+      tags:
+      - Artworks
     put:
       consumes:
       - application/json
-      description: Update artwork with [new] author and [new] collection. If author
-        or collection ID = "", an it will be created.
+      description: Update artwork with already created author and collection.
       parameters:
       - description: bearer {token}
         in: header
@@ -591,9 +806,409 @@ paths:
           description: Artwork updated
         "400":
           description: Wrong input parameters
+        "404":
+          description: Not Found
       security:
       - ApiKeyAuth: []
       summary: Update artwork by employee
       tags:
-      - employee
+      - Artworks
+  /employee/authors:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing author
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Author delete data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.DeleteAuthorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+        "409":
+          description: Conflict - Author has linked artworks
+      security:
+      - ApiKeyAuth: []
+      summary: Delete an author by employee
+      tags:
+      - Author
+    get:
+      description: Retrieves all authors
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.AuthorResponse'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Get all authors by employee
+      tags:
+      - Author
+    post:
+      consumes:
+      - application/json
+      description: Creates a new author
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Author data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.AddAuthorRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      security:
+      - ApiKeyAuth: []
+      summary: Add a new author by employee
+      tags:
+      - Author
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing author
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Author update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.UpdateAuthorRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: Update an author by employee
+      tags:
+      - Author
+  /employee/collections:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes an existing collection
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Collection delete data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.DeleteCollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: Delete a collection by employee
+      tags:
+      - Collection
+    get:
+      description: Retrieves all collections
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.CollectionResponse'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Get all collections by employee
+      tags:
+      - Collection
+    post:
+      consumes:
+      - application/json
+      description: Creates a new collection
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Collection data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.AddCollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+        "400":
+          description: Bad Request
+      security:
+      - ApiKeyAuth: []
+      summary: Add a new collection by employee
+      tags:
+      - Collection
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing collection
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Collection update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.UpdateCollectionRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+        "404":
+          description: Not Found
+      security:
+      - ApiKeyAuth: []
+      summary: Update a collection by employee
+      tags:
+      - Collection
+  /employee/events:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes existing event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Event delete data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.DeleteEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event deleted successfully
+        "400":
+          description: Bad Request - Validation error
+        "404":
+          description: Not Found - Event not found
+      security:
+      - ApiKeyAuth: []
+      summary: Delete event
+      tags:
+      - Events
+    get:
+      description: Retrieves list of all events
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.EventResponse'
+            type: array
+      security:
+      - ApiKeyAuth: []
+      summary: Get all events
+      tags:
+      - Events
+    post:
+      consumes:
+      - application/json
+      description: Creates a new event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Event data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.AddEventRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Event created successfully
+        "400":
+          description: Bad Request - Validation error
+        "404":
+          description: Not Found - Employee not found
+      security:
+      - ApiKeyAuth: []
+      summary: Add new event
+      tags:
+      - Events
+    put:
+      consumes:
+      - application/json
+      description: Updates existing event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Event update data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.UpdateEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Event updated successfully
+        "400":
+          description: Bad Request - Validation error
+        "404":
+          description: Not Found - Event not found
+      security:
+      - ApiKeyAuth: []
+      summary: Update event
+      tags:
+      - Events
+  /employee/events/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Removes an artwork from an existing event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Artwork to event connection data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ConArtworkEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artwork removed from event successfully
+        "400":
+          description: Bad Request - Validation error
+        "404":
+          description: Not Found - Event or artwork not found
+      security:
+      - ApiKeyAuth: []
+      summary: Delete artwork from event
+      tags:
+      - Events
+    put:
+      consumes:
+      - application/json
+      description: Adds an artwork to an existing event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Artwork to event connection data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ConArtworkEventRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Artwork added to event successfully
+        "400":
+          description: Bad Request - Validation error or duplicate artwork
+        "404":
+          description: Not Found - Event or artwork not found
+      security:
+      - ApiKeyAuth: []
+      summary: Add artwork to event
+      tags:
+      - Events
 swagger: "2.0"

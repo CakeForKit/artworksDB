@@ -14,9 +14,12 @@ var (
 )
 
 type AuthorRep interface {
-	GetAllAuthors(ctx context.Context) ([]*models.Author, error)
-	CheckAuthorByID(ctx context.Context, id uuid.UUID) (bool, error)
-	AddAuthor(ctx context.Context, e *models.Author) error
+	GetAll(ctx context.Context) ([]*models.Author, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.Author, error)
+	Add(ctx context.Context, a *models.Author) error
+	Delete(ctx context.Context, idAuthor uuid.UUID) error
+	Update(ctx context.Context, idAuthor uuid.UUID, funcUpdate func(*models.Author) (*models.Author, error)) error
+	HasArtworks(ctx context.Context, authorID uuid.UUID) (bool, error)
 }
 
 func NewAuthorRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {

@@ -80,13 +80,13 @@ CREATE TABLE Events (
     adress VARCHAR(255),
     cntTickets INT,
     creatorID UUID NOT NULL,
+    valid BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (creatorID) REFERENCES Employees(id)
 );
 ALTER TABLE Events ADD CONSTRAINT emptyCheck 
     CHECK(title != '' AND adress != ''); 
 ALTER TABLE Events ADD CONSTRAINT dateBeginEndCheck 
     CHECK(dateBegin < dateEnd);
-
 
 CREATE TABLE Artwork_event (
     artworkID UUID NOT NULL,

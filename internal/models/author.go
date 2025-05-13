@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -14,6 +13,12 @@ type Author struct {
 	name      string
 	birthYear int
 	deathYear int
+}
+
+type AuthorUpdateReq struct {
+	Name      string
+	BirthYear int
+	DeathYear int
 }
 
 var (
@@ -63,26 +68,6 @@ func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
 	}
 }
 
-func FromAuthorRequest(req jsonreqresp.AuthorRequest) (Author, error) {
-	var authorID uuid.UUID
-	if req.ID == "" {
-		authorID = uuid.New()
-	} else {
-		var err error
-		authorID, err = uuid.Parse(req.ID)
-		if err != nil {
-			return Author{}, fmt.Errorf("FromAuthorRequest: %w", err)
-		}
-	}
-
-	return NewAuthor(
-		authorID,
-		req.Name,
-		req.BirthYear,
-		req.DeathYear,
-	)
-}
-
 func (auth *Author) GetID() uuid.UUID {
 	return auth.id
 }
@@ -97,4 +82,17 @@ func (a *Author) GetBirthYear() int {
 
 func (a *Author) GetDeathYear() int {
 	return a.deathYear
+}
+
+func (a *Author) Update(updateReq AuthorUpdateReq) error {
+	copyA := *a
+	copyA.name = updateReq.Name
+	copyA.birthYear = updateReq.BirthYear
+	copyA.deathYear = updateReq.DeathYear
+	err := copyA.validate()
+	if err != nil {
+		return err
+	}
+	*a = copyA
+	return nil
 }

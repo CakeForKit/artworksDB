@@ -329,53 +329,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/employee/artworks/add": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Add artwork with [new] author and [new] collection. If author or collection ID = \"\", an it will be created.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "employee"
-                ],
-                "summary": "Add artwork by employee",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "bearer {token}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "New Artwork with [new] author and [new] collection",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/jsonreqresp.ArtworkRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Artworks added"
-                    },
-                    "400": {
-                        "description": "Wrong input parameters"
-                    }
-                }
-            }
-        },
-        "/employee/artworks/all": {
+        "/employee/artworks": {
             "get": {
                 "security": [
                     {
@@ -390,7 +344,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "employee"
+                    "Artworks"
                 ],
                 "summary": "Get all artworks by employee",
                 "parameters": [
@@ -413,16 +367,14 @@ const docTemplate = `{
                         }
                     }
                 }
-            }
-        },
-        "/employee/artworks/update": {
+            },
             "put": {
                 "security": [
                     {
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update artwork with [new] author and [new] collection. If author or collection ID = \"\", an it will be created.",
+                "description": "Update artwork with already created author and collection.",
                 "consumes": [
                     "application/json"
                 ],
@@ -430,7 +382,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "employee"
+                    "Artworks"
                 ],
                 "summary": "Update artwork by employee",
                 "parameters": [
@@ -457,6 +409,730 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Wrong input parameters"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add artwork with already created author and collection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Add artwork by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "New Artwork with already created author and collection.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Artworks added"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing artwork",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Delete an artwork",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/employee/authors": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all authors",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Get all authors by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.AuthorResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Update an author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Add a new author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Delete an author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict - Author has linked artworks"
+                    }
+                }
+            }
+        },
+        "/employee/collections": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all collections",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Get all collections by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.CollectionResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Update a collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Add a new collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Delete a collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/employee/events": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves list of all events",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get all events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EventResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Update event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event updated successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event not found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Add new event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Event created successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Employee not found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event deleted successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event not found"
+                    }
+                }
+            }
+        },
+        "/employee/events/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Adds an artwork to an existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Add artwork to event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork to event connection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConArtworkEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork added to event successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error or duplicate artwork"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Removes an artwork from an existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete artwork from event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork to event connection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConArtworkEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork removed from event successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
                     }
                 }
             }
@@ -611,11 +1287,11 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.ArtworkRequest": {
+        "jsonreqresp.AddArtworkRequest": {
             "type": "object",
             "required": [
-                "author",
-                "collectionId",
+                "authorID",
+                "collectionID",
                 "creationYear",
                 "material",
                 "size",
@@ -623,11 +1299,13 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
-                "author": {
-                    "$ref": "#/definitions/jsonreqresp.AuthorRequest"
+                "authorID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
-                "collectionId": {
-                    "$ref": "#/definitions/jsonreqresp.CollectionRequest"
+                "collectionID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
                 "creationYear": {
                     "type": "integer",
@@ -653,6 +1331,98 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.AddAuthorRequest": {
+            "type": "object",
+            "required": [
+                "birthYear",
+                "name"
+            ],
+            "properties": {
+                "birthYear": {
+                    "description": "Обязательное, \u003e= 1000",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "example": 1853
+                },
+                "deathYear": {
+                    "description": "Опциональное, \u003e= BirthYear",
+                    "type": "integer",
+                    "example": 1890
+                },
+                "name": {
+                    "description": "Обязательное, 2-100 символов",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Винсент Ван Гог"
+                }
+            }
+        },
+        "jsonreqresp.AddCollectionRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
+                }
+            }
+        },
+        "jsonreqresp.AddEventRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "cntTickets",
+                "dateBegin",
+                "dateEnd",
+                "employeeID",
+                "title"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "artworkIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "employeeID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Ночная выставка"
                 }
             }
         },
@@ -691,37 +1461,6 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.AuthorRequest": {
-            "type": "object",
-            "required": [
-                "birthYear",
-                "name"
-            ],
-            "properties": {
-                "birthYear": {
-                    "description": "Обязательное, \u003e= 1000",
-                    "type": "integer",
-                    "minimum": 1000,
-                    "example": 1853
-                },
-                "deathYear": {
-                    "description": "Опциональное, \u003e= BirthYear",
-                    "type": "integer",
-                    "example": 1890
-                },
-                "id": {
-                    "type": "string",
-                    "example": "ba1df957-ed5e-4694-8766-c5ec5806e5e7"
-                },
-                "name": {
-                    "description": "Обязательное, 2-100 символов",
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 2,
-                    "example": "Винсент Ван Гог"
-                }
-            }
-        },
         "jsonreqresp.AuthorResponse": {
             "type": "object",
             "properties": {
@@ -743,25 +1482,6 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.CollectionRequest": {
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
-                },
-                "title": {
-                    "description": "Обязательное, 2-255 символов",
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2,
-                    "example": "Музей современного искусства"
-                }
-            }
-        },
         "jsonreqresp.CollectionResponse": {
             "type": "object",
             "properties": {
@@ -772,6 +1492,67 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "example": "Louvre Museum Collection"
+                }
+            }
+        },
+        "jsonreqresp.ConArtworkEventRequest": {
+            "type": "object",
+            "required": [
+                "artworkID",
+                "eventID"
+            ],
+            "properties": {
+                "artworkID": {
+                    "type": "string"
+                },
+                "eventID": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.DeleteArtworkRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.DeleteAuthorRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                }
+            }
+        },
+        "jsonreqresp.DeleteCollectionRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                }
+            }
+        },
+        "jsonreqresp.DeleteEventRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
                 }
             }
         },
@@ -804,11 +1585,58 @@ const docTemplate = `{
                 }
             }
         },
+        "jsonreqresp.EventResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "artworkIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "example": 150
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "employeeID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Выставка импрессионистов"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "jsonreqresp.UpdateArtworkRequest": {
             "type": "object",
             "required": [
-                "author",
-                "collectionId",
+                "authorID",
+                "collectionID",
                 "creationYear",
                 "id",
                 "material",
@@ -817,11 +1645,13 @@ const docTemplate = `{
                 "title"
             ],
             "properties": {
-                "author": {
-                    "$ref": "#/definitions/jsonreqresp.AuthorRequest"
+                "authorID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
-                "collectionId": {
-                    "$ref": "#/definitions/jsonreqresp.CollectionRequest"
+                "collectionID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
                 "creationYear": {
                     "type": "integer",
@@ -850,6 +1680,106 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.UpdateAuthorRequest": {
+            "type": "object",
+            "required": [
+                "birthYear",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "birthYear": {
+                    "description": "Обязательное, \u003e= 1000",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "example": 1853
+                },
+                "deathYear": {
+                    "description": "Опциональное, \u003e= BirthYear",
+                    "type": "integer",
+                    "example": 1890
+                },
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "name": {
+                    "description": "Обязательное, 2-100 символов",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Винсент Ван Гог"
+                }
+            }
+        },
+        "jsonreqresp.UpdateCollectionRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "title"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
+                }
+            }
+        },
+        "jsonreqresp.UpdateEventRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "cntTickets",
+                "dateBegin",
+                "dateEnd",
+                "id",
+                "title"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "44a315d0-663c-4813-92a6-d7977c2f2aba"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Ночная выставка"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

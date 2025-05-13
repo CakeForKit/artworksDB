@@ -21,10 +21,14 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/employeeserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -88,24 +92,44 @@ func main() {
 	// ---------------------
 
 	// ----- Employee work -----
+	// Collections
 	employeeGroup := apiGroup.Group("/employee")
 	employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ))
+
+	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	collectionServ := collectionserv.NewCollectionServ(collectionRep)
+	collectionRouter := api.CollectionRouter{}
+	collectionRouter.Init(employeeGroup, collectionServ)
+
+	// Authors
+	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authroServ := authorserv.NewAuthorServ(authorRep)
+	authorRouter := api.NewAuthorRouter(employeeGroup, authroServ)
+	_ = authorRouter
 
 	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
+
 	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
-	artworkRouter := api.ArtworksRouter{}
-	artworkRouter.Init(employeeGroup, artworkServ)
+	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
+	_ = artworkRouter
+
+	// Events
+	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	eventServ := eventserv.NewEventService(eventRep)
+	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
+	_ = eventRouter
 	// -------------------------
 
 	// ----- Admin Auth -----

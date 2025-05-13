@@ -8,7 +8,9 @@ select count(*) from artworks;
 
 select count(*) from Events;
 
-select * from artworks;
+select * from artwork_event;
+
+TRUNCATE Table artwork_event;
 
 select *
 from artworks art 

@@ -11,20 +11,25 @@ import (
 )
 
 var (
-	ErrEventNotFound    = errors.New("the Event was not found in the repository")
-	ErrAddNoEmployee    = errors.New("failed to add the Event, no employeee")
-	ErrUpdateNoEmployee = errors.New("failed to update the Events, no employeee")
+	ErrEventNotFound        = errors.New("the Event was not found in the repository")
+	ErrEventArtowrkNotFound = errors.New("the Event_artwork was not found in the repository")
+	ErrAddNoEmployee        = errors.New("failed to add the Event, no employeee")
+	ErrUpdateNoEmployee     = errors.New("failed to update the Events, no employeee")
 )
 
 type EventRep interface {
 	GetAll(ctx context.Context) ([]*models.Event, error)
+	GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uuid.UUIDs, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Event, error)
 	GetByDate(ctx context.Context, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
-	GetEventsOfArtworkOnDate(ctx context.Context, artwork *models.Artwork, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
+	GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
+	CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool, error)
 	//
-	Add(ctx context.Context, aw *models.Event) error
-	Delete(ctx context.Context, id uuid.UUID) error
-	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) (*models.Event, error)
+	Add(ctx context.Context, e *models.Event) error
+	Delete(ctx context.Context, eventID uuid.UUID) error
+	Update(ctx context.Context, eventID uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) error
+	AddArtworksToEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUIDs) error
+	DeleteArtworkFromEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUID) error
 	Ping(ctx context.Context) error
 	Close()
 }

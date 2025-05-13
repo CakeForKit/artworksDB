@@ -15,8 +15,10 @@ var (
 
 type CollectionRep interface {
 	GetAllCollections(ctx context.Context) ([]*models.Collection, error)
-	CheckCollectionByID(ctx context.Context, id uuid.UUID) (bool, error)
+	GetCollectionByID(ctx context.Context, id uuid.UUID) (*models.Collection, error)
 	AddCollection(ctx context.Context, e *models.Collection) error
+	DeleteCollection(ctx context.Context, idCol uuid.UUID) error
+	UpdateCollection(ctx context.Context, idCol uuid.UUID, funcUpdate func(*models.Collection) (*models.Collection, error)) error
 }
 
 func NewCollectionRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {

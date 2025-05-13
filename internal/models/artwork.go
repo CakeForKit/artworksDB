@@ -21,6 +21,7 @@ type Artwork struct {
 }
 
 var (
+	ErrValidateArtwork          = errors.New("invalid model")
 	ErrArtworkEmptyTitle        = errors.New("empty title")
 	ErrArtworkTitleTooLong      = errors.New("title exceeds maximum length (255 chars)")
 	ErrArtworkEmptyTechnic      = errors.New("empty technic")
@@ -60,10 +61,6 @@ func NewArtwork(
 		return Artwork{}, err
 	}
 
-	if err := artwork.validateWithAuthor(); err != nil {
-		return Artwork{}, err
-	}
-
 	return artwork, nil
 }
 
@@ -92,21 +89,14 @@ func (a *Artwork) validate() error {
 	case a.collection == nil:
 		return ErrArtworkInvalidCollection
 	}
-	return nil
-}
 
-func (a *Artwork) validateWithAuthor() error {
-	if a.author == nil {
-		return ErrArtworkInvalidAuthor
-	}
-
+	// validateWithAuthor
 	birthYear := a.author.GetBirthYear()
 	deathYear := a.author.GetDeathYear()
 	fmt.Printf("deathYear = %d\n", deathYear)
 	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
 		return ErrArtworkYearNotInRange
 	}
-
 	return nil
 }
 
@@ -121,28 +111,6 @@ func (a *Artwork) ToArtworkResponse() jsonreqresp.ArtworkResponse {
 		Author:       a.GetAuthor().ToAuthorResponse(),
 		Collection:   a.GetCollection().ToCollectionResponse(),
 	}
-}
-
-func FromArtworkRequest(req jsonreqresp.ArtworkRequest) (Artwork, error) {
-	author, err := FromAuthorRequest(req.Author)
-	if err != nil {
-		return Artwork{}, fmt.Errorf("FromArtworkRequest: %w", err)
-	}
-	collection, err := FromCollectionRequest(req.Collection)
-	if err != nil {
-		return Artwork{}, fmt.Errorf("FromArtworkRequest: %w", err)
-	}
-
-	return NewArtwork(
-		uuid.New(),
-		req.Title,
-		req.Technic,
-		req.Material,
-		req.Size,
-		req.CreationYear,
-		&author,
-		&collection,
-	)
 }
 
 func (a *Artwork) GetID() uuid.UUID {
@@ -175,4 +143,20 @@ func (a *Artwork) GetMaterial() string {
 
 func (a *Artwork) GetTechnic() string {
 	return a.technic
+}
+
+func (a *Artwork) Update(updateReq jsonreqresp.ArtworkUpdate) error {
+	copyA := *a
+	copyA.title = updateReq.Title
+	copyA.creationYear = updateReq.CreationYear
+	copyA.technic = updateReq.Technic
+	copyA.material = updateReq.Material
+	copyA.size = updateReq.Size
+
+	if err := copyA.validate(); err != nil {
+		return err
+	}
+
+	*a = copyA
+	return nil
 }
