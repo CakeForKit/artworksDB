@@ -32,6 +32,13 @@ WHERE Artwork_event.eventID = (select *
                                 from random_event_id()
                                 limit 1);
 
+                                EXPLAIN ANALYZE
+SELECT Artworks.title
+FROM Artworks
+JOIN Artwork_event
+ON Artwork_event.artworkID = Artworks.id
+WHERE Artwork_event.eventID = 'a2c3646d-8f9c-44dc-bf90-0019fc181db6';
+
 CREATE INDEX idx_Artwork_event_eventID ON Artwork_event(eventID);
 DROP INDEX IF EXISTS idx_Artwork_event_eventID;
 

@@ -67,12 +67,12 @@ func DrawGraph(start int, stop int, step int) error {
 
 	fmt.Printf("cnt rows | not Index | Index\n")
 	for i := start; i < stop; i += step {
-		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/data/%d_notIndex.txt", i))
+		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/good/data/%d_notIndex.txt", i))
 		tmNotIndex, err := readAvg(filenameNotIndex)
 		if err != nil {
 			return fmt.Errorf("DrawGraph: %v", err)
 		}
-		filenameIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/data/%d_Index.txt", i))
+		filenameIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("/measure_results/good/data/%d_Index.txt", i))
 		tmIndex, err := readAvg(filenameIndex)
 		if err != nil {
 			return fmt.Errorf("DrawGraph: %v", err)
@@ -104,7 +104,7 @@ func DrawGraph(start int, stop int, step int) error {
 	p.Add(plotter.NewGrid())
 
 	fontText := font.Font{
-		Size:     14,            // Размер шрифта в пунктах (1/72 дюйма)
+		Size:     20,            // Размер шрифта в пунктах (1/72 дюйма)
 		Typeface: "Times-Roman", // Название шрифта
 		Variant:  "Sans",
 	}
@@ -113,9 +113,10 @@ func DrawGraph(start int, stop int, step int) error {
 	p.Y.Label.TextStyle.Font = fontText
 	p.X.Tick.Label.Font = fontText
 	p.Y.Tick.Label.Font = fontText
+	p.Legend.TextStyle.Font = fontText
 
 	widthLines := vg.Points(1)
-	scatterRadius := vg.Points(4)
+	scatterRadius := vg.Points(5)
 	colorNotIndex := color.RGBA{R: 244, G: 67, B: 54, A: 255}
 	colorIndex := color.RGBA{R: 76, G: 175, B: 80, A: 255}
 
@@ -165,8 +166,8 @@ func DrawGraph(start int, stop int, step int) error {
 	// 	return fmt.Errorf("DrawGraph: %v", err)
 	// }
 
-	saveFile := filepath.Join(cnfg.GetProjectRoot(), "/measure_results/graph.svg")
-	if err := p.Save(8*vg.Inch, 5*vg.Inch, saveFile); err != nil {
+	saveFile := filepath.Join(cnfg.GetProjectRoot(), "/measure_results/graph.png")
+	if err := p.Save(12*vg.Inch, 7*vg.Inch, saveFile); err != nil {
 		return fmt.Errorf("DrawGraph: %v", err)
 	}
 	return nil
