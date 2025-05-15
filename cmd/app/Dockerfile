@@ -1,5 +1,5 @@
 
-FROM golang:1.24.1-alpine
+FROM golang:1.24.2-alpine
 
 RUN mkdir /build
 WORKDIR /build
@@ -9,6 +9,6 @@ RUN go mod download
 
 COPY ../../. .
 
-# CMD ["go", "run", "./cmd/app/main.go"]
+CMD ["go", "run", "./cmd/app/main.go"]
 
-CMD ["go", "test"]
+# CMD ["go", "test"]

@@ -1,6 +1,7 @@
 package searcher
 
 import (
+	"context"
 	"testing"
 	"time"
 
@@ -9,327 +10,377 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep/mockeventrep"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/assert"
+	"github.com/stateio/testify/require"
+	"github.com/stretchr/testify/assert"
 )
 
-// func TestSearcher_GetAllArtworks(t *testing.T) {
-// 	type testCase struct {
-// 		name string
-// 		res  []*models.Artwork
-// 	}
-
-// 	mockArtworkRep := new(mockartworkrep.MockArtworkRep)
-// 	mockArtworkRep.On("GetAllArtworks").Return(&[]models.Artwork{})
-// 	searcherServ :=
-// 		searcher{artowrkRep: mockArtworkRep}
-
-// 	var testCases []testCase = []testCase{
-// 		{
-// 			name: "Empty",
-// 			res:  []*models.Artwork{},
-// 		},
-// 	}
-
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			res := searcherServ.GetAllArtworks()
-// 			if len(res) != 0 {
-// 				t.Errorf("Not empty array??")
-// 			}
-// 		})
-// 	}
-// }
-
-func createTestAuthor() models.Author {
-	author, _ := models.NewAuthor("Test Author", 1900, 2000)
-	return author
+func createTestAuthor() *models.Author {
+	author, _ := models.NewAuthor(uuid.New(), "Test Author", 1900, 2000)
+	return &author
 }
 
-func createTestCollection() models.Collection {
-	collection, _ := models.NewCollection("Test Collection")
-	return collection
+func createTestCollection() *models.Collection {
+	collection, _ := models.NewCollection(uuid.New(), "Test Collection")
+	return &collection
 }
 
-func createTestArtwork() models.Artwork {
+func createTestArtwork() *models.Artwork {
 	author := createTestAuthor()
 	collection := createTestCollection()
 	artwork, _ := models.NewArtwork(
 		uuid.New(),
 		"Test Artwork",
+		"oil on canvas",
+		"canvas",
+		"100x100 cm",
 		1950,
-		&author,
-		&collection,
-		"100x100",
-		"oil",
-		"painting",
+		author,
+		collection,
 	)
-	return artwork
+	return &artwork
 }
 
-func createTestEvent() models.Event {
-	artwork := createTestArtwork()
+func createTestEvent() *models.Event {
 	event, _ := models.NewEvent(
+		uuid.New(),
 		"Test Event",
-		time.Date(2023, 1, 1, 0, 0, 0, 0, time.UTC),
-		time.Date(2023, 1, 31, 0, 0, 0, 0, time.UTC),
+		time.Now(),
+		time.Now().Add(24*time.Hour),
 		"Test Address",
 		true,
-		[]*models.Artwork{&artwork},
+		uuid.New(),
+		100,
 	)
-	return event
+	return &event
 }
 
 func TestSearcher_GetAllArtworks(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
+	ctx := context.Background()
+	tests := []struct {
+		name           string
+		mockArtworks   []*models.Artwork
+		expectedLength int
+	}{
+		{
+			name:           "single artwork",
+			mockArtworks:   []*models.Artwork{createTestArtwork()},
+			expectedLength: 1,
+		},
+		{
+			name:           "multiple artworks",
+			mockArtworks:   []*models.Artwork{createTestArtwork(), createTestArtwork()},
+			expectedLength: 2,
+		},
+	}
 
-	artwork := createTestArtwork()
-	expectedArtworks := []*models.Artwork{&artwork}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	mockArt.On("GetAll").Return(expectedArtworks)
+			mockArt.On("GetAll", ctx).Return(tt.mockArtworks, nil)
 
-	t.Run("get all artworks", func(t *testing.T) {
-		result := searcherServ.GetAllArtworks()
-		assert.Equal(t, expectedArtworks, result)
-		assert.Len(t, result, 1)
-		assert.Equal(t, artwork.GetTitle(), result[0].GetTitle())
-		mockArt.AssertExpectations(t)
-	})
+			result, err := service.GetAllArtworks(ctx)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedLength, len(result))
+			mockArt.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_FilterArtworkByTitle(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
+	ctx := context.Background()
+	tests := []struct {
+		name          string
+		title         string
+		mockArtworks  []*models.Artwork
+		expectedCount int
+	}{
+		{
+			name:          "exact match",
+			title:         "Test Artwork",
+			mockArtworks:  []*models.Artwork{createTestArtwork()},
+			expectedCount: 1,
+		},
+		{
+			name:          "no match",
+			title:         "Nonexistent",
+			mockArtworks:  []*models.Artwork{},
+			expectedCount: 0,
+		},
+	}
 
-	artwork := createTestArtwork()
-	expectedArtworks := []*models.Artwork{&artwork}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	mockArt.On("GetByTitle", artwork.GetTitle()).Return(expectedArtworks)
+			mockArt.On("GetByTitle", ctx, tt.title).Return(tt.mockArtworks, nil)
 
-	t.Run("filter by exact title", func(t *testing.T) {
-		result := searcherServ.FilterArtworkByTitle(artwork.GetTitle())
-		assert.Equal(t, expectedArtworks, result)
-		assert.Len(t, result, 1)
-		assert.Equal(t, artwork.GetID(), result[0].GetID())
-		mockArt.AssertExpectations(t)
-	})
+			result, err := service.FilterArtworkByTitle(ctx, tt.title)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockArt.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_FilterArtworkByAuthor(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
+	ctx := context.Background()
+	author := createTestAuthor()
+	tests := []struct {
+		name          string
+		author        *models.Author
+		mockArtworks  []*models.Artwork
+		expectedCount int
+	}{
+		{
+			name:          "author with artworks",
+			author:        author,
+			mockArtworks:  []*models.Artwork{createTestArtwork()},
+			expectedCount: 1,
+		},
+		{
+			name:          "author without artworks",
+			author:        author,
+			mockArtworks:  []*models.Artwork{},
+			expectedCount: 0,
+		},
+	}
 
-	artwork := createTestArtwork()
-	author := *artwork.GetAuthor()
-	expectedArtworks := []*models.Artwork{&artwork}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	mockArt.On("GetByAuthor", &author).Return(expectedArtworks)
+			mockArt.On("GetByAuthor", ctx, tt.author).Return(tt.mockArtworks, nil)
 
-	t.Run("filter by author", func(t *testing.T) {
-		result := searcherServ.FilterArtworkByAuthor(&author)
-		assert.Equal(t, expectedArtworks, result)
-		assert.Len(t, result, 1)
-		assert.Equal(t, artwork.GetID(), result[0].GetID())
-		mockArt.AssertExpectations(t)
-	})
+			result, err := service.FilterArtworkByAuthor(ctx, tt.author)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockArt.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_FilterArtworkByCreationTime(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
-
+	ctx := context.Background()
 	artwork := createTestArtwork()
-	yearBeg := artwork.GetCreationYear() - 10
-	yearEnd := artwork.GetCreationYear() + 10
-	expectedArtworks := []*models.Artwork{&artwork}
+	tests := []struct {
+		name          string
+		yearBeg       int
+		yearEnd       int
+		mockArtworks  []*models.Artwork
+		expectedCount int
+	}{
+		{
+			name:          "within range",
+			yearBeg:       1940,
+			yearEnd:       1960,
+			mockArtworks:  []*models.Artwork{artwork},
+			expectedCount: 1,
+		},
+		{
+			name:          "outside range",
+			yearBeg:       1970,
+			yearEnd:       1980,
+			mockArtworks:  []*models.Artwork{},
+			expectedCount: 0,
+		},
+	}
 
-	mockArt.On("GetByCreationTime", yearBeg, yearEnd).Return(expectedArtworks)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	t.Run("filter by creation time range", func(t *testing.T) {
-		result := searcherServ.FilterArtworkByCreationTime(yearBeg, yearEnd)
-		assert.Equal(t, expectedArtworks, result)
-		assert.Len(t, result, 1)
-		assert.Equal(t, artwork.GetCreationYear(), result[0].GetCreationYear())
-		mockArt.AssertExpectations(t)
-	})
+			mockArt.On("GetByCreationTime", ctx, tt.yearBeg, tt.yearEnd).Return(tt.mockArtworks, nil)
+
+			result, err := service.FilterArtworkByCreationTime(ctx, tt.yearBeg, tt.yearEnd)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockArt.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_FilterArtworkByEvent(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
-
+	ctx := context.Background()
 	event := createTestEvent()
-	expectedArtworks := event.GetArtworks()
+	tests := []struct {
+		name          string
+		event         models.Event
+		mockArtworks  []*models.Artwork
+		expectedCount int
+	}{
+		{
+			name:          "event with artworks",
+			event:         *event,
+			mockArtworks:  []*models.Artwork{createTestArtwork()},
+			expectedCount: 1,
+		},
+		{
+			name:          "event without artworks",
+			event:         *event,
+			mockArtworks:  []*models.Artwork{},
+			expectedCount: 0,
+		},
+	}
 
-	mockArt.On("GetByEvent", event).Return(expectedArtworks)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	t.Run("filter by event", func(t *testing.T) {
-		result := searcherServ.FilterArtworkByEvent(event)
-		assert.Equal(t, expectedArtworks, result)
-		assert.Len(t, result, 1)
-		mockArt.AssertExpectations(t)
-	})
+			mockArt.On("GetByEvent", ctx, tt.event).Return(tt.mockArtworks, nil)
+
+			result, err := service.FilterArtworkByEvent(ctx, tt.event)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockArt.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_GetAllEvents(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
+	ctx := context.Background()
+	tests := []struct {
+		name          string
+		mockEvents    []*models.Event
+		expectedCount int
+	}{
+		{
+			name:          "single event",
+			mockEvents:    []*models.Event{createTestEvent()},
+			expectedCount: 1,
+		},
+		{
+			name:          "multiple events",
+			mockEvents:    []*models.Event{createTestEvent(), createTestEvent()},
+			expectedCount: 2,
+		},
+	}
 
-	event := createTestEvent()
-	expectedEvents := []*models.Event{&event}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	mockEvent.On("GetAll").Return(expectedEvents)
+			mockEvent.On("GetAll", ctx).Return(tt.mockEvents, nil)
 
-	t.Run("get all events", func(t *testing.T) {
-		result := searcherServ.GetAllEvents()
-		assert.Equal(t, expectedEvents, result)
-		assert.Len(t, result, 1)
-		assert.Equal(t, event.GetTitle(), result[0].GetTitle())
-		mockEvent.AssertExpectations(t)
-	})
+			result, err := service.GetAllEvents(ctx)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockEvent.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_FilterEventsByDate(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
-
+	ctx := context.Background()
 	event := createTestEvent()
-	dateBeg := event.GetDateBegin().Add(-24 * time.Hour)
-	dateEnd := event.GetDateEnd().Add(24 * time.Hour)
-	expectedEvents := []*models.Event{&event}
+	tests := []struct {
+		name          string
+		dateBeg       time.Time
+		dateEnd       time.Time
+		mockEvents    []*models.Event
+		expectedCount int
+	}{
+		{
+			name:          "within date range",
+			dateBeg:       event.GetDateBegin().Add(-24 * time.Hour),
+			dateEnd:       event.GetDateEnd().Add(24 * time.Hour),
+			mockEvents:    []*models.Event{event},
+			expectedCount: 1,
+		},
+		{
+			name:          "outside date range",
+			dateBeg:       event.GetDateBegin().Add(-48 * time.Hour),
+			dateEnd:       event.GetDateBegin().Add(-24 * time.Hour),
+			mockEvents:    []*models.Event{},
+			expectedCount: 0,
+		},
+	}
 
-	mockEvent.On("GetByDate", dateBeg, dateEnd).Return(expectedEvents)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	t.Run("filter events by date range", func(t *testing.T) {
-		result := searcherServ.FilterEventsByDate(dateBeg, dateEnd)
-		assert.Equal(t, expectedEvents, result)
-		assert.Len(t, result, 1)
-		assert.True(t, event.GetDateBegin().After(dateBeg))
-		assert.True(t, event.GetDateEnd().Before(dateEnd))
-		mockEvent.AssertExpectations(t)
-	})
+			mockEvent.On("GetByDate", ctx, tt.dateBeg, tt.dateEnd).Return(tt.mockEvents, nil)
+
+			result, err := service.FilterEventsByDate(ctx, tt.dateBeg, tt.dateEnd)
+			require.NoError(t, err)
+			assert.Equal(t, tt.expectedCount, len(result))
+			mockEvent.AssertExpectations(t)
+		})
+	}
 }
 
 func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
-	mockArt := new(mockartworkrep.MockArtworkRep)
-	mockEvent := new(mockeventrep.MockEventRep)
-	searcherServ := NewSearcher(mockArt, mockEvent)
-
+	ctx := context.Background()
 	event := createTestEvent()
-	artwork := *event.GetArtworks()[0]
+	artwork := createTestArtwork()
 	dateBeg := event.GetDateBegin().Add(-24 * time.Hour)
 	dateEnd := event.GetDateEnd().Add(24 * time.Hour)
 
-	mockEvent.On("GetEventOfArtworkOnDate", &artwork, dateBeg, dateEnd).Return(&event, nil)
+	tests := []struct {
+		name           string
+		artwork        *models.Artwork
+		dateBeg        time.Time
+		dateEnd        time.Time
+		mockEvent      []*models.Event
+		mockError      error
+		expectedError  error
+		expectedResult []*models.Event
+	}{
+		{
+			name:           "event found",
+			artwork:        artwork,
+			dateBeg:        dateBeg,
+			dateEnd:        dateEnd,
+			mockEvent:      []*models.Event{event},
+			mockError:      nil,
+			expectedError:  nil,
+			expectedResult: []*models.Event{event},
+		},
+		{
+			name:           "event not found",
+			artwork:        artwork,
+			dateBeg:        event.GetDateBegin().Add(-48 * time.Hour),
+			dateEnd:        event.GetDateBegin().Add(-24 * time.Hour),
+			mockEvent:      make([]*models.Event, 0),
+			mockError:      eventrep.ErrEventNotFound,
+			expectedError:  eventrep.ErrEventNotFound,
+			expectedResult: make([]*models.Event, 0),
+		},
+	}
 
-	t.Run("get event for artwork on date", func(t *testing.T) {
-		result, err := searcherServ.GetEventOfArtworkOnDate(&artwork, dateBeg, dateEnd)
-		assert.NoError(t, err)
-		assert.Equal(t, &event, result)
-		assert.True(t, result.CheckArtwork(artwork.GetID()))
-		mockEvent.AssertExpectations(t)
-	})
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockEvent := new(mockeventrep.MockEventRep)
+			service := NewSearcher(mockArt, mockEvent)
 
-	nonEventDateBeg := event.GetDateBegin().Add(-48 * time.Hour)
-	nonEventDateEnd := event.GetDateBegin().Add(-24 * time.Hour)
-	var enil *models.Event = nil
-	mockEvent.On("GetEventOfArtworkOnDate", &artwork, nonEventDateBeg, nonEventDateEnd).Return(enil, eventrep.ErrEventNotFound)
+			mockEvent.On("GetEventsOfArtworkOnDate", ctx, tt.artwork, tt.dateBeg, tt.dateEnd).Return(tt.mockEvent, tt.mockError)
 
-	t.Run("event not found for artwork", func(t *testing.T) {
-		result, err := searcherServ.GetEventOfArtworkOnDate(&artwork, nonEventDateBeg, nonEventDateEnd)
-		assert.EqualError(t, err, eventrep.ErrEventNotFound.Error())
-		assert.Nil(t, result)
-		mockEvent.AssertExpectations(t)
-	})
+			result, err := service.GetEventsOfArtworkOnDate(ctx, tt.artwork, tt.dateBeg, tt.dateEnd)
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
+			}
+			assert.Equal(t, tt.expectedResult, result)
+			mockEvent.AssertExpectations(t)
+		})
+	}
 }
-
-// func TestSearcher_GetByID(t *testing.T) {
-// 	type testCase struct {
-// 		name        string
-// 		id          uuid.UUID
-// 		aw          *models.Artwork
-// 		expectedErr error
-// 	}
-
-// 	paw, err := createTestArtwork()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	mock := new(mockartworkrep.MockArtworkRep)
-// 	var idExist uuid.UUID = paw.GetID()
-// 	mock.On("GetByID", idExist).Return(paw, nil)
-// 	idNOTExist := uuid.New()
-// 	var awnill *models.Artwork = nil
-// 	mock.On("GetByID", idNOTExist).Return(awnill, artworkrep.ErrArtworkNotFound)
-
-// 	searcherServ := searcher{artowrkRep: mock}
-// 	var testCases []testCase = []testCase{
-// 		{
-// 			name:        "id exist",
-// 			id:          idExist,
-// 			aw:          paw,
-// 			expectedErr: nil,
-// 		},
-// 		{
-// 			name:        "id NOT exist",
-// 			id:          idNOTExist,
-// 			expectedErr: artworkrep.ErrArtworkNotFound,
-// 		},
-// 	}
-
-// 	for _, tc := range testCases {
-// 		t.Run(tc.name, func(t *testing.T) {
-// 			awres, err := searcherServ.GetByID(tc.id)
-// 			if err != tc.expectedErr {
-// 				t.Errorf("Expected error %v, got %v", tc.expectedErr, err)
-// 			} else if err == nil && awres != tc.aw {
-// 				t.Errorf("Expected artwork %v \ngot %v", tc.aw, awres)
-// 			}
-// 		})
-// 	}
-// }
-
-// func TestSearcher_AddArtwork(t *testing.T) {
-// 	t.Run("successful artwork addition", func(t *testing.T) {
-// 		// Arrange
-// 		mockRepo := new(mockartworkrep.MockArtworkRep)
-// 		searcher := &searcher{rep: mockRepo}
-// 		var err error
-// 		ptestArtwork, err := createTestArtwork()
-// 		if err != nil {
-// 			t.Fatal(err)
-// 		}
-
-// 		mockRepo.On("Add", ptestArtwork).Return(nil)
-// 		err = searcher.AddArtwork(ptestArtwork)
-
-// 		assert.NoError(t, err)
-// 		mockRepo.AssertExpectations(t)
-// 	})
-
-// 	t.Run("failed artwork addition", func(t *testing.T) {
-// 		// Arrange
-// 		mockRepo := new(mockartworkrep.MockArtworkRep)
-// 		searcher := &searcher{rep: mockRepo}
-// 		var err error
-// 		ptestArtwork, err := createTestArtwork()
-// 		if err != nil {
-// 			t.Fatal(err)
-// 		}
-// 		expectedError := artworkrep.ErrFailedToAddArtwork
-
-// 		mockRepo.On("Add", ptestArtwork).Return(expectedError)
-// 		err = searcher.AddArtwork(ptestArtwork)
-
-// 		assert.Error(t, err)
-// 		assert.Equal(t, expectedError, err)
-// 		mockRepo.AssertExpectations(t)
-// 	})
-// }

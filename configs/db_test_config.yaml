@@ -1,0 +1,7 @@
+postgres:
+  postgres_db: "testArtwork"
+  postgres_port: 5433
+  postgres_user: "testUser"
+  postgres_password: "testPassword"
+  postgres_image: "postgres:latest"
+  postgres_migration_dir: "migrations"

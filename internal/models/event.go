@@ -3,141 +3,124 @@ package models
 import (
 	"errors"
 	"fmt"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
 )
 
 type Event struct {
-	id        uuid.UUID
-	title     string
-	dateBegin time.Time
-	dateEnd   time.Time
-	adress    string
-	access    bool
-	artworks  []*Artwork
+	id         uuid.UUID
+	title      string
+	dateBegin  time.Time
+	dateEnd    time.Time
+	address    string
+	canVisit   bool
+	employeeID uuid.UUID
+	cntTickets int
 }
 
 var (
 	ErrEventEmptyTitle      = errors.New("empty title")
+	ErrEventTitleTooLong    = errors.New("title exceeds maximum length (255 chars)")
 	ErrEventInvalidDates    = errors.New("end date must be after start date")
 	ErrEventEmptyAddress    = errors.New("empty address")
-	ErrEventInvalidAccess   = errors.New("invalid access value")
-	ErrArtworkAlreadyExists = errors.New("artwork already exists in event")
-	ErrArtworkNotFound      = errors.New("artwork not found in event")
+	ErrEventAddressTooLong  = errors.New("address exceeds maximum length (255 chars)")
+	ErrEventInvalidAccess   = errors.New("invalid canVisit value")
+	ErrEventInvalidEmployee = errors.New("invalid employee ID")
+	ErrEventNegativeTickets = errors.New("ticket count cannot be negative")
 )
 
-func NewEvent(title string, dateBegin time.Time, dateEnd time.Time,
-	address string, access bool, artworks []*Artwork) (Event, error) {
-	if title == "" {
-		return Event{}, ErrEventEmptyTitle
-	}
-	if dateEnd.Before(dateBegin) {
-		return Event{}, ErrEventInvalidDates
-	}
-	if address == "" {
-		return Event{}, ErrEventEmptyAddress
-	}
-	if access != true && access != false {
-		return Event{}, ErrEventInvalidAccess
+func NewEvent(
+	id uuid.UUID,
+	title string,
+	dateBegin time.Time,
+	dateEnd time.Time,
+	address string,
+	canVisit bool,
+	employeeID uuid.UUID,
+	cntTickets int,
+) (Event, error) {
+	event := Event{
+		id:         id,
+		title:      strings.TrimSpace(title),
+		dateBegin:  dateBegin,
+		dateEnd:    dateEnd,
+		address:    strings.TrimSpace(address),
+		canVisit:   canVisit,
+		employeeID: employeeID,
+		cntTickets: cntTickets,
 	}
 
-	return Event{
-		id:        uuid.New(),
-		title:     title,
-		dateBegin: dateBegin,
-		dateEnd:   dateEnd,
-		adress:    address,
-		access:    access,
-		artworks:  artworks,
-	}, nil
+	if err := event.validate(); err != nil {
+		return Event{}, err
+	}
+
+	return event, nil
+}
+
+func (e *Event) validate() error {
+	switch {
+	case e.title == "":
+		return ErrEventEmptyTitle
+	case len(e.title) > 255:
+		return ErrEventTitleTooLong
+	case e.dateEnd.Before(e.dateBegin):
+		return ErrEventInvalidDates
+	case e.address == "":
+		return ErrEventEmptyAddress
+	case len(e.address) > 255:
+		return ErrEventAddressTooLong
+	case e.employeeID == uuid.Nil:
+		return ErrEventInvalidEmployee
+	case e.cntTickets < 0:
+		return ErrEventNegativeTickets
+	}
+	return nil
 }
 
 func (e *Event) TextAbout() string {
 	return fmt.Sprintf(
-		"Событие: %s:\nДата начала: %s\nДата окончания: %s\nАдрес: %s\nДоступ: %v\n",
+		"Событие: %s\nДата начала: %s\nДата окончания: %s\nАдрес: %s\nДоступ: %v\n"+
+			"Ответственный сотрудник: %s\nДоступно билетов: %d",
 		e.GetTitle(),
 		e.GetDateBegin().Format(time.RFC3339),
 		e.GetDateEnd().Format(time.RFC3339),
 		e.GetAddress(),
 		e.GetAccess(),
+		e.GetEmployeeID(),
+		e.GetTicketCount(),
 	)
 }
 
-// GetID возвращает уникальный идентификатор события
 func (e *Event) GetID() uuid.UUID {
 	return e.id
 }
 
-// GetTitle возвращает название события
 func (e *Event) GetTitle() string {
 	return e.title
 }
 
-// GetDateBegin возвращает дату и время начала события
 func (e *Event) GetDateBegin() time.Time {
 	return e.dateBegin
 }
 
-// GetDateEnd возвращает дату и время окончания события
 func (e *Event) GetDateEnd() time.Time {
 	return e.dateEnd
 }
 
-// GetAddress возвращает адрес проведения события
-// Примечание: исправлено с "adress" на "address" для соответствия правильному написанию
 func (e *Event) GetAddress() string {
-	return e.adress
+	return e.address
 }
 
-// GetAccess возвращает флаг доступа к событию (публичное/приватное)
 func (e *Event) GetAccess() bool {
-	return e.access
+	return e.canVisit
 }
 
-// GetArtworks возвращает список произведений искусства на событии
-func (e *Event) GetArtworks() []*Artwork {
-	return e.artworks
+func (e *Event) GetEmployeeID() uuid.UUID {
+	return e.employeeID
 }
 
-// AddArtwork добавляет произведение искусства к событию
-func (e *Event) AddArtwork(artwork *Artwork) error {
-	for _, a := range e.artworks {
-		if a.GetID() == artwork.GetID() {
-			return ErrArtworkAlreadyExists
-		}
-	}
-	e.artworks = append(e.artworks, artwork)
-	return nil
-}
-
-// RemoveArtwork удаляет произведение искусства из события
-func (e *Event) RemoveArtwork(artworkID uuid.UUID) error {
-	for i, a := range e.artworks {
-		if a.GetID() == artworkID {
-			e.artworks = append(e.artworks[:i], e.artworks[i+1:]...)
-			return nil
-		}
-	}
-	return ErrArtworkNotFound
-}
-
-// CheckArtwork проверяет наличие произведения искусства в событии
-func (e *Event) CheckArtwork(artworkID uuid.UUID) bool {
-	for _, a := range e.artworks {
-		if a.GetID() == artworkID {
-			return true
-		}
-	}
-	return false
-}
-
-// ClearArtworks очищает список произведений искусства
-func (e *Event) ClearArtworks() {
-	e.artworks = []*Artwork{}
-}
-
-// ArtworksCount возвращает количество произведений искусства на событии
-func (e *Event) ArtworksCount() int {
-	return len(e.artworks)
+func (e *Event) GetTicketCount() int {
+	return e.cntTickets
 }
