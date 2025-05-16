@@ -29,6 +29,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/employeeserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/searcher"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -78,6 +79,19 @@ func main() {
 		// ---------------------
 	}
 
+	// For all
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	searcherServ := searcher.NewSearcher(artworkRep, eventRep)
+	searcherRouter := api.NewSearcherRouter(apiGroup, searcherServ)
+	_ = searcherRouter
+
 	// ----- Employee Auth -----
 	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
@@ -113,20 +127,11 @@ func main() {
 	authorRouter := api.NewAuthorRouter(employeeGroup, authroServ)
 	_ = authorRouter
 
-	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-
 	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
 	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
 	_ = artworkRouter
 
 	// Events
-	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
 	eventServ := eventserv.NewEventService(eventRep)
 	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
 	_ = eventRouter

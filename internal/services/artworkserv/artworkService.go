@@ -40,7 +40,7 @@ func NewArtworkService(artRep artworkrep.ArtworkRep, authorRep authorrep.AuthorR
 }
 
 func (a *artworkService) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
-	return a.artworkRep.GetAllArtworks(ctx)
+	return a.artworkRep.GetAllArtworks(ctx, &jsonreqresp.ArtworkFilter{}, &jsonreqresp.ArtworkSortOps{})
 }
 
 func (a *artworkService) Add(ctx context.Context, artworkReq jsonreqresp.AddArtworkRequest) error {

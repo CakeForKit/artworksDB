@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
@@ -159,12 +160,9 @@ func (e *Event) IsValid() bool {
 
 func (e *Event) AddArtworks(idArts uuid.UUIDs) error {
 	for _, oldID := range e.artworkIDs {
-		for _, newID := range idArts {
-			if oldID == newID {
-				return fmt.Errorf("Event.AddArtworks %w %w", ErrValidateEvent, ErrAddArtwork)
-			}
+		if slices.Contains(idArts, oldID) {
+			return fmt.Errorf("Event.AddArtworks %w %w", ErrValidateEvent, ErrAddArtwork)
 		}
-
 	}
 	e.artworkIDs = append(e.artworkIDs, idArts...)
 	return nil

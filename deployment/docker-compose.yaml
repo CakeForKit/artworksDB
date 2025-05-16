@@ -13,6 +13,8 @@ services:
     networks:
       - postgres-db
       - redis_artworks
+    labels:
+      - "project=artworks"
 
   postgres:
     container_name: postgres_artworks
@@ -32,6 +34,8 @@ services:
       start_period: 60s
     networks:
       - postgres-db
+    labels:
+      - "project=artworks"
 
   migrator:
     container_name: migrator_artworks
@@ -45,7 +49,9 @@ services:
       dockerfile: Dockerfile
     networks:
       - postgres-db
-
+    labels:
+      - "project=artworks"
+      
   redis_artworks:
     container_name: redis_artworks
     hostname: redis_artworks
@@ -56,7 +62,9 @@ services:
       - ../configs/redis.env
     networks:
       - redis_artworks
-
+    labels:
+      - "project=artworks"
+      
 volumes:
   data-volume:
     # Имя тома

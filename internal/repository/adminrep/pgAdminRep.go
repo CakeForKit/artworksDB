@@ -50,7 +50,7 @@ func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCon
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxOpenConns(dbConf.MaxOpenConns)
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 

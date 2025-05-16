@@ -10,6 +10,7 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -50,7 +51,7 @@ func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbC
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxOpenConns(dbConf.MaxOpenConns)
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
@@ -99,41 +100,83 @@ func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, er
 	return resArtworks, nil
 }
 
-func (pg *PgArtworkRep) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
-		"art.id", "art.title", "art.technic", "art.material",
-		"art.size", "art.creationYear",
-		"au.id", "au.name", "au.birthyear", "au.deathyear",
-		"col.id", "col.title",
-	).
-		From("artworks art").
-		Join("author au ON art.authorid = au.id").
-		Join("collection col ON art.collectionid = col.id").
-		ToSql()
+func (pg *PgArtworkRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonreqresp.ArtworkFilter) sq.SelectBuilder {
+	if filterOps.Title != "" {
+		query = query.Where(sq.ILike{"artworks.title": "%" + filterOps.Title + "%"})
+	}
+	if filterOps.AuthorName != "" {
+		query = query.Where(sq.ILike{"author.name": "%" + filterOps.AuthorName + "%"}) // Поиск подстроки
+	}
+	if filterOps.Collection != "" {
+		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
+	}
+	if filterOps.Collection != "" {
+		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
+	}
+	if filterOps.EventID != uuid.Nil {
+		existsSubQuery := sq.Select("1").
+			From("Artwork_event ae").
+			Where("artworks.id = ae.artworkID").
+			Where(sq.Eq{"ae.eventID": filterOps.EventID})
+		query = query.Where(sq.Expr("EXISTS (?)", existsSubQuery))
+	}
+	return query
+}
+
+func (pg *PgArtworkRep) addSortParams(query sq.SelectBuilder, sortOps *jsonreqresp.ArtworkSortOps) sq.SelectBuilder {
+	switch sortOps.Field {
+	case jsonreqresp.TitleSortFieldArtwork:
+		query = query.OrderBy("artworks.title " + sortOps.Direction)
+	case jsonreqresp.AuthorNameSortFieldArtwork:
+		query = query.OrderBy("author.name " + sortOps.Direction)
+	case jsonreqresp.CreationYearSortFieldArtwork:
+		query = query.OrderBy("artworks.creationYear " + sortOps.Direction)
+	}
+	return query
+}
+
+func (pg *PgArtworkRep) execQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Artwork, error) {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	arts, err := pg.parseArtworksRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w", err)
+		return nil, fmt.Errorf("%w", err)
 	}
-	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
+	return arts, nil
+}
+
+func (pg *PgArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select(
+		"artworks.id", "artworks.title", "artworks.technic", "artworks.material",
+		"artworks.size", "artworks.creationYear",
+		"author.id", "author.name", "author.birthyear", "author.deathyear",
+		"collection.id", "collection.title").
+		From("artworks").
+		Join("author ON artworks.authorid = author.id").
+		Join("collection ON artworks.collectionid = collection.id")
+
+	query = pg.addFilterParams(query, filterOps)
+	query = pg.addSortParams(query, sortOps)
+	arts, err := pg.execQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgArtworkRep.GetAllArtworks: %w", err)
 	}
 	return arts, nil
 }
 
 func (pg *PgArtworkRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Artwork, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
+	query := psql.Select(
 		"art.id", "art.title", "art.technic", "art.material",
 		"art.size", "art.creationYear",
 		"au.id", "au.name", "au.birthyear", "au.deathyear",
@@ -142,177 +185,19 @@ func (pg *PgArtworkRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Artw
 		From("artworks art").
 		Join("author au ON art.authorid = au.id").
 		Join("collection col ON art.collectionid = col.id").
-		Where(sq.Eq{"art.id": id}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrQueryBuilds, err)
-	}
+		Where(sq.Eq{"art.id": id})
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	arts, err := pg.parseArtworksRows(rows)
+	arts, err := pg.execQuery(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w", err)
 	}
+
 	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
+		return nil, nil
 	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w: %v", ErrExpectedOneArtwork, err)
+		return nil, fmt.Errorf("PgArtworkRep.GetByID: %w", ErrExpectedOneArtwork)
 	}
 	return arts[0], nil
-}
-
-func (pg *PgArtworkRep) GetByTitle(ctx context.Context, title string) ([]*models.Artwork, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
-		"art.id", "art.title", "art.technic", "art.material",
-		"art.size", "art.creationYear",
-		"au.id", "au.name", "au.birthyear", "au.deathyear",
-		"col.id", "col.title",
-	).
-		From("artworks art").
-		Join("author au ON art.authorid = au.id").
-		Join("collection col ON art.collectionid = col.id").
-		Where(sq.Eq{"art.title": title}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	arts, err := pg.parseArtworksRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %v", err)
-	}
-	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
-	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("PgArtworkRep.GetByTitle: %w: %v", ErrExpectedOneArtwork, err)
-	}
-	return arts, nil
-}
-
-func (pg *PgArtworkRep) GetByAuthor(ctx context.Context, author *models.Author) ([]*models.Artwork, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
-		"art.id", "art.title", "art.technic", "art.material",
-		"art.size", "art.creationYear",
-		"au.id", "au.name", "au.birthyear", "au.deathyear",
-		"col.id", "col.title",
-	).
-		From("artworks art").
-		Join("author au ON art.authorid = au.id").
-		Join("collection col ON art.collectionid = col.id").
-		Where(sq.Eq{"au.id": author.GetID()}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	arts, err := pg.parseArtworksRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %v", err)
-	}
-	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
-	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("PgArtworkRep.GetByAuthor: %w: %v", ErrExpectedOneArtwork, err)
-	}
-	return arts, nil
-}
-
-func (pg *PgArtworkRep) GetByCreationTime(ctx context.Context, yearBeg int, yearEnd int) ([]*models.Artwork, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
-		"art.id", "art.title", "art.technic", "art.material",
-		"art.size", "art.creationYear",
-		"au.id", "au.name", "au.birthyear", "au.deathyear",
-		"col.id", "col.title",
-	).
-		From("artworks art").
-		Join("author au ON art.authorid = au.id").
-		Join("collection col ON art.collectionid = col.id").
-		Where(sq.And{
-			sq.GtOrEq{"art.creationYear": yearBeg},
-			sq.LtOrEq{"art.creationYear": yearEnd},
-		}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	arts, err := pg.parseArtworksRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %v", err)
-	}
-	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
-	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("PgArtworkRep.GetByCreationTime: %w: %v", ErrExpectedOneArtwork, err)
-	}
-	return arts, nil
-}
-
-func (pg *PgArtworkRep) GetByEvent(ctx context.Context, event models.Event) ([]*models.Artwork, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	existsSubQuery := sq.Select("1").
-		From("Artwork_event ae").
-		Where("art.id = ae.artworkID").
-		Where(sq.Eq{"ae.eventID": event.GetID()})
-
-	// Основной запрос
-	query, args, err := psql.Select(
-		"art.id", "art.title", "art.technic", "art.material",
-		"art.size", "art.creationYear",
-		"au.id", "au.name", "au.birthyear", "au.deathyear",
-		"col.id", "col.title",
-	).
-		From("artworks art").
-		Join("author au ON art.authorid = au.id").
-		Join("collection col ON art.collectionid = col.id").
-		Where(sq.Expr("EXISTS (?)", existsSubQuery)). // Используем Expr для EXISTS
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	arts, err := pg.parseArtworksRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %v", err)
-	}
-	if len(arts) == 0 {
-		return nil, ErrArtworkNotFound
-	} else if len(arts) > 1 {
-		return nil, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrExpectedOneArtwork, err)
-	}
-	return arts, nil
 }
 
 func (pg *PgArtworkRep) Add(ctx context.Context, e *models.Artwork) error {

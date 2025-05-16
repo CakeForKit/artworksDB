@@ -10,7 +10,7 @@ select count(*) from Events;
 
 select * from artwork_event;
 
-TRUNCATE Table artwork_event;
+update events set canVisit = FALSE where id = '681d817b-fbf8-49fe-a27a-0caa147f8e09';
 
 select *
 from artworks art 

@@ -226,7 +226,7 @@ $$ LANGUAGE plpgsql;
 
 INSERT INTO Artwork_event (artworkID, eventID)
 SELECT random_artwork_id(), random_event_id()
-FROM generate_series(1, 15)
+FROM generate_series(1, 20)
 ON CONFLICT DO NOTHING;
 
 -- Заполнение таблицы TicketPurchases (x записей)

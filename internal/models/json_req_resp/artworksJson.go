@@ -11,6 +11,11 @@ type ArtworkResponse struct {
 	Collection   CollectionResponse `json:"collection"`
 }
 
+type ArtworkRequest struct {
+	Filter ArtworkFilter  `json:"filter"`
+	Sort   ArtworkSortOps `json:"sort"`
+}
+
 type AddArtworkRequest struct {
 	Title        string `json:"title" binding:"required,max=255" example:"Звёздная ночь"`
 	CreationYear int    `json:"creationYear" binding:"required,gt=0,lte=2100" example:"1889"`
@@ -32,7 +37,7 @@ type ArtworkUpdate struct {
 }
 
 type UpdateArtworkRequest struct {
-	ID           string `json:"id" binding:"required,uuid" example: "44a315d0-663c-4813-92a6-d7977c2f2aba"`
+	ID           string `json:"id" binding:"required,uuid" example:"44a315d0-663c-4813-92a6-d7977c2f2aba"`
 	Title        string `json:"title" binding:"required,max=255" example:"Звёздная ночь"`
 	CreationYear int    `json:"creationYear" binding:"required,gt=0,lte=2100" example:"1889"`
 	Technic      string `json:"technic" binding:"required,max=100" example:"Масло, холст"`
@@ -45,3 +50,15 @@ type UpdateArtworkRequest struct {
 type DeleteArtworkRequest struct {
 	ID string `json:"id" binding:"required,uuid"`
 }
+
+// type TitleArtworkRequest struct {
+// 	Title string `json:"title" binding:"required,max=255" example:"Звёздная ночь"`
+// }
+
+// type AuthorIDRequest struct {
+// 	AuthorID string `json:"authorID" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
+// }
+
+// type CollectionIDRequest struct {
+// 	CollectionID string `json:"collectionID" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
+// }

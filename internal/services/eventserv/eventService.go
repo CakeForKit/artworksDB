@@ -35,7 +35,7 @@ func NewEventService(eventRep eventrep.EventRep) EventService {
 }
 
 func (e *eventService) GetAll(ctx context.Context) ([]*models.Event, error) {
-	return e.eventRep.GetAll(ctx)
+	return e.eventRep.GetAll(ctx, &jsonreqresp.EventFilter{})
 }
 
 func (e *eventService) Add(ctx context.Context, eventReq *jsonreqresp.AddEventRequest) error {

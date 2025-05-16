@@ -5,11 +5,13 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strconv"
 	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"
@@ -50,7 +52,7 @@ func NewPgEventRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCon
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxOpenConns(dbConf.MaxOpenConns)
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
@@ -86,6 +88,52 @@ func (pg *PgEventRep) parseEventsRows(rows *sql.Rows) ([]*models.Event, error) {
 	return resEvents, nil
 }
 
+func (pg *PgEventRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonreqresp.EventFilter) sq.SelectBuilder {
+	if filterOps.Title != "" {
+		query = query.Where(sq.ILike{"events.title": "%" + filterOps.Title + "%"})
+	}
+
+	if !filterOps.DateBegin.IsZero() && !filterOps.DateEnd.IsZero() {
+		query = query.Where(sq.Or{
+			sq.Expr("dateBegin BETWEEN ? AND ?", filterOps.DateBegin, filterOps.DateEnd),
+			sq.Expr("dateEnd BETWEEN ? AND ?", filterOps.DateBegin, filterOps.DateEnd),
+			sq.And{
+				sq.Expr("dateBegin <= ?", filterOps.DateBegin),
+				sq.Expr("dateEnd >= ?", filterOps.DateEnd),
+			},
+		})
+	} else if !filterOps.DateBegin.IsZero() {
+		query = query.Where(sq.GtOrEq{"dateBegin": filterOps.DateBegin})
+	} else if !filterOps.DateEnd.IsZero() {
+		query = query.Where(sq.LtOrEq{"dateEnd": filterOps.DateEnd})
+	}
+
+	if filterOps.CanVisit != "" {
+		canVisit, _ := strconv.ParseBool(filterOps.CanVisit)
+		query = query.Where(sq.Eq{"events.canVisit": canVisit})
+	}
+	return query
+}
+
+func (pg *PgEventRep) execQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Event, error) {
+	querySQL, args, err := query.ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+	}
+
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+	}
+	defer rows.Close()
+
+	events, err := pg.parseEventsRows(rows)
+	if err != nil {
+		return nil, fmt.Errorf("%w", err)
+	}
+	return events, nil
+}
+
 func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uuid.UUIDs, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("artworkID").
@@ -116,37 +164,35 @@ func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uui
 	return artworkIDs, nil
 }
 
-func (pg *PgEventRep) GetAll(ctx context.Context) ([]*models.Event, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID", "valid").
-		From("events").
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetAll %w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetAll %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	events, err := pg.parseEventsRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(events) == 0 {
-		return nil, ErrEventNotFound
-	}
-
+func (pg *PgEventRep) joinArtworkIDsToEvents(ctx context.Context, events []*models.Event) ([]*models.Event, error) {
 	for _, event := range events {
 		artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
 		if err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
+			return nil, fmt.Errorf("join ArtworkIds %w", err)
 		}
 		if err := event.AddArtworks(artworkIDs); err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
+			return nil, fmt.Errorf("join ArtworkIds %w", err)
 		}
+	}
+	return events, nil
+}
+
+func (pg *PgEventRep) GetAll(ctx context.Context, filterOps *jsonreqresp.EventFilter) ([]*models.Event, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select(
+		"events.id", "events.title", "events.dateBegin", "events.dateEnd", "events.canVisit",
+		"events.adress", "events.cntTickets", "events.creatorID", "events.valid").
+		From("events")
+
+	query = pg.addFilterParams(query, filterOps)
+	events, err := pg.execQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgEventRep.GetAll %w", err)
+	}
+
+	events, err = pg.joinArtworkIDsToEvents(ctx, events)
+	if err != nil {
+		return nil, fmt.Errorf("PgEventRep.GetAll %w", err)
 	}
 
 	return events, nil
@@ -154,39 +200,26 @@ func (pg *PgEventRep) GetAll(ctx context.Context) ([]*models.Event, error) {
 
 func (pg *PgEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID", "valid").
+	query := psql.Select(
+		"events.id", "events.title", "events.dateBegin", "events.dateEnd", "events.canVisit",
+		"events.adress", "events.cntTickets", "events.creatorID", "events.valid").
 		From("events").
-		Where(sq.Eq{"id": id}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetByID %w: %v", ErrQueryBuilds, err)
-	}
+		Where(sq.Eq{"id": id})
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	events, err := pg.execQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetByID %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	events, err := pg.parseEventsRows(rows)
-	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("PgEventRep.GetByID %w", err)
 	}
 	if len(events) == 0 {
-		return nil, ErrEventNotFound
+		return nil, nil
 	} else if len(events) > 1 {
 		return nil, fmt.Errorf("PgEventRep.GetByID %w: %v", ErrExpectedOneEvent, err)
 	}
-
-	event := events[0]
-	artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
+	events, err = pg.joinArtworkIDsToEvents(ctx, events)
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetByID %v", err)
+		return nil, fmt.Errorf("PgEventRep.GetByID %w", err)
 	}
-	if err := event.AddArtworks(artworkIDs); err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetByID %v", err)
-	}
-	return event, nil
+	return events[0], nil
 }
 
 func (pg *PgEventRep) GetByDate(ctx context.Context, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {

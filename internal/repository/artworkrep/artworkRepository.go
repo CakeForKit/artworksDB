@@ -6,6 +6,7 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -16,12 +17,8 @@ var (
 )
 
 type ArtworkRep interface {
-	GetAllArtworks(ctx context.Context) ([]*models.Artwork, error)
+	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Artwork, error)
-	GetByTitle(ctx context.Context, title string) ([]*models.Artwork, error)
-	GetByAuthor(ctx context.Context, author *models.Author) ([]*models.Artwork, error)
-	GetByCreationTime(ctx context.Context, yearBeg int, yearEnd int) ([]*models.Artwork, error)
-	GetByEvent(ctx context.Context, event models.Event) ([]*models.Artwork, error)
 	//
 	Add(ctx context.Context, aw *models.Artwork) error
 	Delete(ctx context.Context, id uuid.UUID) error

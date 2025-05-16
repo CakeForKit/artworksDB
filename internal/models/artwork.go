@@ -2,7 +2,6 @@ package models
 
 import (
 	"errors"
-	"fmt"
 	"strings"
 
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -93,7 +92,6 @@ func (a *Artwork) validate() error {
 	// validateWithAuthor
 	birthYear := a.author.GetBirthYear()
 	deathYear := a.author.GetDeathYear()
-	fmt.Printf("deathYear = %d\n", deathYear)
 	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
 		return ErrArtworkYearNotInRange
 	}
