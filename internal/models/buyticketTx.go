@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"time"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -22,6 +23,7 @@ type jsonTicketPurchaseTx struct {
 }
 
 var (
+	ErrValidateTicketTx   = errors.New("invalid model TicketTx")
 	ErrBuyTicketTxZeroCnt = errors.New("cntTickets <= 0")
 )
 
@@ -36,11 +38,11 @@ func NewBuyTicketTx(
 	expiredAt time.Time,
 ) (TicketPurchaseTx, error) {
 	if cntTickets <= 0 {
-		return TicketPurchaseTx{}, ErrBuyTicketTxZeroCnt
+		return TicketPurchaseTx{}, fmt.Errorf("%w: %v", ErrValidateTicketTx, ErrBuyTicketTxZeroCnt)
 	}
 	tp, err := NewTicketPurchase(id, customerName, customerEmail, purchaseDate, eventID, userID)
 	if err != nil {
-		return TicketPurchaseTx{}, fmt.Errorf("NewBuyTicketTx: %v", err)
+		return TicketPurchaseTx{}, fmt.Errorf("%w: %v", ErrValidateTicketTx, err)
 	}
 	return TicketPurchaseTx{
 		ticketPurchase: tp,
@@ -86,6 +88,23 @@ func (t *TicketPurchaseTx) FromJson(data []byte) error {
 	}
 
 	return nil
+}
+
+func (t *TicketPurchaseTx) ToTxTicketPurchaseResponse() jsonreqresp.TxTicketPurchaseResponse {
+	ticketPurchaseJson := jsonreqresp.TicketPurchaseResponse{
+		ID:            t.ticketPurchase.id,
+		CustomerName:  t.ticketPurchase.customerName,
+		CustomerEmail: t.ticketPurchase.customerEmail,
+		PurchaseDate:  t.ticketPurchase.purchaseDate,
+		EventID:       t.ticketPurchase.eventID,
+		UserID:        t.ticketPurchase.userID,
+	}
+
+	return jsonreqresp.TxTicketPurchaseResponse{
+		TicketPurchase: ticketPurchaseJson,
+		CntTickets:     t.cntTickets,
+		ExpiredAt:      t.expiredAt,
+	}
 }
 
 func (t *TicketPurchaseTx) GetID() uuid.UUID {

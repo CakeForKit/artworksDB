@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/admin/employeelist/all": {
+        "/admin/employeelist/": {
             "get": {
                 "security": [
                     {
@@ -146,6 +146,49 @@ const docTemplate = `{
                     },
                     "409": {
                         "description": "Attempt to re-register"
+                    }
+                }
+            }
+        },
+        "/admin/userlist/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get all users by admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EmployeeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
                     }
                 }
             }
@@ -1137,6 +1180,249 @@ const docTemplate = `{
                 }
             }
         },
+        "/employee/mailing/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Sends a message to all users using event data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mailing"
+                ],
+                "summary": "Send mailing to users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mailing sent successfully",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.MailingResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error: no events found"
+                    }
+                }
+            }
+        },
+        "/guest/tickets": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all ticket purchases for authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Get user's tickets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.TicketPurchaseResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Buy tickets for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Purchase tickets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Ticket purchase details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.BuyTicketRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sets purchase data in cookie",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.TxTicketPurchaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Event not found"
+                    },
+                    "409": {
+                        "description": "No tickets available"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
+        "/guest/tickets/cancel": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Cancels a pending ticket purchase",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Cancel purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Transaction ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConfirmCancelTxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Purchase cancelled"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
+        "/guest/tickets/confirm": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Confirms a pending ticket purchase",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Confirm purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Transaction ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConfirmCancelTxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Purchase confirmed"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
         "/museum/artworks": {
             "get": {
                 "description": "Retrieves a list of all artworks",
@@ -1264,6 +1550,84 @@ const docTemplate = `{
                     },
                     "400": {
                         "description": "Invalid date format. Use YYYY-MM-DD"
+                    }
+                }
+            }
+        },
+        "/user/self": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns authenticated user's profile information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UserSelfResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Changes user's subscription to email mailings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update mailing subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription preference",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid request body"
                     }
                 }
             }
@@ -1511,6 +1875,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address",
+                "canVisit",
                 "cntTickets",
                 "dateBegin",
                 "dateEnd",
@@ -1613,6 +1978,43 @@ const docTemplate = `{
                 }
             }
         },
+        "jsonreqresp.BuyTicketRequest": {
+            "type": "object",
+            "required": [
+                "cntTickets",
+                "eventID"
+            ],
+            "properties": {
+                "CustomerEmail": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "myname@test.ru"
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 1
+                },
+                "customerName": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "myname"
+                },
+                "eventID": {
+                    "type": "string",
+                    "example": "b10f841d-ba75-48df-a9cf-c86fc9bd3041"
+                }
+            }
+        },
+        "jsonreqresp.ChangeSubscribeToMailingRequest": {
+            "type": "object",
+            "properties": {
+                "subscribe": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
         "jsonreqresp.CollectionResponse": {
             "type": "object",
             "properties": {
@@ -1638,6 +2040,18 @@ const docTemplate = `{
                 },
                 "eventID": {
                     "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.ConfirmCancelTxRequest": {
+            "type": "object",
+            "required": [
+                "txID"
+            ],
+            "properties": {
+                "txID": {
+                    "type": "string",
+                    "example": "b10f841d-ba75-48df-a9cf-c86fc9bd3041"
                 }
             }
         },
@@ -1763,6 +2177,57 @@ const docTemplate = `{
                 }
             }
         },
+        "jsonreqresp.MailingResponse": {
+            "type": "object",
+            "properties": {
+                "msg_text": {
+                    "type": "string"
+                },
+                "user_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "jsonreqresp.TicketPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "eventId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.TxTicketPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "cntTickets": {
+                    "type": "integer"
+                },
+                "expiredAt": {
+                    "type": "string"
+                },
+                "ticketPurchase": {
+                    "$ref": "#/definitions/jsonreqresp.TicketPurchaseResponse"
+                }
+            }
+        },
         "jsonreqresp.UpdateArtworkRequest": {
             "type": "object",
             "required": [
@@ -1871,6 +2336,7 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "address",
+                "canVisit",
                 "cntTickets",
                 "dateBegin",
                 "dateEnd",
@@ -1925,6 +2391,27 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "jsonreqresp.UserSelfResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "alice.smith@example.com"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "alice@example.com"
+                },
+                "subscribeMail": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "example": "alice_smith"
                 }
             }
         }

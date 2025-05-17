@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -99,6 +100,17 @@ func (tp *TicketPurchase) GetEventID() uuid.UUID {
 
 func (tp *TicketPurchase) GetUserID() uuid.UUID {
 	return tp.userID
+}
+
+func (t *TicketPurchase) ToTicketPurchaseResponse() jsonreqresp.TicketPurchaseResponse {
+	return jsonreqresp.TicketPurchaseResponse{
+		ID:            t.id,
+		CustomerName:  t.customerName,
+		CustomerEmail: t.customerEmail,
+		PurchaseDate:  t.purchaseDate,
+		EventID:       t.eventID,
+		UserID:        t.userID,
+	}
 }
 
 // // SetCustomerName устанавливает имя покупателя

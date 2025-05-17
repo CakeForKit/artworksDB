@@ -214,6 +214,7 @@ definitions:
         type: string
     required:
     - address
+    - canVisit
     - cntTickets
     - dateBegin
     - dateEnd
@@ -260,6 +261,33 @@ definitions:
         example: Leonardo da Vinci
         type: string
     type: object
+  jsonreqresp.BuyTicketRequest:
+    properties:
+      CustomerEmail:
+        example: myname@test.ru
+        maxLength: 100
+        type: string
+      cntTickets:
+        example: 1
+        minimum: 0
+        type: integer
+      customerName:
+        example: myname
+        maxLength: 100
+        type: string
+      eventID:
+        example: b10f841d-ba75-48df-a9cf-c86fc9bd3041
+        type: string
+    required:
+    - cntTickets
+    - eventID
+    type: object
+  jsonreqresp.ChangeSubscribeToMailingRequest:
+    properties:
+      subscribe:
+        example: true
+        type: boolean
+    type: object
   jsonreqresp.CollectionResponse:
     properties:
       id:
@@ -278,6 +306,14 @@ definitions:
     required:
     - artworkID
     - eventID
+    type: object
+  jsonreqresp.ConfirmCancelTxRequest:
+    properties:
+      txID:
+        example: b10f841d-ba75-48df-a9cf-c86fc9bd3041
+        type: string
+    required:
+    - txID
     type: object
   jsonreqresp.DeleteArtworkRequest:
     properties:
@@ -363,6 +399,39 @@ definitions:
       valid:
         example: true
         type: boolean
+    type: object
+  jsonreqresp.MailingResponse:
+    properties:
+      msg_text:
+        type: string
+      user_ids:
+        items:
+          type: string
+        type: array
+    type: object
+  jsonreqresp.TicketPurchaseResponse:
+    properties:
+      customerEmail:
+        type: string
+      customerName:
+        type: string
+      eventId:
+        type: string
+      id:
+        type: string
+      purchaseDate:
+        type: string
+      userId:
+        type: string
+    type: object
+  jsonreqresp.TxTicketPurchaseResponse:
+    properties:
+      cntTickets:
+        type: integer
+      expiredAt:
+        type: string
+      ticketPurchase:
+        $ref: '#/definitions/jsonreqresp.TicketPurchaseResponse'
     type: object
   jsonreqresp.UpdateArtworkRequest:
     properties:
@@ -476,6 +545,7 @@ definitions:
         type: boolean
     required:
     - address
+    - canVisit
     - cntTickets
     - dateBegin
     - dateEnd
@@ -491,6 +561,21 @@ definitions:
         example: true
         type: boolean
     type: object
+  jsonreqresp.UserSelfResponse:
+    properties:
+      email:
+        example: alice.smith@example.com
+        type: string
+      login:
+        example: alice@example.com
+        type: string
+      subscribeMail:
+        example: true
+        type: boolean
+      username:
+        example: alice_smith
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -498,7 +583,7 @@ info:
   title: Museum
   version: "1.0"
 paths:
-  /admin/employeelist/all:
+  /admin/employeelist/:
     get:
       consumes:
       - application/json
@@ -581,6 +666,33 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Register employee
+      tags:
+      - admin
+  /admin/userlist/:
+    get:
+      consumes:
+      - application/json
+      description: Retrieves a list of all users
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.EmployeeResponse'
+            type: array
+        "401":
+          description: Unauthorized
+      security:
+      - ApiKeyAuth: []
+      summary: Get all users by admin
       tags:
       - admin
   /auth-admin/login:
@@ -1212,6 +1324,159 @@ paths:
       summary: Add artwork to event
       tags:
       - Events
+  /employee/mailing/:
+    post:
+      consumes:
+      - application/json
+      description: Sends a message to all users using event data
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Mailing sent successfully
+          schema:
+            $ref: '#/definitions/jsonreqresp.MailingResponse'
+        "404":
+          description: 'Error: no events found'
+      security:
+      - ApiKeyAuth: []
+      summary: Send mailing to users
+      tags:
+      - Mailing
+  /guest/tickets:
+    get:
+      description: Retrieves all ticket purchases for authenticated user
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.TicketPurchaseResponse'
+            type: array
+        "401":
+          description: Unauthorized
+        "403":
+          description: Forbidden
+      security:
+      - ApiKeyAuth: []
+      summary: Get user's tickets
+      tags:
+      - Tickets
+    post:
+      consumes:
+      - application/json
+      description: Buy tickets for a specific event
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        type: string
+      - description: Ticket purchase details
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.BuyTicketRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sets purchase data in cookie
+          schema:
+            $ref: '#/definitions/jsonreqresp.TxTicketPurchaseResponse'
+        "400":
+          description: Invalid request format
+        "401":
+          description: Unauthorized
+        "404":
+          description: Event not found
+        "409":
+          description: No tickets available
+        "410":
+          description: Transaction expired
+      security:
+      - ApiKeyAuth: []
+      summary: Purchase tickets
+      tags:
+      - Tickets
+  /guest/tickets/cancel:
+    put:
+      consumes:
+      - application/json
+      description: Cancels a pending ticket purchase
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        type: string
+      - description: Transaction ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ConfirmCancelTxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Purchase cancelled
+        "400":
+          description: Invalid request
+        "404":
+          description: Transaction not found
+        "410":
+          description: Transaction expired
+      security:
+      - ApiKeyAuth: []
+      summary: Cancel purchase
+      tags:
+      - Tickets
+  /guest/tickets/confirm:
+    put:
+      consumes:
+      - application/json
+      description: Confirms a pending ticket purchase
+      parameters:
+      - description: Bearer token
+        in: header
+        name: Authorization
+        type: string
+      - description: Transaction ID
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ConfirmCancelTxRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Purchase confirmed
+        "400":
+          description: Invalid request
+        "404":
+          description: Transaction not found
+        "410":
+          description: Transaction expired
+      security:
+      - ApiKeyAuth: []
+      summary: Confirm purchase
+      tags:
+      - Tickets
   /museum/artworks:
     get:
       consumes:
@@ -1302,4 +1567,53 @@ paths:
       summary: Get events
       tags:
       - Searcher
+  /user/self:
+    get:
+      description: Returns authenticated user's profile information
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonreqresp.UserSelfResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user profile
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Changes user's subscription to email mailings
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Subscription preference
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request body
+      security:
+      - ApiKeyAuth: []
+      summary: Update mailing subscription
+      tags:
+      - User
 swagger: "2.0"

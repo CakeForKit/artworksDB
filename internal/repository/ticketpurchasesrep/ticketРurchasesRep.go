@@ -2,9 +2,15 @@ package ticketpurchasesrep
 
 import (
 	"context"
+	"errors"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"github.com/google/uuid"
+)
+
+var (
+	ErrPgTicketPurchasesRep = errors.New("pgTicketPurchasesRep")
 )
 
 type TicketPurchasesRep interface {
@@ -17,6 +23,6 @@ type TicketPurchasesRep interface {
 	Close()
 }
 
-func NewTicketPurchasesRep() (TicketPurchasesRep, error) {
-	return &MockTicketPurchasesRep{}, nil
+func NewTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
+	return NewPgTicketPurchasesRep(ctx, pgCreds, dbConf)
 }

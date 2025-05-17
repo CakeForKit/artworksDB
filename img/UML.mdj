@@ -1898,7 +1898,7 @@
 											"top": 391,
 											"width": 115.958984375,
 											"height": 13,
-											"text": "EmployeeService"
+											"text": "adminservice"
 										},
 										{
 											"_type": "LabelView",
@@ -2110,7 +2110,7 @@
 											"top": 583,
 											"width": 111,
 											"height": 13,
-											"text": "employeeService"
+											"text": "adminservice"
 										},
 										{
 											"_type": "LabelView",
@@ -10853,7 +10853,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "EmployeeService",
+					"name": "adminservice",
 					"operations": [
 						{
 							"_type": "UMLOperation",
@@ -10879,7 +10879,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "employeeService",
+					"name": "adminservice",
 					"ownedElements": [
 						{
 							"_type": "UMLGeneralization",

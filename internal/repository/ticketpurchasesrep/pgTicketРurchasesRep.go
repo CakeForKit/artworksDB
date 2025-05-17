@@ -85,10 +85,7 @@ func (pg *PgTicketPurchasesRep) parseTicketPurchasessRows(rows *sql.Rows) ([]*mo
 	return resTicketPurchases, nil
 }
 
-func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(
-	ctx context.Context,
-	userID uuid.UUID,
-) ([]*models.TicketPurchase, error) {
+func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context, userID uuid.UUID) ([]*models.TicketPurchase, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select(
 		"tp.id", "tp.customername", "tp.customeremail",
@@ -118,10 +115,7 @@ func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(
 	return arts, nil
 }
 
-func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(
-	ctx context.Context,
-	eventID uuid.UUID,
-) (int, error) {
+func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(ctx context.Context, eventID uuid.UUID) (int, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	query, args, err := psql.
@@ -132,13 +126,13 @@ func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(
 		ToSql()
 
 	if err != nil {
-		return 0, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return 0, fmt.Errorf("%w: %w %v", ErrPgTicketPurchasesRep, ErrQueryBuilds, err)
 	}
 
 	var count int
 	err = pg.db.QueryRowContext(ctx, query, args...).Scan(&count)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return 0, fmt.Errorf("%w: %w %v", ErrPgTicketPurchasesRep, ErrQueryExec, err)
 	}
 
 	return count, nil

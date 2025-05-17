@@ -11,9 +11,7 @@ import (
 )
 
 type MailingService interface {
-	SendMailToAllUsers(ctx context.Context, events []*models.Event) error
-	SubscribeToMailing(ctx context.Context, id uuid.UUID) error
-	UnSubscribeToMailing(ctx context.Context, id uuid.UUID) error
+	SendMailToAllUsers(ctx context.Context, events []*models.Event) (string, uuid.UUIDs, error)
 	GenerateMessageText(ctx context.Context, events []*models.Event) string
 }
 
@@ -34,22 +32,21 @@ func NewGmailSender(urep userrep.UserRep,
 	}
 }
 
-func (m *mailingService) SendMailToAllUsers(ctx context.Context, events []*models.Event) error {
+func (m *mailingService) SendMailToAllUsers(ctx context.Context, events []*models.Event) (string, uuid.UUIDs, error) {
+	msgText := m.GenerateMessageText(ctx, events)
+
 	users, err := m.userRep.GetAllSubscribed(ctx)
 	if err != nil {
-		return fmt.Errorf("SendMailToAllUsers: %v", err)
+		return "", nil, fmt.Errorf("SendMailToAllUsers: %v", err)
 	}
 	if len(users) == 0 {
-		return nil
+		return msgText, nil, nil
 	}
-	fmt.Printf("Сообщение отправлено пользовтелям:\n")
-	msgText := m.GenerateMessageText(ctx, events)
+	var userIDs uuid.UUIDs
 	for _, u := range users {
-		fmt.Printf("%s, ", u.GetEmail())
+		userIDs = append(userIDs, u.GetID())
 	}
-	fmt.Printf("\n")
-	fmt.Println(msgText) // TODO to log
-	return nil
+	return msgText, userIDs, nil
 }
 
 func (m *mailingService) GenerateMessageText(ctx context.Context, events []*models.Event) string {
@@ -60,38 +57,4 @@ func (m *mailingService) GenerateMessageText(ctx context.Context, events []*mode
 	}
 	arre[i] = fmt.Sprintf("from %s (%s)", m.name, m.fromEmailAddress)
 	return strings.Join(arre, "\n")
-}
-
-func (m *mailingService) SubscribeToMailing(ctx context.Context, id uuid.UUID) error {
-	// updatefunc := func(u *models.User) (*models.User, error) {
-	// 	updatedUser, err := models.NewUser(
-	// 		u.GetID(),
-	// 		u.GetUsername(),
-	// 		u.GetLogin(),
-	// 		u.GetHashedPassword(),
-	// 		u.GetCreatedAt(),
-	// 		u.GetEmail(),
-	// 		true,
-	// 	)
-	// 	return &updatedUser, err
-	// }
-	// _, err := m.userRep.Update(id, updatefunc)
-	return m.userRep.UpdateSubscribeToMailing(ctx, id, true)
-}
-
-func (m *mailingService) UnSubscribeToMailing(ctx context.Context, id uuid.UUID) error {
-	// updatefunc := func(u *models.User) (*models.User, error) {
-	// 	updatedUser, err := models.NewUser(
-	// 		u.GetID(),
-	// 		u.GetUsername(),
-	// 		u.GetLogin(),
-	// 		u.GetHashedPassword(),
-	// 		u.GetCreatedAt(),
-	// 		u.GetEmail(),
-	// 		false,
-	// 	)
-	// 	return &updatedUser, err
-	// }
-	// _, err := m.userRep.Update(id, updatefunc)
-	return m.userRep.UpdateSubscribeToMailing(ctx, id, false)
 }

@@ -8,7 +8,7 @@ select count(*) from artworks;
 
 select count(*) from Events;
 
-select * from artwork_event;
+select * from TicketPurchases where eventID = 'b10f841d-ba75-48df-a9cf-c86fc9bd3041';
 
 update events set canVisit = FALSE where id = '681d817b-fbf8-49fe-a27a-0caa147f8e09';
 

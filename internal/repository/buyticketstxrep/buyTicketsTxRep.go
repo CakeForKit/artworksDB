@@ -27,6 +27,6 @@ func NewBuyTicketsTxRep(
 	ctx context.Context,
 	redisCreds *cnfg.RedisCredentials,
 ) (BuyTicketsTxRep, error) {
-	return &MockBuyTicketsTxRep{}, nil
-	// return NewRedisBuyTicketsTxRep(ctx, redisCreds)
+	// return &MockBuyTicketsTxRep{}, nil
+	return NewRedisBuyTicketsTxRep(ctx, redisCreds)
 }

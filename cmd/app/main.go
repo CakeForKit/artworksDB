@@ -19,17 +19,22 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/ticketpurchasesrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/adminserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/employeeserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/mailing"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/searcher"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -52,6 +57,10 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("cannot load PgCredentials: %v", err))
 	}
+	redisCreds, err := cnfg.LoadRedisCredentials()
+	if err != nil {
+		panic(fmt.Errorf("cannot load RedisCredentials: %v", err))
+	}
 	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
 	if err != nil {
 		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
@@ -62,29 +71,59 @@ func main() {
 	}
 	// ------------------
 
-	// User
-	{
-		// ----- User Auth -----
-		userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
-		if err != nil {
-			panic(err)
-		}
-		authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
-		if err != nil {
-			panic(err)
-		}
-
-		authUserRouter := api.AuthUserRouter{}
-		authUserRouter.Init(apiGroup, authUserServ)
-		// ---------------------
-	}
-
-	// For all
-	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	// authZ
+	authZ, err := auth.NewAuthZ()
 	if err != nil {
 		panic(err)
 	}
+
+	// User
+
+	// ----- User Auth -----
+	userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
+	if err != nil {
+		panic(err)
+	}
+	userServ := userservice.NewUserService(userRep, authZ)
+
+	authUserRouter := api.AuthUserRouter{}
+	authUserRouter.Init(apiGroup, authUserServ)
+
+	userGroup := apiGroup.Group("/user")
+	userGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, true))
+
+	userRouter := api.NewUserRouter(userGroup, userServ)
+	_ = userRouter
+	// ---------------------
+
+	// For all
+	guestGroup := apiGroup.Group("/guest")
+	guestGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, false))
+
 	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	txRep, err := buyticketstxrep.NewBuyTicketsTxRep(ctx, redisCreds)
+	if err != nil {
+		panic(err)
+	}
+	tPurchasesRep, err := ticketpurchasesrep.NewTicketPurchasesRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	buyTicketServ, err := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
+	if err != nil {
+		panic(err)
+	}
+	buyTicketRouter := api.NewBuyTicketRouter(guestGroup, buyTicketServ)
+	_ = buyTicketRouter
+
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
@@ -97,18 +136,18 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
+	authadminserv, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
 	if err != nil {
 		panic(err)
 	}
 	authEmployeeRouter := api.AuthEmployeeRouter{}
-	authEmployeeRouter.Init(apiGroup, authEmployeeServ)
+	authEmployeeRouter.Init(apiGroup, authadminserv)
 	// ---------------------
 
 	// ----- Employee work -----
 	// Collections
 	employeeGroup := apiGroup.Group("/employee")
-	employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ))
+	employeeGroup.Use(middleware.AuthMiddleware(authadminserv, authZ, true))
 
 	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
@@ -135,6 +174,11 @@ func main() {
 	eventServ := eventserv.NewEventService(eventRep)
 	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
 	_ = eventRouter
+
+	// Mailing
+	mailingServ := mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
+	mailingRouter := api.NewMailingRouter(employeeGroup, mailingServ, eventServ)
+	_ = mailingRouter
 	// -------------------------
 
 	// ----- Admin Auth -----
@@ -152,12 +196,12 @@ func main() {
 
 	// ----- Admin work -----
 	adminGroup := apiGroup.Group("/admin")
-	adminGroup.Use(middleware.AuthMiddleware(authAdminServ))
+	adminGroup.Use(middleware.AuthMiddleware(authAdminServ, authZ, true))
 
-	employeeServ := employeeserv.NewEmployeeService(employeeRep)
+	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
 
-	employeeRouter := api.EmployeeListRouter{}
-	employeeRouter.Init(adminGroup, employeeServ, authEmployeeServ)
+	employeeRouter := api.AdminRouter{}
+	employeeRouter.Init(adminGroup, adminserv, authadminserv, authZ)
 	// ----------------------
 	engine.Run(":8080")
 

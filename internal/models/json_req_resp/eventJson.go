@@ -20,7 +20,7 @@ type EventUpdate struct {
 	DateBegin  time.Time `json:"dateBegin" binding:"required" example:"2023-06-15T10:00:00Z"`
 	DateEnd    time.Time `json:"dateEnd" binding:"required" example:"2023-09-20T18:00:00Z"`
 	Address    string    `json:"address" binding:"required,max=500" example:"ул. Пречистенка, 12/2"`
-	CanVisit   bool      `json:"canVisit" example:"true"`
+	CanVisit   bool      `json:"canVisit" binding:"required" example:"true"`
 	CntTickets int       `json:"cntTickets" binding:"required,min=0" example:"100"`
 	Valid      bool      `json:"valid" example:"true"`
 }
@@ -30,7 +30,7 @@ type AddEventRequest struct {
 	DateBegin  time.Time `json:"dateBegin" binding:"required" example:"2023-06-15T10:00:00Z"`
 	DateEnd    time.Time `json:"dateEnd" binding:"required" example:"2023-09-20T18:00:00Z"`
 	Address    string    `json:"address" binding:"required,max=500" example:"ул. Пречистенка, 12/2"`
-	CanVisit   bool      `json:"canVisit" example:"true"`
+	CanVisit   bool      `json:"canVisit" binding:"required" example:"true"`
 	EmployeeID string    `json:"employeeID" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
 	CntTickets int       `json:"cntTickets" binding:"required,min=0" example:"100"`
 	ArtworkIDs []string  `json:"artworkIDs"`
@@ -42,7 +42,7 @@ type UpdateEventRequest struct {
 	DateBegin  time.Time `json:"dateBegin" binding:"required" example:"2023-06-15T10:00:00Z"`
 	DateEnd    time.Time `json:"dateEnd" binding:"required" example:"2023-09-20T18:00:00Z"`
 	Address    string    `json:"address" binding:"required,max=500" example:"ул. Пречистенка, 12/2"`
-	CanVisit   bool      `json:"canVisit" example:"true"`
+	CanVisit   bool      `json:"canVisit" binding:"required" example:"true"`
 	CntTickets int       `json:"cntTickets" binding:"required,min=0" example:"100"`
 	Valid      bool      `json:"valid" example:"true"`
 }
