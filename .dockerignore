@@ -1,0 +1,10 @@
+.git
+.idea
+*.md
+*.sql
+*.drawio
+*.png
+*.svg
+tmp/
+test/
+docs/

@@ -3,6 +3,7 @@ package models
 import (
 	"errors"
 	"net/mail"
+	"strings"
 	"time"
 
 	"github.com/google/uuid"
@@ -14,7 +15,7 @@ type User struct {
 	login          string // unique
 	hashedPassword string
 	createdAt      time.Time
-	mail           string
+	email          string
 	subscribeMail  bool
 }
 
@@ -27,60 +28,74 @@ var (
 )
 
 func NewUser(id uuid.UUID, username string, login string, hashedPassword string, createdAt time.Time, mail string, subscribeMail bool) (User, error) {
-	if username == "" {
-		return User{}, ErrUserEmptyUsername
-	} else if login == "" {
-		return User{}, ErrUserEmptyLogin
-	} else if hashedPassword == "" {
-		return User{}, ErrUserEmptyPassword
-	} else if createdAt.IsZero() {
-		return User{}, ErrUserInvalidCreatedAt
-	} else if !isValidEmail(mail) {
-		return User{}, ErrUserInvalidEmail
-	}
-
-	return User{
+	user := User{
 		id:             id,
-		username:       username,
-		login:          login,
+		username:       strings.TrimSpace(username),
+		login:          strings.TrimSpace(login),
 		hashedPassword: hashedPassword,
 		createdAt:      createdAt,
-		mail:           mail,
+		email:          strings.TrimSpace(mail),
 		subscribeMail:  subscribeMail,
-	}, nil
+	}
+	err := user.validate()
+	if err != nil {
+		return User{}, err
+	}
+	return user, nil
 }
 
-// GetID возвращает идентификатор пользователя
+func (u *User) validate() error {
+	if u.username == "" || len(u.username) > 50 {
+		return ErrUserEmptyUsername
+	} else if u.login == "" || len(u.login) > 50 {
+		return ErrUserEmptyLogin
+	} else if u.hashedPassword == "" || len(u.hashedPassword) > 255 {
+		return ErrUserEmptyPassword
+	} else if u.createdAt.IsZero() {
+		return ErrUserInvalidCreatedAt
+	} else if len(u.email) > 100 || !isValidEmail(u.email) {
+		return ErrUserInvalidEmail
+	}
+	return nil
+}
+
+func CmpUsers(u1, u2 *User) bool {
+	if u1 == nil || u2 == nil {
+		return u1 == u2
+	}
+	// createdAt - не сравниваем
+	return u1.id == u2.id &&
+		u1.username == u2.username &&
+		u1.login == u2.login &&
+		u1.hashedPassword == u2.hashedPassword &&
+		u1.email == u2.email &&
+		u1.subscribeMail == u2.subscribeMail
+}
+
 func (u *User) GetID() uuid.UUID {
 	return u.id
 }
 
-// GetUsername возвращает имя пользователя
 func (u *User) GetUsername() string {
 	return u.username
 }
 
-// GetLogin возвращает логин пользователя
 func (u *User) GetLogin() string {
 	return u.login
 }
 
-// GetHashedPassword возвращает хэшированный пароль пользователя
 func (u *User) GetHashedPassword() string {
 	return u.hashedPassword
 }
 
-// GetCreatedAt возвращает дату создания пользователя
 func (u *User) GetCreatedAt() time.Time {
 	return u.createdAt
 }
 
-// GetMail возвращает email пользователя
-func (u *User) GetMail() string {
-	return u.mail
+func (u *User) GetEmail() string {
+	return u.email
 }
 
-// IsSubscribedToMail возвращает статус подписки на рассылку
 func (u *User) IsSubscribedToMail() bool {
 	return u.subscribeMail
 }

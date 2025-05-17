@@ -1,154 +1,193 @@
 package auth
 
 import (
+	"context"
 	"testing"
 	"time"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep/mockemployeerep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/util"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/mock"
-	"github.com/stateio/testify/require"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-func TestAuthEmployee(t *testing.T) {
-	validEmployeeID := uuid.New()
-	validUsername := "employee_user"
-	validLogin := "employee_login"
-	validPassword := "employee_password"
-	hashedPassword := "hashed_employee_password"
+func createTestConfig() cnfg.AppConfig {
+	config := cnfg.AppConfig{
+		TokenSymmetricKey:   "01234567890123456789012345678912",
+		AccessTokenDuration: time.Hour,
+	}
+	return config
+}
 
-	config := util.Config{
-		TokenSymmetricKey:    "01234567890123456789012345678912",
-		AccessTokenDuration:  time.Hour,
-		RefreshTokenDuration: time.Hour * 24,
+func createTestEmployee() *models.Employee {
+	employee, _ := models.NewEmployee(
+		uuid.New(),
+		"test_user",
+		"test_login",
+		"hashed_password",
+		time.Now(),
+		true,
+		uuid.New(),
+	)
+	return &employee
+}
+
+func TestAuthEmployee_LoginEmployee(t *testing.T) {
+	ctx := context.Background()
+	config := createTestConfig()
+	validPassword := "valid_password"
+	invalidPassword := "invalid_password"
+
+	tests := []struct {
+		name          string
+		login         string
+		password      string
+		mockEmployee  *models.Employee
+		mockError     error
+		checkPassword error
+		expectedError error
+	}{
+		{
+			name:          "success",
+			login:         "test_login",
+			password:      validPassword,
+			mockEmployee:  createTestEmployee(),
+			mockError:     nil,
+			checkPassword: nil,
+			expectedError: nil,
+		},
+		{
+			name:          "employee not found",
+			login:         "unknown_login",
+			password:      validPassword,
+			mockEmployee:  nil,
+			mockError:     employeerep.ErrEmployeeNotFound,
+			expectedError: employeerep.ErrEmployeeNotFound,
+		},
+		{
+			name:          "invalid password",
+			login:         "test_login",
+			password:      invalidPassword,
+			mockEmployee:  createTestEmployee(),
+			mockError:     nil,
+			checkPassword: hasher.ErrPassword,
+			expectedError: hasher.ErrPassword,
+		},
 	}
 
-	t.Run("LoginEmployee", func(t *testing.T) {
-		t.Run("Success", func(t *testing.T) {
-			employeeRep := new(mockemployeerep.MockEmployeeRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
-
-			employee, err := models.NewEmployee(
-				validEmployeeID,
-				validUsername,
-				validLogin,
-				hashedPassword,
-				time.Now(),
-			)
-			require.NoError(t, err)
-
-			employeeRep.On("GetByLogin", validLogin).Return(&employee, nil)
-			hasher.On("CheckPassword", validPassword, hashedPassword).Return(nil)
 
 			service := &authEmployee{
 				tokenMaker:  tokenMaker,
 				config:      config,
-				employeerep: employeeRep,
+				employeerep: mockRepo,
 				hasher:      hasher,
 			}
 
-			_, err = service.LoginEmployee(LoginEmployeeRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
-			require.NoError(t, err)
+			mockRepo.On("GetByLogin", ctx, tt.login).Return(tt.mockEmployee, tt.mockError)
+			if tt.mockEmployee != nil {
+				hasher.On("CheckPassword", tt.password, tt.mockEmployee.GetHashedPassword()).Return(tt.checkPassword)
+			}
 
-			employeeRep.AssertExpectations(t)
+			token, err := service.LoginEmployee(ctx, LoginEmployeeRequest{
+				Login:    tt.login,
+				Password: tt.password,
+			})
+
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+				assert.Empty(t, token)
+			} else {
+				assert.NoError(t, err)
+				assert.NotEmpty(t, token)
+			}
+
+			mockRepo.AssertExpectations(t)
 			hasher.AssertExpectations(t)
 		})
+	}
+}
 
-		t.Run("EmployeeNotFound", func(t *testing.T) {
-			employeeRep := new(mockemployeerep.MockEmployeeRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
+func TestAuthEmployee_RegisterEmployee(t *testing.T) {
+	ctx := context.Background()
+	config := createTestConfig()
+	validRequest := RegisterEmployeeRequest{
+		Username: "new_user",
+		Login:    "new_login",
+		Password: "new_password",
+		Valid:    true,
+		AdminID:  uuid.New(),
+	}
+
+	tests := []struct {
+		name          string
+		request       RegisterEmployeeRequest
+		hashError     error
+		addError      error
+		expectedError error
+	}{
+		{
+			name:          "success",
+			request:       validRequest,
+			hashError:     nil,
+			addError:      nil,
+			expectedError: nil,
+		},
+		{
+			name:          "hash error",
+			request:       validRequest,
+			hashError:     hasher.ErrHash,
+			addError:      nil,
+			expectedError: hasher.ErrHash,
+		},
+		{
+			name:          "add error",
+			request:       validRequest,
+			hashError:     nil,
+			addError:      employeerep.ErrFailedToAddEmployee,
+			expectedError: employeerep.ErrFailedToAddEmployee,
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
 
-			var nile *models.Employee = nil
-			employeeRep.On("GetByLogin", validLogin).Return(nile, assert.AnError)
+			hasher.On("HashPassword", tt.request.Password).Return("hashed_password", tt.hashError)
+			if tt.hashError == nil {
+				mockRepo.On("Add", ctx, mock.Anything).Return(tt.addError)
+			}
 
 			service := &authEmployee{
 				tokenMaker:  tokenMaker,
 				config:      config,
-				employeerep: employeeRep,
+				employeerep: mockRepo,
 				hasher:      hasher,
 			}
 
-			_, err = service.LoginEmployee(LoginEmployeeRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
+			err := service.RegisterEmployee(ctx, tt.request)
 
-			require.Error(t, err)
-			assert.ErrorIs(t, err, assert.AnError)
-		})
-
-		t.Run("InvalidPassword", func(t *testing.T) {
-			employeeRep := new(mockemployeerep.MockEmployeeRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
-			hasher := new(MockHasher)
-
-			employee, err := models.NewEmployee(
-				validEmployeeID,
-				validUsername,
-				validLogin,
-				hashedPassword,
-				time.Now(),
-			)
-			require.NoError(t, err)
-
-			employeeRep.On("GetByLogin", validLogin).Return(&employee, nil)
-			hasher.On("CheckPassword", validPassword, hashedPassword).Return(assert.AnError)
-
-			service := &authEmployee{
-				tokenMaker:  tokenMaker,
-				config:      config,
-				employeerep: employeeRep,
-				hasher:      hasher,
+			if tt.expectedError != nil {
+				assert.Error(t, err)
+				assert.Equal(t, tt.expectedError, err)
+			} else {
+				assert.NoError(t, err)
 			}
 
-			_, err = service.LoginEmployee(LoginEmployeeRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
-
-			require.Error(t, err)
-			assert.ErrorIs(t, err, assert.AnError)
-		})
-	})
-
-	t.Run("RegisterEmployee", func(t *testing.T) {
-		t.Run("Success", func(t *testing.T) {
-			employeeRep := new(mockemployeerep.MockEmployeeRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
-			hasher := new(MockHasher)
-
-			hasher.On("HashPassword", validPassword).Return(hashedPassword, nil)
-			employeeRep.On("Add", mock.AnythingOfType("*models.Employee")).Return(nil)
-
-			service := &authEmployee{
-				tokenMaker:  tokenMaker,
-				config:      config,
-				employeerep: employeeRep,
-				hasher:      hasher,
-			}
-
-			err = service.RegisterEmployee(RegisterEmployeeRequest{
-				Username: validUsername,
-				Login:    validLogin,
-				Password: validPassword,
-			})
-
-			require.NoError(t, err)
+			mockRepo.AssertExpectations(t)
 			hasher.AssertExpectations(t)
-			employeeRep.AssertExpectations(t)
 		})
-	})
+	}
 }
