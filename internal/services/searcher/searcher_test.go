@@ -6,7 +6,7 @@ import (
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/mockartworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep/mockeventrep"
 	"github.com/google/uuid"
@@ -75,7 +75,7 @@ func TestSearcher_GetAllArtworks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -113,7 +113,7 @@ func TestSearcher_FilterArtworkByTitle(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -152,7 +152,7 @@ func TestSearcher_FilterArtworkByAuthor(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -194,7 +194,7 @@ func TestSearcher_FilterArtworkByCreationTime(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -233,7 +233,7 @@ func TestSearcher_FilterArtworkByEvent(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -268,7 +268,7 @@ func TestSearcher_GetAllEvents(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -310,7 +310,7 @@ func TestSearcher_FilterEventsByDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 
@@ -365,7 +365,7 @@ func TestSearcher_GetEventOfArtworkOnDate(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockArt := new(mockartworkrep.MockArtworkRep)
+			mockArt := new(artworkrep.MockArtworkRep)
 			mockEvent := new(mockeventrep.MockEventRep)
 			service := NewSearcher(mockArt, mockEvent)
 

@@ -71,39 +71,31 @@ func main() {
 	}
 	// ------------------
 
-	// authZ
-	authZ, err := auth.NewAuthZ()
-	if err != nil {
-		panic(err)
-	}
-
-	// User
-
-	// ----- User Auth -----
+	// ----- Repositories -----
 	userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
+	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	userServ := userservice.NewUserService(userRep, authZ)
-
-	authUserRouter := api.AuthUserRouter{}
-	authUserRouter.Init(apiGroup, authUserServ)
-
-	userGroup := apiGroup.Group("/user")
-	userGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, true))
-
-	userRouter := api.NewUserRouter(userGroup, userServ)
-	_ = userRouter
-	// ---------------------
-
-	// For all
-	guestGroup := apiGroup.Group("/guest")
-	guestGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, false))
-
+	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
 	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
 	if err != nil {
 		panic(err)
@@ -116,73 +108,19 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	buyTicketServ, err := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
+	// ------------------------
+
+	// ----- Services -----
+	// auth
+	authZ, err := auth.NewAuthZ()
 	if err != nil {
 		panic(err)
 	}
-	buyTicketRouter := api.NewBuyTicketRouter(guestGroup, buyTicketServ)
-	_ = buyTicketRouter
-
-	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
 	if err != nil {
 		panic(err)
 	}
-	searcherServ := searcher.NewSearcher(artworkRep, eventRep)
-	searcherRouter := api.NewSearcherRouter(apiGroup, searcherServ)
-	_ = searcherRouter
-
-	// ----- Employee Auth -----
-	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	authadminserv, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
-	if err != nil {
-		panic(err)
-	}
-	authEmployeeRouter := api.AuthEmployeeRouter{}
-	authEmployeeRouter.Init(apiGroup, authadminserv)
-	// ---------------------
-
-	// ----- Employee work -----
-	// Collections
-	employeeGroup := apiGroup.Group("/employee")
-	employeeGroup.Use(middleware.AuthMiddleware(authadminserv, authZ, true))
-
-	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	collectionServ := collectionserv.NewCollectionServ(collectionRep)
-	collectionRouter := api.CollectionRouter{}
-	collectionRouter.Init(employeeGroup, collectionServ)
-
-	// Authors
-	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	authroServ := authorserv.NewAuthorServ(authorRep)
-	authorRouter := api.NewAuthorRouter(employeeGroup, authroServ)
-	_ = authorRouter
-
-	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
-	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
-	_ = artworkRouter
-
-	// Events
-	eventServ := eventserv.NewEventService(eventRep)
-	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
-	_ = eventRouter
-
-	// Mailing
-	mailingServ := mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
-	mailingRouter := api.NewMailingRouter(employeeGroup, mailingServ, eventServ)
-	_ = mailingRouter
-	// -------------------------
-
-	// ----- Admin Auth -----
-	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
+	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
 	if err != nil {
 		panic(err)
 	}
@@ -190,40 +128,59 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authAdminRouter := api.AuthAdminRouter{}
-	authAdminRouter.Init(apiGroup, authAdminServ)
-	// ----------------------
+	// serv
+	userServ := userservice.NewUserService(userRep, authZ)
+	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
+	buyTicketServ, _ := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
+	collectionServ := collectionserv.NewCollectionServ(collectionRep)
+	authroServ := authorserv.NewAuthorServ(authorRep)
+	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
+	eventServ := eventserv.NewEventService(eventRep)
+	searcherServ := searcher.NewSearcher(artworkRep, eventRep)
+	mailingServ := mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
+	// --------------------
 
-	// ----- Admin work -----
+	// ----- Groups -----
+	userGroup := apiGroup.Group("/user")
+	userGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, true))
+	guestGroup := apiGroup.Group("/guest")
+	guestGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, false))
+	employeeGroup := apiGroup.Group("/employee")
+	employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ, authZ, true))
 	adminGroup := apiGroup.Group("/admin")
 	adminGroup.Use(middleware.AuthMiddleware(authAdminServ, authZ, true))
+	// ------------------------
 
-	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
+	// ----- Routers -----
+	authUserRouter := api.AuthUserRouter{}
+	authUserRouter.Init(apiGroup, authUserServ)
+	authEmployeeRouter := api.AuthEmployeeRouter{}
+	authEmployeeRouter.Init(apiGroup, authEmployeeServ)
+	authAdminRouter := api.AuthAdminRouter{}
+	authAdminRouter.Init(apiGroup, authAdminServ)
 
+	userRouter := api.NewUserRouter(userGroup, userServ)
+	_ = userRouter
 	employeeRouter := api.AdminRouter{}
-	employeeRouter.Init(adminGroup, adminserv, authadminserv, authZ)
-	// ----------------------
+	employeeRouter.Init(adminGroup, adminserv, authEmployeeServ, authZ)
+
+	collectionRouter := api.CollectionRouter{}
+	collectionRouter.Init(employeeGroup, collectionServ)
+	authorRouter := api.NewAuthorRouter(employeeGroup, authroServ)
+	_ = authorRouter
+	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
+	_ = artworkRouter
+	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
+	_ = eventRouter
+	mailingRouter := api.NewMailingRouter(employeeGroup, mailingServ, eventServ)
+	_ = mailingRouter
+	buyTicketRouter := api.NewBuyTicketRouter(guestGroup, buyTicketServ)
+	_ = buyTicketRouter
+	searcherRouter := api.NewSearcherRouter(apiGroup, searcherServ)
+	_ = searcherRouter
+	// -------------------
+
 	engine.Run(":8080")
-
-	// server, err := api.NewServer()
-	// if err != nil {
-	// 	log.Fatal("cannot create server:", err)
-	// }
-	// err = server.Start(":8080")
-	// if err != nil {
-	// 	log.Fatal("cannot start server:", err)
-	// }
-
-	// r := gin.Default()
-	// // route для Swagger - НЕ ТРОГАТЬ
-	// url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
-	// r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-
-	// r.GET("/hello", func(c *gin.Context) {
-	// 	c.JSON(200, gin.H{"message": "Привет, мир! Вау"})
-	// })
-
-	// r.Run(":8080")
 }
 
 func main1() {

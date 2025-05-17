@@ -10,6 +10,8 @@ select count(*) from Events;
 
 select * from TicketPurchases where eventID = 'b10f841d-ba75-48df-a9cf-c86fc9bd3041';
 
+select * from tickets_user where ticketID = 'bf7da5de-6350-4453-bb1b-9e02ff376f93'
+
 update events set canVisit = FALSE where id = '681d817b-fbf8-49fe-a27a-0caa147f8e09';
 
 select *

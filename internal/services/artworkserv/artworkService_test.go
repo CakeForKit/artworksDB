@@ -6,7 +6,7 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/mockartworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"github.com/google/uuid"
 	"github.com/stateio/testify/require"
@@ -52,7 +52,7 @@ func TestArtworkService_GetAllArtworks(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockartworkrep.MockArtworkRep)
+			mockRepo := new(artworkrep.MockArtworkRep)
 			service := artworkserv.NewArtworkService(mockRepo)
 
 			var expectedArtworks []*models.Artwork
@@ -85,7 +85,7 @@ func TestArtworkService_Add(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockartworkrep.MockArtworkRep)
+			mockRepo := new(artworkrep.MockArtworkRep)
 			service := artworkserv.NewArtworkService(mockRepo)
 			artwork := createTestArtwork()
 
@@ -116,7 +116,7 @@ func TestArtworkService_Delete(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockartworkrep.MockArtworkRep)
+			mockRepo := new(artworkrep.MockArtworkRep)
 			service := artworkserv.NewArtworkService(mockRepo)
 			artworkID := uuid.New()
 
@@ -183,7 +183,7 @@ func TestArtworkService_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockartworkrep.MockArtworkRep)
+			mockRepo := new(artworkrep.MockArtworkRep)
 			service := artworkserv.NewArtworkService(mockRepo)
 			artworkID := uuid.New()
 
