@@ -1,4 +1,4 @@
-package mockemployeerep
+package employeerep
 
 import (
 	"context"

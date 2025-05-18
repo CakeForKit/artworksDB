@@ -211,7 +211,7 @@ func (pg *PgEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 		return nil, fmt.Errorf("PgEventRep.GetByID %w", err)
 	}
 	if len(events) == 0 {
-		return nil, nil
+		return nil, ErrEventNotFound
 	} else if len(events) > 1 {
 		return nil, fmt.Errorf("PgEventRep.GetByID %w: %v", ErrExpectedOneEvent, err)
 	}
@@ -220,48 +220,6 @@ func (pg *PgEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 		return nil, fmt.Errorf("PgEventRep.GetByID %w", err)
 	}
 	return events[0], nil
-}
-
-func (pg *PgEventRep) GetByDate(ctx context.Context, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID", "valid").
-		From("Events").
-		Where(sq.Or{
-			sq.Expr("dateBegin BETWEEN ? AND ?", dateBeg, dateEnd),
-			sq.Expr("dateEnd BETWEEN ? AND ?", dateBeg, dateEnd),
-			sq.And{
-				sq.Expr("dateBegin <= ?", dateBeg),
-				sq.Expr("dateEnd >= ?", dateEnd),
-			},
-		}).
-		ToSql()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-
-	events, err := pg.parseEventsRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(events) == 0 {
-		return nil, ErrEventNotFound
-	}
-	for _, event := range events {
-		artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
-		if err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
-		}
-		if err := event.AddArtworks(artworkIDs); err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
-		}
-	}
-	return events, nil
 }
 
 func formatTime(t time.Time) string {
@@ -315,27 +273,22 @@ func (pg *PgEventRep) CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %v", ErrQueryBuilds, err)
 	}
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	return rows.Next(), nil
 }
 
-func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
-
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("Events").
-		Columns("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID").
-		Values(e.GetID(), e.GetTitle(), e.GetDateBegin(), e.GetDateEnd(), e.GetAccess(), e.GetAddress(), e.GetTicketCount(), e.GetEmployeeID()).
-		ToSql()
+func (pg *PgEventRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
+	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
@@ -345,30 +298,43 @@ func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no event added", ErrRowsAffected)
+		return fmt.Errorf("%w: no artowrk added", ErrRowsAffected)
+	}
+	return nil
+}
+
+func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Insert("Events").
+		Columns("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID").
+		Values(e.GetID(), e.GetTitle(), e.GetDateBegin(), e.GetDateEnd(), e.GetAccess(), e.GetAddress(), e.GetTicketCount(), e.GetEmployeeID())
+	err := pg.execChangeQuery(ctx, query)
+	if err != nil {
+		return fmt.Errorf("PgEventRep.Add: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgEventRep) Delete(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Update("Events").
+	query := psql.Update("Events").
 		Set("valid", false).
-		Where(sq.Eq{"id": id}).ToSql()
+		Where(sq.Eq{"id": id})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete %w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgEventRep.Delete: %w", err)
 	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
+	return nil
+}
+
+func (pg *PgEventRep) RealDelete(ctx context.Context, id uuid.UUID) error {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Delete("Events").
+		Where(sq.Eq{"id": id})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgEventRep.Delete %w: no event deleted", ErrEventNotFound)
+		return fmt.Errorf("PgEventRep.RealDelete: %w", err)
 	}
 	return nil
 }
@@ -384,9 +350,9 @@ func (pg *PgEventRep) Update(ctx context.Context,
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEvent, err := funcUpdate(event)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Update funcUpdate: %v", err)
+		return fmt.Errorf("PgEventRep.Update: %w", ErrUpdateEvent)
 	}
-	query, args, err := psql.Update("Events").
+	query := psql.Update("Events").
 		Set("title", updatedEvent.GetTitle()).
 		Set("dateBegin", updatedEvent.GetDateBegin()).
 		Set("canVisit", updatedEvent.GetAccess()).
@@ -394,21 +360,10 @@ func (pg *PgEventRep) Update(ctx context.Context,
 		Set("cntTickets", updatedEvent.GetTicketCount()).
 		Set("creatorID", updatedEvent.GetEmployeeID()).
 		Set("valid", updatedEvent.IsValid()).
-		Where(sq.Eq{"id": id}).ToSql()
+		Where(sq.Eq{"id": id})
+	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Update %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgEventRep.Update %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgEventRep.Update %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgEventRep.Update %w: no event updated", ErrRowsAffected)
+		return fmt.Errorf("PgEventRep.Update %w", err)
 	}
 	return nil
 }
@@ -417,24 +372,12 @@ func (pg *PgEventRep) AddArtworksToEvent(ctx context.Context, eventID uuid.UUID,
 
 	for _, artworkID := range artworkIDs {
 		psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-		query, args, err := psql.Insert("Artwork_event").
+		query := psql.Insert("Artwork_event").
 			Columns("eventID", "artworkID").
-			Values(eventID, artworkID).
-			ToSql()
+			Values(eventID, artworkID)
+		err := pg.execChangeQuery(ctx, query)
 		if err != nil {
-			return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-		}
-		result, err := pg.db.ExecContext(ctx, query, args...)
-		if err != nil {
-			return fmt.Errorf("%w: %v", ErrQueryExec, err)
-		}
-		// проверка количества затронутых строк
-		rowsAffected, err := result.RowsAffected()
-		if err != nil {
-			return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-		}
-		if rowsAffected == 0 {
-			return fmt.Errorf("%w: no artwork_event added", ErrRowsAffected)
+			return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", err)
 		}
 	}
 	return nil
@@ -442,26 +385,14 @@ func (pg *PgEventRep) AddArtworksToEvent(ctx context.Context, eventID uuid.UUID,
 
 func (pg *PgEventRep) DeleteArtworkFromEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Artwork_event").
+	query := psql.Delete("Artwork_event").
 		Where(sq.And{
 			sq.Eq{"artworkID": artworkID},
 			sq.Eq{"eventID": eventID},
-		}).
-		ToSql()
+		})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete: %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgEventRep.Delete: %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgEventRep.Delete: %w", ErrEventArtowrkNotFound)
+		return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", err)
 	}
 	return nil
 }

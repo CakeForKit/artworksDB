@@ -28,6 +28,6 @@ type AdminRep interface {
 }
 
 func NewAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
-	rep, err := NewPgAdminRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgAdminRep(ctx, pgCreds, dbConf)
+	// return &MockAdminRep{}, nil
 }

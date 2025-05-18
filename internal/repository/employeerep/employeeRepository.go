@@ -28,6 +28,6 @@ type EmployeeRep interface {
 }
 
 func NewEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
-	rep, err := NewPgEmployeeRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgEmployeeRep(ctx, pgCreds, dbConf)
+	// return &MockEmployeeRep{}, nil
 }

@@ -31,4 +31,5 @@ type UserRep interface {
 
 func NewUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
 	return NewPgUserRep(ctx, pgCreds, dbConf)
+	// return &MockUserRep{}, nil
 }

@@ -25,4 +25,5 @@ type TicketPurchasesRep interface {
 
 func NewTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
 	return NewPgTicketPurchasesRep(ctx, pgCreds, dbConf)
+	// return &MockTicketPurchasesRep{}, nil
 }

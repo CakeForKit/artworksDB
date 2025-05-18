@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrAuthorNotFound = errors.New("the Author was not found in the repository")
+	ErrUpdateAuthor   = errors.New("err update author params")
 )
 
 type AuthorRep interface {
@@ -23,6 +24,6 @@ type AuthorRep interface {
 }
 
 func NewAuthorRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {
-	rep, err := NewPgAuthorRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgAuthorRep(ctx, pgCreds, dbConf)
+	// return &MockAuthorRep{}, nil
 }
