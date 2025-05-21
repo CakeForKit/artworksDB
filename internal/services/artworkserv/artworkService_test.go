@@ -5,13 +5,15 @@ import (
 	"testing"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/require"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
 func createTestAuthor() *models.Author {
@@ -40,166 +42,256 @@ func createTestArtwork() *models.Artwork {
 	return &artwork
 }
 
+func createTestAddRequest(authorID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest {
+	return jsonreqresp.AddArtworkRequest{
+		Title:        "Test Artwork",
+		Technic:      "oil on canvas",
+		Material:     "canvas",
+		Size:         "100x100 cm",
+		CreationYear: 1950,
+		AuthorID:     authorID.String(),
+		CollectionID: collectionID.String(),
+	}
+}
+
+func createTestUpdateRequest(authorID, collectionID uuid.UUID) jsonreqresp.ArtworkUpdate {
+	return jsonreqresp.ArtworkUpdate{
+		Title:        "Updated Artwork",
+		Technic:      "updated technic",
+		Material:     "updated material",
+		Size:         "200x200 cm",
+		CreationYear: 2000,
+		AuthorID:     authorID.String(),
+		CollectionID: collectionID.String(),
+	}
+}
+
 func TestArtworkService_GetAllArtworks(t *testing.T) {
 	ctx := context.Background()
 	tests := []struct {
 		name          string
+		setupMocks    func(*artworkrep.MockArtworkRep)
 		expectedCount int
+		expectedError error
 	}{
-		{"single artwork", 1},
-		{"multiple artworks", 3},
+		{
+			name: "success with artworks",
+			setupMocks: func(m *artworkrep.MockArtworkRep) {
+				artworks := []*models.Artwork{
+					createTestArtwork(),
+					createTestArtwork(),
+				}
+				m.On("GetAllArtworks", ctx, &jsonreqresp.ArtworkFilter{}, &jsonreqresp.ArtworkSortOps{}).
+					Return(artworks, nil)
+			},
+			expectedCount: 2,
+		},
+		{
+			name: "empty result",
+			setupMocks: func(m *artworkrep.MockArtworkRep) {
+				m.On("GetAllArtworks", ctx, &jsonreqresp.ArtworkFilter{}, &jsonreqresp.ArtworkSortOps{}).
+					Return([]*models.Artwork{}, nil)
+			},
+			expectedCount: 0,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(artworkrep.MockArtworkRep)
-			service := artworkserv.NewArtworkService(mockRepo)
+			artMock := &artworkrep.MockArtworkRep{}
+			authMock := &authorrep.MockAuthorRep{}
+			colMock := &collectionrep.MockCollectionRep{}
 
-			var expectedArtworks []*models.Artwork
-			for i := 0; i < tt.expectedCount; i++ {
-				artwork := createTestArtwork()
-				expectedArtworks = append(expectedArtworks, artwork)
+			tt.setupMocks(artMock)
+
+			service := artworkserv.NewArtworkService(artMock, authMock, colMock)
+			result, err := service.GetAllArtworks(ctx)
+
+			if tt.expectedError != nil {
+				assert.ErrorIs(t, err, tt.expectedError)
+				assert.Nil(t, result)
+			} else {
+				require.NoError(t, err)
+				assert.Equal(t, tt.expectedCount, len(result))
 			}
 
-			mockRepo.On("GetAll", ctx).Return(expectedArtworks, nil)
-
-			result, err := service.GetAllArtworks(ctx)
-			require.NoError(t, err)
-			assert.Equal(t, tt.expectedCount, len(result))
-			assert.Equal(t, expectedArtworks, result)
-			mockRepo.AssertExpectations(t)
+			artMock.AssertExpectations(t)
 		})
 	}
 }
 
 func TestArtworkService_Add(t *testing.T) {
 	ctx := context.Background()
+	testAuthor := createTestAuthor()
+	testCollection := createTestCollection()
+	testRequest := createTestAddRequest(testAuthor.GetID(), testCollection.GetID())
+
 	tests := []struct {
 		name          string
-		mockError     error
+		setupMocks    func(*artworkrep.MockArtworkRep, *authorrep.MockAuthorRep, *collectionrep.MockCollectionRep)
 		expectedError error
 	}{
-		{"success", nil, nil},
-		{"repository error", artworkrep.ErrFailedToAddArtwork, artworkrep.ErrFailedToAddArtwork},
+		{
+			name: "success",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(testAuthor, nil)
+				col.On("GetCollectionByID", ctx, testCollection.GetID()).Return(testCollection, nil)
+				art.On("Add", ctx, mock.AnythingOfType("*models.Artwork")).Return(nil)
+			},
+		},
+		{
+			name: "author not found",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(nil, authorrep.ErrAuthorNotFound)
+			},
+			expectedError: authorrep.ErrAuthorNotFound,
+		},
+		{
+			name: "collection not found",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(testAuthor, nil)
+				col.On("GetCollectionByID", ctx, testCollection.GetID()).Return(nil, collectionrep.ErrCollectionNotFound)
+			},
+			expectedError: collectionrep.ErrCollectionNotFound,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(artworkrep.MockArtworkRep)
-			service := artworkserv.NewArtworkService(mockRepo)
-			artwork := createTestArtwork()
+			artMock := &artworkrep.MockArtworkRep{}
+			authMock := &authorrep.MockAuthorRep{}
+			colMock := &collectionrep.MockCollectionRep{}
 
-			mockRepo.On("Add", ctx, artwork).Return(tt.mockError)
+			tt.setupMocks(artMock, authMock, colMock)
 
-			err := service.Add(ctx, artwork)
+			service := artworkserv.NewArtworkService(artMock, authMock, colMock)
+			err := service.Add(ctx, testRequest)
+
 			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
+				assert.ErrorIs(t, err, tt.expectedError)
 			} else {
 				assert.NoError(t, err)
 			}
-			mockRepo.AssertExpectations(t)
+
+			artMock.AssertExpectations(t)
+			authMock.AssertExpectations(t)
+			colMock.AssertExpectations(t)
 		})
 	}
 }
 
 func TestArtworkService_Delete(t *testing.T) {
 	ctx := context.Background()
+	artworkID := uuid.New()
+
 	tests := []struct {
 		name          string
-		mockError     error
+		setupMocks    func(*artworkrep.MockArtworkRep)
 		expectedError error
 	}{
-		{"success", nil, nil},
-		{"not found", artworkrep.ErrArtworkNotFound, artworkrep.ErrArtworkNotFound},
+		{
+			name: "success",
+			setupMocks: func(m *artworkrep.MockArtworkRep) {
+				m.On("Delete", ctx, artworkID).Return(nil)
+			},
+		},
+		{
+			name: "not found",
+			setupMocks: func(m *artworkrep.MockArtworkRep) {
+				m.On("Delete", ctx, artworkID).Return(artworkrep.ErrArtworkNotFound)
+			},
+			expectedError: artworkrep.ErrArtworkNotFound,
+		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(artworkrep.MockArtworkRep)
-			service := artworkserv.NewArtworkService(mockRepo)
-			artworkID := uuid.New()
+			artMock := &artworkrep.MockArtworkRep{}
+			authMock := &authorrep.MockAuthorRep{}
+			colMock := &collectionrep.MockCollectionRep{}
 
-			mockRepo.On("Delete", ctx, artworkID).Return(tt.mockError)
+			tt.setupMocks(artMock)
 
+			service := artworkserv.NewArtworkService(artMock, authMock, colMock)
 			err := service.Delete(ctx, artworkID)
+
 			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
+				assert.ErrorIs(t, err, tt.expectedError)
 			} else {
 				assert.NoError(t, err)
 			}
-			mockRepo.AssertExpectations(t)
+
+			artMock.AssertExpectations(t)
 		})
 	}
 }
 
 func TestArtworkService_Update(t *testing.T) {
 	ctx := context.Background()
-	updateTitle := "Updated Title"
-	updateFunc := func(aw *models.Artwork) (*models.Artwork, error) {
-		newArtwork, err := models.NewArtwork(
-			aw.GetID(),
-			updateTitle,
-			aw.GetTechnic(),
-			aw.GetMaterial(),
-			aw.GetSize(),
-			aw.GetCreationYear(),
-			aw.GetAuthor(),
-			aw.GetCollection(),
-		)
-		if err != nil {
-			return nil, err
-		}
-		return &newArtwork, nil
-	}
+	artworkID := uuid.New()
+	testAuthor := createTestAuthor()
+	testCollection := createTestCollection()
+	testRequest := createTestUpdateRequest(testAuthor.GetID(), testCollection.GetID())
 
-	expectedArtwork, _ := updateFunc(createTestArtwork())
 	tests := []struct {
 		name          string
-		mockResult    *models.Artwork
-		mockError     error
+		setupMocks    func(*artworkrep.MockArtworkRep, *authorrep.MockAuthorRep, *collectionrep.MockCollectionRep)
 		expectedError error
 	}{
 		{
-			"success",
-			expectedArtwork,
-			nil,
-			nil,
+			name: "success",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(testAuthor, nil)
+				col.On("GetCollectionByID", ctx, testCollection.GetID()).Return(testCollection, nil)
+				art.On("Update", ctx, artworkID, mock.Anything).Return(nil)
+			},
 		},
 		{
-			"not found",
-			nil,
-			artworkrep.ErrArtworkNotFound,
-			artworkrep.ErrArtworkNotFound,
+			name: "author not found",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(nil, authorrep.ErrAuthorNotFound)
+			},
+			expectedError: authorrep.ErrAuthorNotFound,
 		},
 		{
-			"update error",
-			nil,
-			artworkrep.ErrUpdateArtwork,
-			artworkrep.ErrUpdateArtwork,
+			name: "collection not found",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(testAuthor, nil)
+				col.On("GetCollectionByID", ctx, testCollection.GetID()).Return(nil, collectionrep.ErrCollectionNotFound)
+			},
+			expectedError: collectionrep.ErrCollectionNotFound,
+		},
+		{
+			name: "update error",
+			setupMocks: func(art *artworkrep.MockArtworkRep, auth *authorrep.MockAuthorRep, col *collectionrep.MockCollectionRep) {
+				auth.On("GetByID", ctx, testAuthor.GetID()).Return(testAuthor, nil)
+				col.On("GetCollectionByID", ctx, testCollection.GetID()).Return(testCollection, nil)
+				art.On("Update", ctx, artworkID, mock.Anything).Return(artworkrep.ErrUpdateArtwork)
+			},
+			expectedError: artworkrep.ErrUpdateArtwork,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(artworkrep.MockArtworkRep)
-			service := artworkserv.NewArtworkService(mockRepo)
-			artworkID := uuid.New()
+			artMock := &artworkrep.MockArtworkRep{}
+			authMock := &authorrep.MockAuthorRep{}
+			colMock := &collectionrep.MockCollectionRep{}
 
-			mockRepo.On("Update", ctx, artworkID, mock.Anything).Return(tt.mockResult, tt.mockError)
+			tt.setupMocks(artMock, authMock, colMock)
 
-			result, err := service.Update(ctx, artworkID, updateFunc)
+			service := artworkserv.NewArtworkService(artMock, authMock, colMock)
+			err := service.Update(ctx, artworkID, testRequest)
+
 			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
-				assert.Nil(t, result)
+				assert.ErrorIs(t, err, tt.expectedError)
 			} else {
 				assert.NoError(t, err)
-				assert.NotNil(t, result)
-				assert.Equal(t, updateTitle, result.GetTitle())
 			}
-			mockRepo.AssertExpectations(t)
+
+			artMock.AssertExpectations(t)
+			authMock.AssertExpectations(t)
+			colMock.AssertExpectations(t)
 		})
 	}
 }

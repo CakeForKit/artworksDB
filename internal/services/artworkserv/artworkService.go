@@ -46,11 +46,11 @@ func (a *artworkService) GetAllArtworks(ctx context.Context) ([]*models.Artwork,
 func (a *artworkService) Add(ctx context.Context, artworkReq jsonreqresp.AddArtworkRequest) error {
 	author, err := a.authorRep.GetByID(ctx, uuid.MustParse(artworkReq.AuthorID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %v", err)
+		return fmt.Errorf("artworkService.Add: %w", err)
 	}
 	collection, err := a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(artworkReq.CollectionID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %v", err)
+		return fmt.Errorf("artworkService.Add: %w", err)
 	}
 
 	artwork, err := models.NewArtwork(
@@ -64,12 +64,12 @@ func (a *artworkService) Add(ctx context.Context, artworkReq jsonreqresp.AddArtw
 		collection,
 	)
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %w: %v", models.ErrValidateArtwork, err)
+		return fmt.Errorf("artworkService.Add: %w: %w", models.ErrValidateArtwork, err)
 	}
 
 	err = a.artworkRep.Add(ctx, &artwork)
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %v", err)
+		return fmt.Errorf("artworkService.Add: %w", err)
 	}
 
 	return nil
@@ -82,11 +82,11 @@ func (a *artworkService) Delete(ctx context.Context, idArt uuid.UUID) error {
 func (a *artworkService) Update(ctx context.Context, idArt uuid.UUID, updateFields jsonreqresp.ArtworkUpdate) error {
 	_, err := a.authorRep.GetByID(ctx, uuid.MustParse(updateFields.AuthorID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %v", err)
+		return fmt.Errorf("artworkService.Add: %w", err)
 	}
 	_, err = a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(updateFields.CollectionID))
 	if err != nil {
-		return fmt.Errorf("artworkService.Add: %v", err)
+		return fmt.Errorf("artworkService.Add: %w", err)
 	}
 	return a.artworkRep.Update(
 		ctx,

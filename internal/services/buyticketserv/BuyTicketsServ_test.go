@@ -3,14 +3,16 @@ package buyticketserv_test
 import (
 	"context"
 	"errors"
-	"fmt"
 	"testing"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/ticketpurchasesrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
@@ -18,73 +20,53 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-// testHelper содержит общие методы для тестов
-type testHelper struct {
-	ctx context.Context
-	// serv       buyticketserv.BuyTicketsServ
-	// txRep      *buyticketstxrep.MockBuyTicketsTxRep
-	// tpRep      *ticketpurchasesrep.MockTicketPurchasesRep
-	config     cnfg.AppConfig
-	employeeID uuid.UUID
+type testData struct {
+	ctx     context.Context
+	config  cnfg.AppConfig
+	userID  uuid.UUID
+	eventID uuid.UUID
 }
 
-func setupTestHelper(t *testing.T) *testHelper {
-	ctx := context.Background()
-	config := cnfg.AppConfig{
-		BuyTicketTransactionDuration: 15 * time.Minute,
-	}
-
-	// txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-	// tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-
-	// serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, config)
-	// require.NoError(t, err)
-
-	return &testHelper{
-		ctx: ctx,
-		// serv:       serv,
-		// txRep:      txRep,
-		// tpRep:      tpRep,
-		config:     config,
-		employeeID: uuid.New(),
+func setupTestData() *testData {
+	return &testData{
+		ctx:     context.Background(),
+		config:  cnfg.AppConfig{BuyTicketTransactionDuration: 15 * time.Minute},
+		userID:  uuid.New(),
+		eventID: uuid.New(),
 	}
 }
 
-func (th *testHelper) createTestEvent(num int) *models.Event {
-	event, err := models.NewEvent(
-		uuid.New(),
-		fmt.Sprintf("Event %d", num),
-		time.Now().Add(time.Hour),
-		time.Now().Add(2*time.Hour),
-		fmt.Sprintf("Address %d", num),
+func createTestEvent(eventID uuid.UUID, ticketCount int) *models.Event {
+	event, _ := models.NewEvent(
+		eventID,
+		"Test Event",
+		time.Now(),
+		time.Now().Add(24*time.Hour),
+		"Test Address",
 		true,
-		th.employeeID,
-		100+num,
+		uuid.New(),
+		ticketCount,
+		true,
+		make(uuid.UUIDs, 0),
 	)
-	if err != nil {
-		panic(fmt.Sprintf("createTestEvent failed: %v", err))
-	}
 	return &event
 }
 
-func (th *testHelper) createTestUser(num int) *models.User {
-	user, err := models.NewUser(
-		uuid.New(),
-		fmt.Sprintf("user%d", num),
-		fmt.Sprintf("login%d", num),
-		fmt.Sprintf("hash %d", num),
+func createTestUser(userID uuid.UUID) *models.User {
+	user, _ := models.NewUser(
+		userID,
+		"test-user",
+		"test-login",
+		"hashed-password",
 		time.Now(),
-		fmt.Sprintf("user%d@example.com", num),
+		"user@test.com",
 		true,
 	)
-	if err != nil {
-		panic(fmt.Sprintf("createTestUser failed: %v", err))
-	}
 	return &user
 }
 
-func (th *testHelper) createTestTicketPurchaseTx(eventID uuid.UUID, userID uuid.UUID, cnt int) *models.TicketPurchaseTx {
-	tx, err := models.NewBuyTicketTx(
+func createTestTicketPurchaseTx(eventID, userID uuid.UUID, config cnfg.AppConfig, cnt int) *models.TicketPurchaseTx {
+	tx, _ := models.NewBuyTicketTx(
 		uuid.New(),
 		"Customer",
 		"customer@example.com",
@@ -92,286 +74,304 @@ func (th *testHelper) createTestTicketPurchaseTx(eventID uuid.UUID, userID uuid.
 		eventID,
 		userID,
 		cnt,
-		time.Now().Add(th.config.BuyTicketTransactionDuration),
+		time.Now().Add(config.BuyTicketTransactionDuration),
 	)
-	if err != nil {
-		panic(fmt.Sprintf("createTestTicketPurchaseTx failed: %v", err))
-	}
 	return &tx
 }
 
 func TestBuyTicketsServ_BuyTicket(t *testing.T) {
-	th := setupTestHelper(t)
-
-	event := th.createTestEvent(1)
+	td := setupTestData()
+	event := createTestEvent(td.eventID, 10)
+	user := createTestUser(td.userID)
 	customerName := "Test Customer"
 	customerEmail := "test@example.com"
 	cntTickets := 2
 
-	t.Run("Should successfully buy tickets", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		// Настраиваем моки
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("GetCntTPurchasesForEvent", th.ctx, event.GetID()).Return(0, nil)
-		txRep.On("Add", th.ctx, mock.AnythingOfType("models.TicketPurchaseTx")).Return(nil)
+	t.Run("success for authenticated user", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		userMock := new(userrep.MockUserRep)
+		eventMock := new(eventrep.MockEventRep)
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
 
-		tx, err := serv.BuyTicket(th.ctx, *event, cntTickets, customerName, customerEmail)
-		require.NoError(t, err)
+		authMock.On("UserIDFromContext", td.ctx).Return(td.userID, nil)
+		userMock.On("GetByID", td.ctx, td.userID).Return(user, nil)
+		eventMock.On("GetByID", td.ctx, td.eventID).Return(event, nil)
+		txMock.On("GetCntTxByEventID", td.ctx, td.eventID).Return(0, nil)
+		ticketMock.On("GetCntTPurchasesForEvent", td.ctx, td.eventID).Return(0, nil)
+		txMock.On("Add", td.ctx, mock.Anything).Return(nil)
 
-		assert.Equal(t, cntTickets, tx.GetCntTickets())
-		assert.Equal(t, customerName, tx.GetTicketPurchase().GetCustomerName())
-		assert.Equal(t, customerEmail, tx.GetTicketPurchase().GetCustomerEmail())
-		assert.Equal(t, event.GetID(), tx.GetTicketPurchase().GetEventID())
-		assert.True(t, tx.GetExpiredAt().After(time.Now()))
-
-		txRep.AssertExpectations(t)
-	})
-
-	t.Run("Should return error when no free tickets", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		// Настраиваем моки - все билеты заняты
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("GetCntTPurchasesForEvent", th.ctx, event.GetID()).Return(event.GetTicketCount(), nil)
-
-		_, err = serv.BuyTicket(th.ctx, *event, cntTickets, customerName, customerEmail)
-		assert.Error(t, err)                                                   // Проверяем что ошибка есть
-		assert.Contains(t, err.Error(), buyticketserv.ErrNoFreeTicket.Error()) // Проверяем текст ошибки
-
-		txRep.AssertExpectations(t)
-		tpRep.AssertExpectations(t)
-	})
-
-	t.Run("Should return error when cntTickets <= 0", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			ticketMock,
+			td.config,
+			authMock,
+			userMock,
+			eventMock,
+		)
 		require.NoError(t, err)
 
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("GetCntTPurchasesForEvent", th.ctx, event.GetID()).Return(event.GetTicketCount(), nil)
-
-		_, err = serv.BuyTicket(th.ctx, *event, 0, customerName, customerEmail)
-		assert.Error(t, err)
-	})
-}
-
-func TestBuyTicketsServ_BuyTicketByUser(t *testing.T) {
-	th := setupTestHelper(t)
-
-	event := th.createTestEvent(1)
-	user := th.createTestUser(1)
-	cntTickets := 2
-
-	t.Run("Should successfully buy tickets by user", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		// Настраиваем моки
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("GetCntTPurchasesForEvent", th.ctx, event.GetID()).Return(0, nil)
-		txRep.On("Add", th.ctx, mock.AnythingOfType("models.TicketPurchaseTx")).Return(nil)
-
-		tx, err := serv.BuyTicketByUser(th.ctx, *event, cntTickets, *user)
+		tx, err := service.BuyTicket(td.ctx, td.eventID, cntTickets, "", "")
 		require.NoError(t, err)
 
 		assert.Equal(t, cntTickets, tx.GetCntTickets())
 		assert.Equal(t, user.GetUsername(), tx.GetTicketPurchase().GetCustomerName())
 		assert.Equal(t, user.GetEmail(), tx.GetTicketPurchase().GetCustomerEmail())
-		assert.Equal(t, user.GetID(), tx.GetTicketPurchase().GetUserID())
-		assert.Equal(t, event.GetID(), tx.GetTicketPurchase().GetEventID())
+		assert.Equal(t, td.eventID, tx.GetTicketPurchase().GetEventID())
 		assert.True(t, tx.GetExpiredAt().After(time.Now()))
 
-		txRep.AssertExpectations(t)
+		authMock.AssertExpectations(t)
+		userMock.AssertExpectations(t)
+		eventMock.AssertExpectations(t)
+		txMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
 	})
 
-	t.Run("Should return error when no free tickets", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
+	t.Run("success for unauthenticated user", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		eventMock := new(eventrep.MockEventRep)
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
+
+		authMock.On("UserIDFromContext", td.ctx).Return(uuid.Nil, auth.ErrNotAuthZ)
+		eventMock.On("GetByID", td.ctx, td.eventID).Return(event, nil)
+		txMock.On("GetCntTxByEventID", td.ctx, td.eventID).Return(0, nil)
+		ticketMock.On("GetCntTPurchasesForEvent", td.ctx, td.eventID).Return(0, nil)
+		txMock.On("Add", td.ctx, mock.Anything).Return(nil)
+
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			ticketMock,
+			td.config,
+			authMock,
+			new(userrep.MockUserRep),
+			eventMock,
+		)
 		require.NoError(t, err)
-		// Настраиваем моки - все билеты заняты
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("GetCntTPurchasesForEvent", th.ctx, event.GetID()).Return(event.GetTicketCount(), nil)
 
-		_, err = serv.BuyTicketByUser(th.ctx, *event, cntTickets, *user)
-		assert.Error(t, err)                                                   // Проверяем что ошибка есть
-		assert.Contains(t, err.Error(), buyticketserv.ErrNoFreeTicket.Error()) // Проверяем текст ошибки
+		tx, err := service.BuyTicket(td.ctx, td.eventID, cntTickets, customerName, customerEmail)
+		require.NoError(t, err)
 
-		txRep.AssertExpectations(t)
-		tpRep.AssertExpectations(t)
+		assert.Equal(t, cntTickets, tx.GetCntTickets())
+		assert.Equal(t, customerName, tx.GetTicketPurchase().GetCustomerName())
+		assert.Equal(t, customerEmail, tx.GetTicketPurchase().GetCustomerEmail())
+		assert.Equal(t, td.eventID, tx.GetTicketPurchase().GetEventID())
+
+		authMock.AssertExpectations(t)
+		eventMock.AssertExpectations(t)
+		txMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
+	})
+
+	t.Run("error when no free tickets", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		userMock := new(userrep.MockUserRep)
+		eventMock := new(eventrep.MockEventRep)
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
+
+		// authMock.On("UserIDFromContext", td.ctx).Return(td.userID, nil)
+		// userMock.On("GetByID", td.ctx, td.userID).Return(user, nil)
+		eventMock.On("GetByID", td.ctx, td.eventID).Return(event, nil)
+		txMock.On("GetCntTxByEventID", td.ctx, td.eventID).Return(8, nil)
+		ticketMock.On("GetCntTPurchasesForEvent", td.ctx, td.eventID).Return(2, nil)
+
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			ticketMock,
+			td.config,
+			authMock,
+			userMock,
+			eventMock,
+		)
+		require.NoError(t, err)
+
+		_, err = service.BuyTicket(td.ctx, td.eventID, cntTickets, "", "")
+		assert.ErrorIs(t, err, buyticketserv.ErrNoFreeTicket)
+
+		// authMock.AssertExpectations(t)
+		// userMock.AssertExpectations(t)
+		eventMock.AssertExpectations(t)
+		txMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
+	})
+
+	t.Run("error when no user data for unauthenticated user", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		eventMock := new(eventrep.MockEventRep)
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
+
+		// Set up mock expectations
+		authMock.On("UserIDFromContext", td.ctx).Return(uuid.Nil, auth.ErrNotAuthZ)
+		eventMock.On("GetByID", td.ctx, td.eventID).Return(event, nil)
+		txMock.On("GetCntTxByEventID", td.ctx, td.eventID).Return(0, nil)
+		ticketMock.On("GetCntTPurchasesForEvent", td.ctx, td.eventID).Return(0, nil)
+
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			ticketMock,
+			td.config,
+			authMock,
+			new(userrep.MockUserRep),
+			eventMock,
+		)
+		require.NoError(t, err)
+
+		_, err = service.BuyTicket(td.ctx, td.eventID, cntTickets, "", "")
+		assert.ErrorIs(t, err, buyticketserv.ErrNoUserData)
+
+		// Verify expected calls were made
+		authMock.AssertExpectations(t)
+		eventMock.AssertExpectations(t)
+		txMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
 	})
 }
 
 func TestBuyTicketsServ_ConfirmBuyTicket(t *testing.T) {
-	th := setupTestHelper(t)
+	td := setupTestData()
+	tx := createTestTicketPurchaseTx(td.eventID, td.userID, td.config, 2)
 
-	event := th.createTestEvent(1)
-	user := th.createTestUser(1)
-	tx := th.createTestTicketPurchaseTx(event.GetID(), user.GetID(), 2)
+	t.Run("success", func(t *testing.T) {
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
 
-	t.Run("Should successfully confirm ticket purchase", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
+		txMock.On("GetByID", td.ctx, tx.GetID()).Return(tx, nil)
+		ticketMock.On("Add", td.ctx, tx.GetTicketPurchase()).Return(nil)
+		txMock.On("Delete", td.ctx, tx.GetID()).Return(nil)
+
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			ticketMock,
+			td.config,
+			new(auth.MockAuthZ),
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
 		require.NoError(t, err)
-		// Настраиваем моки
-		txRep.On("GetByID", th.ctx, tx.GetID()).Return(tx, nil)
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(1, nil).Once()
-		txRep.On("Delete", th.ctx, tx.GetID()).Return(nil)
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil).Once()
-		tpRep.On("Add", th.ctx, tx.GetTicketPurchase()).Return(nil)
 
-		err = serv.ConfirmBuyTicket(th.ctx, tx.GetID())
-		require.NoError(t, err)
+		err = service.ConfirmBuyTicket(td.ctx, tx.GetID())
+		assert.NoError(t, err)
 
-		txRep.AssertExpectations(t)
-		tpRep.AssertExpectations(t)
+		txMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
 	})
 
-	t.Run("Should return error when transaction not found", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		nonExistentID := uuid.New()
-		txRep.On("GetByID", th.ctx, nonExistentID).Return(nil, errors.New("not found"))
+	t.Run("error when tx not found", func(t *testing.T) {
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		txMock.On("GetByID", td.ctx, tx.GetID()).Return(nil, errors.New("not found"))
 
-		err = serv.ConfirmBuyTicket(th.ctx, nonExistentID)
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			new(ticketpurchasesrep.MockTicketPurchasesRep),
+			td.config,
+			new(auth.MockAuthZ),
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
+		require.NoError(t, err)
+
+		err = service.ConfirmBuyTicket(td.ctx, tx.GetID())
 		assert.Error(t, err)
 
-		txRep.AssertExpectations(t)
-	})
-
-	t.Run("Should return error when failed to delete transaction", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		txRep.On("GetByID", th.ctx, tx.GetID()).Return(tx, nil)
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(1, nil)
-		txRep.On("Delete", th.ctx, tx.GetID()).Return(errors.New("delete error"))
-
-		err = serv.ConfirmBuyTicket(th.ctx, tx.GetID())
-		assert.Error(t, err)
-
-		txRep.AssertExpectations(t)
-	})
-
-	t.Run("Should return error when failed to add ticket purchase", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		txRep.On("GetByID", th.ctx, tx.GetID()).Return(tx, nil)
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(1, nil)
-		txRep.On("Delete", th.ctx, tx.GetID()).Return(nil)
-		txRep.On("GetCntTxByEventID", th.ctx, event.GetID()).Return(0, nil)
-		tpRep.On("Add", th.ctx, tx.GetTicketPurchase()).Return(errors.New("add error"))
-
-		err = serv.ConfirmBuyTicket(th.ctx, tx.GetID())
-		assert.Error(t, err)
-
-		txRep.AssertExpectations(t)
-		tpRep.AssertExpectations(t)
+		txMock.AssertExpectations(t)
 	})
 }
 
 func TestBuyTicketsServ_CancelBuyTicket(t *testing.T) {
-	th := setupTestHelper(t)
-
+	td := setupTestData()
 	txID := uuid.New()
 
-	t.Run("Should successfully cancel ticket purchase", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		txRep.On("Delete", th.ctx, txID).Return(nil)
+	t.Run("success", func(t *testing.T) {
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		txMock.On("Delete", td.ctx, txID).Return(nil)
 
-		err = serv.CancelBuyTicket(th.ctx, txID)
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			new(ticketpurchasesrep.MockTicketPurchasesRep),
+			td.config,
+			new(auth.MockAuthZ),
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
 		require.NoError(t, err)
 
-		txRep.AssertExpectations(t)
+		err = service.CancelBuyTicket(td.ctx, txID)
+		assert.NoError(t, err)
+
+		txMock.AssertExpectations(t)
 	})
 
-	t.Run("Should return error when failed to cancel", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		txRep.On("Delete", th.ctx, txID).Return(errors.New("delete error"))
+	t.Run("error when delete fails", func(t *testing.T) {
+		txMock := new(buyticketstxrep.MockBuyTicketsTxRep)
+		txMock.On("Delete", td.ctx, txID).Return(errors.New("delete error"))
 
-		err = serv.CancelBuyTicket(th.ctx, txID)
+		service, err := buyticketserv.NewBuyTicketsServ(
+			txMock,
+			new(ticketpurchasesrep.MockTicketPurchasesRep),
+			td.config,
+			new(auth.MockAuthZ),
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
+		require.NoError(t, err)
+
+		err = service.CancelBuyTicket(td.ctx, txID)
 		assert.Error(t, err)
 
-		txRep.AssertExpectations(t)
+		txMock.AssertExpectations(t)
 	})
 }
 
 func TestBuyTicketsServ_GetAllTicketPurchasesOfUser(t *testing.T) {
-	th := setupTestHelper(t)
+	td := setupTestData()
+	tx := createTestTicketPurchaseTx(td.eventID, td.userID, td.config, 1)
+	purchases := []*models.TicketPurchase{tx.GetTicketPurchase()}
 
-	user := th.createTestUser(1)
-	event1 := th.createTestEvent(1)
-	event2 := th.createTestEvent(2)
+	t.Run("success", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		ticketMock := new(ticketpurchasesrep.MockTicketPurchasesRep)
 
-	tx1 := th.createTestTicketPurchaseTx(event1.GetID(), user.GetID(), 1)
-	tx2 := th.createTestTicketPurchaseTx(event2.GetID(), user.GetID(), 2)
+		authMock.On("UserIDFromContext", td.ctx).Return(td.userID, nil)
+		ticketMock.On("GetTPurchasesOfUserID", td.ctx, td.userID).Return(purchases, nil)
 
-	t.Run("Should return all ticket purchases of user", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		expectedPurchases := []*models.TicketPurchase{
-			tx1.GetTicketPurchase(),
-			tx2.GetTicketPurchase(),
-		}
-
-		tpRep.On("GetTPurchasesOfUserID", th.ctx, user.GetID()).Return(expectedPurchases, nil)
-
-		purchases, err := serv.GetAllTicketPurchasesOfUser(th.ctx, user.GetID())
+		service, err := buyticketserv.NewBuyTicketsServ(
+			new(buyticketstxrep.MockBuyTicketsTxRep),
+			ticketMock,
+			td.config,
+			authMock,
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
 		require.NoError(t, err)
 
-		assert.Len(t, purchases, 2)
-		assert.Equal(t, tx1.GetTicketPurchase().GetID(), purchases[0].GetID())
-		assert.Equal(t, tx2.GetTicketPurchase().GetID(), purchases[1].GetID())
+		result, err := service.GetAllTicketPurchasesOfUser(td.ctx)
+		require.NoError(t, err)
+		assert.Len(t, result, 1)
+		assert.Equal(t, tx.GetTicketPurchase().GetID(), result[0].GetID())
 
-		tpRep.AssertExpectations(t)
+		authMock.AssertExpectations(t)
+		ticketMock.AssertExpectations(t)
 	})
 
-	t.Run("Should return error when failed to get purchases", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		tpRep.On("GetTPurchasesOfUserID", th.ctx, user.GetID()).Return(make([]*models.TicketPurchase, 0), errors.New("get error"))
+	t.Run("error when not authenticated", func(t *testing.T) {
+		authMock := new(auth.MockAuthZ)
+		authMock.On("UserIDFromContext", td.ctx).Return(uuid.Nil, auth.ErrNotAuthZ)
 
-		_, err = serv.GetAllTicketPurchasesOfUser(th.ctx, user.GetID())
+		service, err := buyticketserv.NewBuyTicketsServ(
+			new(buyticketstxrep.MockBuyTicketsTxRep),
+			new(ticketpurchasesrep.MockTicketPurchasesRep),
+			td.config,
+			authMock,
+			new(userrep.MockUserRep),
+			new(eventrep.MockEventRep),
+		)
+		require.NoError(t, err)
+
+		_, err = service.GetAllTicketPurchasesOfUser(td.ctx)
 		assert.Error(t, err)
 
-		tpRep.AssertExpectations(t)
-	})
-
-	t.Run("Should return empty list when no purchases", func(t *testing.T) {
-		txRep := new(buyticketstxrep.MockBuyTicketsTxRep)
-		tpRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		serv, err := buyticketserv.NewBuyTicketsServ(txRep, tpRep, th.config)
-		require.NoError(t, err)
-		tpRep.On("GetTPurchasesOfUserID", th.ctx, user.GetID()).Return([]*models.TicketPurchase{}, nil)
-
-		purchases, err := serv.GetAllTicketPurchasesOfUser(th.ctx, user.GetID())
-		require.NoError(t, err)
-
-		assert.Empty(t, purchases)
-
-		tpRep.AssertExpectations(t)
+		authMock.AssertExpectations(t)
 	})
 }

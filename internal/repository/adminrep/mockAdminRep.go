@@ -47,12 +47,12 @@ func (m *MockAdminRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockAdminRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Admin) (*models.Admin, error)) (*models.Admin, error) {
+func (m *MockAdminRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Admin) (*models.Admin, error)) error {
 	args := m.Called(ctx, id, funcUpdate)
 	if args.Get(0) == nil {
-		return nil, args.Error(1)
+		return args.Error(1)
 	}
-	return args.Get(0).(*models.Admin), args.Error(1)
+	return args.Error(1)
 }
 
 func (m *MockAdminRep) Ping(ctx context.Context) error {

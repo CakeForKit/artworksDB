@@ -47,7 +47,7 @@ func (s *authorServ) Update(ctx context.Context, idAuthor uuid.UUID, updateReq m
 func (s *authorServ) Delete(ctx context.Context, idAuthor uuid.UUID) error {
 	has, err := s.authorRep.HasArtworks(ctx, idAuthor)
 	if err != nil {
-		return fmt.Errorf("authorServ.Delete %v", err)
+		return fmt.Errorf("authorServ.Delete %w", err)
 	} else if has {
 		return ErrHasLinkedArtworks
 	}

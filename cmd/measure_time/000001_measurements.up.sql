@@ -1,4 +1,3 @@
--- Active: 1744740356603@@127.0.0.1@5432@artworks
 
 CREATE TABLE Admins (
     id UUID PRIMARY KEY,
@@ -258,7 +257,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Генерация 20,000 произведений искусства
+-- Генерация 10,000 произведений искусства
 DO $$
 DECLARE
     i INTEGER;
@@ -268,7 +267,7 @@ DECLARE
     size_w INT;
     size_h INT;
 BEGIN
-    FOR i IN 1..20000 LOOP
+    FOR i IN 1..10000 LOOP
         -- Выбираем случайного автора
         SELECT id INTO author_rec FROM Author ORDER BY random() LIMIT 1;
         
@@ -443,57 +442,10 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Заполнение таблицы TicketPurchases (5000 записей)
-DO $$
-DECLARE
-    event_rec RECORD;
-    tickets_to_sell INT;
-    tickets_available INT;
-    tickets_sold INT;
-    i INT;
-BEGIN
-    FOR event_rec IN SELECT id, cntTickets FROM Events WHERE canVisit = true LOOP
-        -- Сколько билетов уже продано
-        SELECT COUNT(*) INTO tickets_sold 
-        FROM TicketPurchases 
-        WHERE eventID = event_rec.id;
-        
-        -- Сколько еще можно продать
-        tickets_available := event_rec.cntTickets - tickets_sold;
-        
-        -- Продаем случайное количество (но не больше доступного)
-        IF tickets_available > 0 THEN
-            tickets_to_sell := least(floor(random() * 20)::INT + 1, tickets_available);
-            
-            FOR i IN 1..tickets_to_sell LOOP
-                INSERT INTO TicketPurchases (id, customerName, customerEmail, purchaseDate, eventID)
-                VALUES (
-                    gen_random_uuid(),
-                    random_name(),
-                    random_email(random_name()),
-                    NOW() - (random() * 30 || ' days')::INTERVAL,
-                    event_rec.id
-                );
-            END LOOP;
-        END IF;
-    END LOOP;
-    RAISE NOTICE 'Добавлено % TicketPurchases', (SELECT  COUNT(*) FROM TicketPurchases);
-END $$;
 
--- Заполнение таблицы tickets_user
--- Сначала обновим TicketPurchases, добавив userID для 70% билетов
-UPDATE TicketPurchases 
-SET customerEmail = random_email(customerName),
-    customerName = random_name()
-WHERE random() > 0.3; -- обновим 70% записей
+ALTER DATABASE testArtwork SET enable_mergejoin = off;
+ALTER DATABASE testArtwork SET enable_hashjoin = on; 
+ALTER DATABASE testArtwork SET enable_nestloop = off;
 
--- Затем создадим связи
-INSERT INTO tickets_user (ticketID, userID)
-SELECT 
-    tp.id,
-    (SELECT id FROM Users ORDER BY random() LIMIT 1)
-FROM TicketPurchases tp
-WHERE random() > 0.5 -- 50% билетов с привязкой к пользователям
-ON CONFLICT DO NOTHING;
-
+-- ALTER DATABASE testArtwork RESET ALL;
 ANALYZE;

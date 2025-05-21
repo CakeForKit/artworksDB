@@ -1,0 +1,300 @@
+
+1000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+2000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+3000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+4000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+5000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+6000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+7000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+8000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+9000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+10000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+11000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+12000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+13000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+14000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+15000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+16000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+17000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+18000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+19000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+20000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+21000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+22000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+23000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+24000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+25000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+26000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+27000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+28000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+29000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+30000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+31000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+32000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+33000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+34000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+35000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+36000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+37000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+38000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+39000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+40000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+41000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+42000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+43000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+44000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+45000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+46000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+47000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+48000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+49000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan
+
+50000 rows in artworks_event
+Node Type: Hash Join
+  Node Type: Seq Scan
+  Node Type: Hash
+    Node Type: Seq Scan

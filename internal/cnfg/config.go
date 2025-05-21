@@ -151,7 +151,7 @@ func GetPgTestConfig() (config *PostgresTestConfig) {
 	projectRoot := GetProjectRoot()
 	migrationDir := filepath.Join(projectRoot, "migrations") // Путь от корня проекта
 	return &PostgresTestConfig{
-		DbName:       "testArtwork",
+		DbName:       "testartwork",
 		Port:         5432,
 		Username:     "testUser",
 		Password:     "testPassword",
