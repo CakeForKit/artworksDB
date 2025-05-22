@@ -63,10 +63,6 @@ func main() {
 	// engine.Use(gin.Logger())
 	engine.Use(gin.Recovery())
 
-	// для Swagger - НЕ ТРОГАТЬ
-	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
-	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
-
 	// ----- Config ------
 	pgCreds, err := cnfg.LoadPgCredentials()
 	if err != nil {
@@ -85,6 +81,10 @@ func main() {
 		panic(fmt.Errorf("cannot load AppConfig: %v", err))
 	}
 	// ------------------
+
+	// для Swagger - НЕ ТРОГАТЬ
+	url := ginSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", appCnfg.Port))
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// ----- Repositories -----
 	userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
@@ -195,7 +195,8 @@ func main() {
 	_ = searcherRouter
 	// -------------------
 
-	engine.Run(":8080")
+	// engine.Run(":8080")
+	engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
 }
 
 func main1() {

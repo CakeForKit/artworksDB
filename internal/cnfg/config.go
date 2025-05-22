@@ -22,6 +22,7 @@ type AppConfig struct {
 	TokenSymmetricKey            string        `mapstructure:"token_symmetric_key"`
 	AccessTokenDuration          time.Duration `mapstructure:"access_token_duration"`
 	BuyTicketTransactionDuration time.Duration `mapstructure:"buy_ticket_transaction_duration"`
+	Port                         int           `mapstructure:"port"`
 }
 
 type DatebaseConfig struct {
