@@ -6,6 +6,7 @@ import (
 	"strings"
 	"time"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -113,4 +114,24 @@ func (u *User) IsSubscribedToMail() bool {
 func isValidEmail(email string) bool {
 	_, err := mail.ParseAddress(email)
 	return (err == nil)
+}
+
+func (u *User) ToUserResponse() jsonreqresp.UserResponse {
+	return jsonreqresp.UserResponse{
+		ID:            u.id.String(),
+		Username:      u.username,
+		Login:         u.login,
+		CreatedAt:     u.createdAt,
+		Email:         u.email,
+		SubscribeMail: u.subscribeMail,
+	}
+}
+
+func (u *User) ToUserSelfResponse() jsonreqresp.UserSelfResponse {
+	return jsonreqresp.UserSelfResponse{
+		Username:      u.username,
+		Login:         u.login,
+		Email:         u.email,
+		SubscribeMail: u.subscribeMail,
+	}
 }

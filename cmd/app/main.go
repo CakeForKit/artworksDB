@@ -1,3 +1,8 @@
+// @title Museum
+// @version 1.0
+// @description API для системы учета произведений искусств
+// @host localhost:8080
+// @BasePath /api/v1
 package main
 
 import (
@@ -6,10 +11,192 @@ import (
 	"fmt"
 	"os"
 
+	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/projlog"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/ticketpurchasesrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/adminserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/mailing"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/searcher"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice"
+	"github.com/gin-gonic/gin"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+func main() {
+	ctx := context.Background()
+	engine := gin.New()
+	apiGroup := engine.Group("/api/v1")
+
+	logCnfg, err := cnfg.GetLogConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load LogConfig: %v", err))
+	}
+	projLogger, err := projlog.NewLogger(logCnfg)
+	if err != nil {
+		panic(err)
+	}
+	defer projLogger.Sync()
+
+	apiGroup.Use(middleware.LogMiddleware(projLogger))
+
+	// engine.Use(ginzap.Ginzap(projLogger, viper.GetString("logging.time_format"), true))
+	// engine.Use(ginzap.RecoveryWithZap(projLogger, true))
+	// engine.Use(gin.Logger())
+	engine.Use(gin.Recovery())
+
+	// для Swagger - НЕ ТРОГАТЬ
+	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")
+	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
+
+	// ----- Config ------
+	pgCreds, err := cnfg.LoadPgCredentials()
+	if err != nil {
+		panic(fmt.Errorf("cannot load PgCredentials: %v", err))
+	}
+	redisCreds, err := cnfg.LoadRedisCredentials()
+	if err != nil {
+		panic(fmt.Errorf("cannot load RedisCredentials: %v", err))
+	}
+	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
+	if err != nil {
+		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
+	}
+	appCnfg, err := cnfg.LoadAppConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load AppConfig: %v", err))
+	}
+	// ------------------
+
+	// ----- Repositories -----
+	userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	txRep, err := buyticketstxrep.NewBuyTicketsTxRep(ctx, redisCreds)
+	if err != nil {
+		panic(err)
+	}
+	tPurchasesRep, err := ticketpurchasesrep.NewTicketPurchasesRep(ctx, pgCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	// ------------------------
+
+	// ----- Services -----
+	// auth
+	authZ, err := auth.NewAuthZ()
+	if err != nil {
+		panic(err)
+	}
+	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
+	if err != nil {
+		panic(err)
+	}
+	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
+	if err != nil {
+		panic(err)
+	}
+	authAdminServ, err := auth.NewAuthAdmin(*appCnfg, adminRep)
+	if err != nil {
+		panic(err)
+	}
+	// serv
+	userServ := userservice.NewUserService(userRep, authZ)
+	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
+	buyTicketServ, _ := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
+	collectionServ := collectionserv.NewCollectionServ(collectionRep)
+	authroServ := authorserv.NewAuthorServ(authorRep)
+	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
+	eventServ := eventserv.NewEventService(eventRep)
+	searcherServ := searcher.NewSearcher(artworkRep, eventRep)
+	mailingServ := mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
+	// --------------------
+
+	// ----- Groups -----
+	userGroup := apiGroup.Group("/user")
+	userGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, true))
+	guestGroup := apiGroup.Group("/guest")
+	guestGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, false))
+	employeeGroup := apiGroup.Group("/employee")
+	employeeGroup.Use(middleware.AuthMiddleware(authEmployeeServ, authZ, true))
+	adminGroup := apiGroup.Group("/admin")
+	adminGroup.Use(middleware.AuthMiddleware(authAdminServ, authZ, true))
+	// ------------------------
+
+	// ----- Routers -----
+	authUserRouter := api.AuthUserRouter{}
+	authUserRouter.Init(apiGroup, authUserServ)
+	authEmployeeRouter := api.AuthEmployeeRouter{}
+	authEmployeeRouter.Init(apiGroup, authEmployeeServ)
+	authAdminRouter := api.AuthAdminRouter{}
+	authAdminRouter.Init(apiGroup, authAdminServ)
+
+	userRouter := api.NewUserRouter(userGroup, userServ)
+	_ = userRouter
+	employeeRouter := api.AdminRouter{}
+	employeeRouter.Init(adminGroup, adminserv, authEmployeeServ, authZ)
+
+	collectionRouter := api.CollectionRouter{}
+	collectionRouter.Init(employeeGroup, collectionServ)
+	authorRouter := api.NewAuthorRouter(employeeGroup, authroServ)
+	_ = authorRouter
+	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
+	_ = artworkRouter
+	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
+	_ = eventRouter
+	mailingRouter := api.NewMailingRouter(employeeGroup, mailingServ, eventServ)
+	_ = mailingRouter
+	buyTicketRouter := api.NewBuyTicketRouter(guestGroup, buyTicketServ)
+	_ = buyTicketRouter
+	searcherRouter := api.NewSearcherRouter(apiGroup, searcherServ)
+	_ = searcherRouter
+	// -------------------
+
+	engine.Run(":8080")
+}
 
 func main1() {
 	wd, err := os.Getwd() // Получает директорию, из которой запущен `go run`
@@ -84,7 +271,7 @@ func main1() {
 	// fmt.Printf("UPDATED %+v\n", *user)
 }
 
-func main() {
+func main2() {
 	// redisCnfg, err := cnfg.LoadRedisCredentials()
 	// if err != nil {
 	// 	fmt.Printf("cannot load config: %v", err)

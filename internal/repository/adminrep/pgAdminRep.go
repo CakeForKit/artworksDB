@@ -41,16 +41,16 @@ func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbCon
 			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrOpenConnect, err)
+			resErr = fmt.Errorf("NewPgAdminRep: %w: %v", ErrOpenConnect, err)
 			return
 		}
 		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrPing, err)
+			resErr = fmt.Errorf("NewPgAdminRep: %w: %v", ErrPing, err)
 			db.Close()
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxOpenConns(dbConf.MaxOpenConns)
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
@@ -67,114 +67,94 @@ func (pg *PgAdminRep) parseAdminsRows(rows *sql.Rows) ([]*models.Admin, error) {
 	var resAdmins []*models.Admin
 	for rows.Next() {
 		var id uuid.UUID
-		var username, login, hashedPassword, email string
+		var username, login, hashedPassword string
 		var createdAt time.Time
-		var subscribeMail bool
-		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+		var valid bool
+		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &valid); err != nil {
+			return nil, fmt.Errorf("parseAdminsRows, scan error: %v", err)
 		}
-		admin, err := models.NewAdmin(id, username, login, hashedPassword, createdAt, true)
+		admin, err := models.NewAdmin(id, username, login, hashedPassword, createdAt, valid)
 		if err != nil {
 			return nil, err
 		}
 		resAdmins = append(resAdmins, &admin)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %v", err)
+		return nil, fmt.Errorf("parseAdminsRows, rows iteration error: %v", err)
 	}
 	return resAdmins, nil
 }
 
-func (pg *PgAdminRep) GetAll(ctx context.Context) ([]*models.Admin, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid").
-		From("Admins").
-		ToSql()
+func (pg *PgAdminRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Admin, error) {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
-	admins, err := pg.parseAdminsRows(rows)
+	res, err := pg.parseAdminsRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
-	if len(admins) == 0 {
-		return nil, ErrAdminNotFound
+	return res, nil
+}
+
+func (pg *PgAdminRep) GetAll(ctx context.Context) ([]*models.Admin, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid").
+		From("Admins")
+	res, err := pg.execSelectQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgAdminRep.GetAll: %v", err)
 	}
-	return admins, nil
+	return res, nil
 }
 
 func (pg *PgAdminRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Admin, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		From("users").
-		Where(sq.Eq{"id": id}).
-		ToSql()
+	query := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid").
+		From("Admins").
+		Where(sq.Eq{"id": id})
+	res, err := pg.execSelectQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgAdminRep.GetByID: %v", err)
 	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	users, err := pg.parseAdminsRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(users) == 0 {
+	if len(res) == 0 {
 		return nil, ErrAdminNotFound
-	} else if len(users) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneAdmin, err)
+	} else if len(res) > 1 {
+		return nil, fmt.Errorf("PgAdminRep.GetByID: %w: %v", ErrExpectedOneAdmin, err)
 	}
-	return users[0], nil
+	return res[0], nil
 }
 
 func (pg *PgAdminRep) GetByLogin(ctx context.Context, login string) (*models.Admin, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
+	query := psql.Select("id", "username", "login", "hashedPassword", "createdAt", "valid").
 		From("Admins").
-		Where(sq.Eq{"login": login}).
-		ToSql()
+		Where(sq.Eq{"login": login})
+	res, err := pg.execSelectQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgAdminRep.GetByID: %v", err)
 	}
-
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	admins, err := pg.parseAdminsRows(rows)
-	if err != nil {
-		return nil, err
-	}
-	if len(admins) == 0 {
+	if len(res) == 0 {
 		return nil, ErrAdminNotFound
-	} else if len(admins) > 1 {
-		return nil, fmt.Errorf("%w: %v", ErrExpectedOneAdmin, err)
+	} else if len(res) > 1 {
+		return nil, fmt.Errorf("PgAdminRep.GetByLogin: %w: %v", ErrExpectedOneAdmin, err)
 	}
-	return admins[0], nil
+	return res[0], nil
 }
 
-func (pg *PgAdminRep) Add(ctx context.Context, e *models.Admin) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("admins").
-		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true).
-		ToSql()
+func (pg *PgAdminRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
-
-	result, err := pg.db.ExecContext(ctx, query, args...)
+	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
@@ -184,69 +164,66 @@ func (pg *PgAdminRep) Add(ctx context.Context, e *models.Admin) error {
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no admin added", ErrRowsAffected)
+		return fmt.Errorf("%w: no added", ErrRowsAffected)
+	}
+	return nil
+}
+
+func (pg *PgAdminRep) Add(ctx context.Context, e *models.Admin) error {
+	_, err := pg.GetByLogin(ctx, e.GetLogin())
+	if err == nil {
+		return ErrDuplicateLoginAdm
+	} else if err != ErrAdminNotFound {
+		return fmt.Errorf("PgAdminRep.Add %v", err)
+	}
+
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Insert("admins").
+		Columns("id", "username", "login", "hashedPassword", "createdAt", "valid").
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), true)
+	err = pg.execChangeQuery(ctx, query)
+	if err != nil {
+		return fmt.Errorf("PgAdminRep.Add: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgAdminRep) Delete(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Admins").
-		Where(sq.Eq{"id": id}).
-		ToSql()
+	query := psql.Delete("Admins").
+		Where(sq.Eq{"id": id})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no admin with id %s", ErrRowsAffected, id)
+		return fmt.Errorf("PgAdminRep.Delete: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgAdminRep) Update(ctx context.Context,
 	id uuid.UUID,
-	funcUpdate func(*models.Admin) (*models.Admin, error)) (*models.Admin, error) {
+	funcUpdate func(*models.Admin) (*models.Admin, error),
+) error {
 	admin, err := pg.GetByID(ctx, id)
 	if err != nil {
-		return nil, err
+		return fmt.Errorf("PgAdminRep.Update %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedAdmin, err := funcUpdate(admin)
 	if err != nil {
-		return nil, fmt.Errorf("funcUpdate: %v", err)
+		return fmt.Errorf("PgAdminRep.Update: %w", ErrUpdateAdmin)
 	}
-	query, args, err := psql.Update("Admins").
+	query := psql.Update("Admins").
 		Set("username", updatedAdmin.GetUsername()).
 		Set("login", updatedAdmin.GetLogin()).
 		Set("hashedPassword", updatedAdmin.GetHashedPassword()).
 		Set("valid", updatedAdmin.IsValid()).
-		Where(sq.Eq{"id": id}).ToSql()
+		Where(sq.Eq{"id": id})
+	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgAdminRep.Delete: %w", err)
 	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return nil, fmt.Errorf("%w: no admin added", ErrRowsAffected)
-	}
-	return updatedAdmin, nil
+	return nil
 }
 
 func (pg *PgAdminRep) Ping(ctx context.Context) error {

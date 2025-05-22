@@ -51,7 +51,7 @@ func NewPgTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.PostgresCredenti
 			return
 		}
 		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxIdleConns)
+		db.SetMaxOpenConns(dbConf.MaxOpenConns)
 		db.SetMaxIdleConns(dbConf.MaxIdleConns)
 		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
@@ -85,24 +85,13 @@ func (pg *PgTicketPurchasesRep) parseTicketPurchasessRows(rows *sql.Rows) ([]*mo
 	return resTicketPurchases, nil
 }
 
-func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(
-	ctx context.Context,
-	userID uuid.UUID,
-) ([]*models.TicketPurchase, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select(
-		"tp.id", "tp.customername", "tp.customeremail",
-		"tp.purchasedate", "tp.eventid", "tu.userid",
-	).
-		From("TicketPurchases tp").
-		Join("tickets_user tu ON tp.id = tu.ticketID").
-		Where(sq.Eq{"tu.userID": userID}).
-		ToSql()
+func (pg *PgTicketPurchasesRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.TicketPurchase, error) {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
@@ -110,18 +99,31 @@ func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(
 
 	arts, err := pg.parseTicketPurchasessRows(rows)
 	if err != nil {
-		return nil, err
-	}
-	if len(arts) == 0 {
-		return nil, nil
+		return nil, fmt.Errorf("%w", err)
 	}
 	return arts, nil
 }
 
-func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(
-	ctx context.Context,
-	eventID uuid.UUID,
-) (int, error) {
+func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context, userID uuid.UUID) ([]*models.TicketPurchase, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select(
+		"tp.id", "tp.customername", "tp.customeremail",
+		"tp.purchasedate", "tp.eventid", "tu.userid",
+	).
+		From("TicketPurchases tp").
+		Join("tickets_user tu ON tp.id = tu.ticketID").
+		Where(sq.Eq{"tu.userID": userID})
+	res, err := pg.execSelectQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgTicketPurchasesRep.GetTPurchasesOfUserID: %v", err)
+	}
+	if len(res) == 0 {
+		return nil, nil
+	}
+	return res, nil
+}
+
+func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(ctx context.Context, eventID uuid.UUID) (int, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	query, args, err := psql.
@@ -132,28 +134,24 @@ func (pg *PgTicketPurchasesRep) GetCntTPurchasesForEvent(
 		ToSql()
 
 	if err != nil {
-		return 0, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return 0, fmt.Errorf("%w: %w %v", ErrPgTicketPurchasesRep, ErrQueryBuilds, err)
 	}
 
 	var count int
 	err = pg.db.QueryRowContext(ctx, query, args...).Scan(&count)
 	if err != nil {
-		return 0, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return 0, fmt.Errorf("%w: %w %v", ErrPgTicketPurchasesRep, ErrQueryExec, err)
 	}
 
 	return count, nil
 }
 
-func (pg *PgTicketPurchasesRep) addConnectTicketsUser(ctx context.Context, tp *models.TicketPurchase) error {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("tickets_user").
-		Columns("ticketID", "userID").
-		Values(tp.GetID(), tp.GetUserID()).
-		ToSql()
+func (pg *PgTicketPurchasesRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
+	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
@@ -163,31 +161,31 @@ func (pg *PgTicketPurchasesRep) addConnectTicketsUser(ctx context.Context, tp *m
 		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no tickets_user added", ErrRowsAffected)
+		return fmt.Errorf("%w: no added", ErrRowsAffected)
+	}
+	return nil
+}
+
+func (pg *PgTicketPurchasesRep) addConnectTicketsUser(ctx context.Context, tp *models.TicketPurchase) error {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Insert("tickets_user").
+		Columns("ticketID", "userID").
+		Values(tp.GetID(), tp.GetUserID())
+	err := pg.execChangeQuery(ctx, query)
+	if err != nil {
+		return fmt.Errorf("PgTicketPurchasesRep.addConnectTicketsUser: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgTicketPurchasesRep) Add(ctx context.Context, tp *models.TicketPurchase) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Insert("TicketPurchases").
+	query := psql.Insert("TicketPurchases").
 		Columns("id", "customerName", "customerEmail", "purchaseDate", "eventID").
-		Values(tp.GetID(), tp.GetCustomerName(), tp.GetCustomerEmail(), tp.GetPurchaseDate(), tp.GetEventID()).
-		ToSql()
+		Values(tp.GetID(), tp.GetCustomerName(), tp.GetCustomerEmail(), tp.GetPurchaseDate(), tp.GetEventID())
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no TicketPurchases added", ErrRowsAffected)
+		return fmt.Errorf("PgTicketPurchasesRep.Add: %w", err)
 	}
 
 	if tp.GetUserID() != uuid.Nil {

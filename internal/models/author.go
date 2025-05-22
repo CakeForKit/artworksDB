@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -12,6 +13,12 @@ type Author struct {
 	name      string
 	birthYear int
 	deathYear int
+}
+
+type AuthorUpdateReq struct {
+	Name      string
+	BirthYear int
+	DeathYear int
 }
 
 var (
@@ -46,10 +53,19 @@ func (a *Author) validate() error {
 		return ErrAuthorInvalidBirthYear
 	case a.deathYear < 0:
 		return ErrAuthorInvalidDeathYear
-	case a.deathYear > 0 && a.birthYear > a.deathYear:
+	case a.deathYear > 0 && (a.birthYear > a.deathYear):
 		return ErrAuthorBirthAfterDeath
 	}
 	return nil
+}
+
+func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
+	return jsonreqresp.AuthorResponse{
+		ID:        a.id.String(),
+		Name:      a.name,
+		BirthYear: a.birthYear,
+		DeathYear: a.deathYear,
+	}
 }
 
 func (auth *Author) GetID() uuid.UUID {
@@ -66,4 +82,17 @@ func (a *Author) GetBirthYear() int {
 
 func (a *Author) GetDeathYear() int {
 	return a.deathYear
+}
+
+func (a *Author) Update(updateReq AuthorUpdateReq) error {
+	copyA := *a
+	copyA.name = updateReq.Name
+	copyA.birthYear = updateReq.BirthYear
+	copyA.deathYear = updateReq.DeathYear
+	err := copyA.validate()
+	if err != nil {
+		return err
+	}
+	*a = copyA
+	return nil
 }

@@ -14,34 +14,55 @@ func TestPasetoMaker(t *testing.T) {
 
 	userID := uuid.New()
 	duration := time.Minute
+	expiredAt := time.Now().Add(duration)
 
-	issuedAt := time.Now()
-	expiredAt := issuedAt.Add(duration)
-
-	token, err := maker.CreateToken(userID, duration)
+	token, err := maker.CreateToken(userID, UserRole, duration)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	payload, err := maker.VerifyToken(token)
+	payload, err := maker.VerifyToken(token, UserRole)
 	require.NoError(t, err)
-	require.NotEmpty(t, token)
+	require.NotEmpty(t, payload)
 
-	require.NotZero(t, payload.ID)
-	require.Equal(t, userID, payload.UserID)
-	require.WithinDuration(t, issuedAt, payload.IssuedAt, time.Second)
-	require.WithinDuration(t, expiredAt, payload.ExpiredAt, time.Second)
+	require.Equal(t, userID, payload.GetPersonID())
+	require.Equal(t, UserRole, payload.GetRole())
+	require.WithinDuration(t, expiredAt, payload.GetExpiredAt(), time.Second)
 }
 
 func TestExpiredPasetoToken(t *testing.T) {
 	maker, err := NewPasetoMaker("12345678901234567890123456789012")
 	require.NoError(t, err)
 
-	token, err := maker.CreateToken(uuid.New(), -time.Minute)
+	token, err := maker.CreateToken(uuid.New(), UserRole, -time.Minute)
 	require.NoError(t, err)
 	require.NotEmpty(t, token)
 
-	payload, err := maker.VerifyToken(token)
+	payload, err := maker.VerifyToken(token, UserRole)
 	require.Error(t, err)
 	require.EqualError(t, err, ErrExpiredToken.Error())
+	require.Nil(t, payload)
+}
+
+func TestIncorrectRole(t *testing.T) {
+	maker, err := NewPasetoMaker("12345678901234567890123456789012")
+	require.NoError(t, err)
+
+	token, err := maker.CreateToken(uuid.New(), AdminRole, time.Minute)
+	require.NoError(t, err)
+	require.NotEmpty(t, token)
+
+	payload, err := maker.VerifyToken(token, UserRole)
+	require.Error(t, err)
+	require.EqualError(t, err, ErrIncorrectRole.Error())
+	require.Nil(t, payload)
+}
+
+func TestInvalidToken(t *testing.T) {
+	maker, err := NewPasetoMaker("12345678901234567890123456789012")
+	require.NoError(t, err)
+
+	payload, err := maker.VerifyToken("invalid.token", UserRole)
+	require.Error(t, err)
+	require.EqualError(t, err, ErrInvalidToken.Error())
 	require.Nil(t, payload)
 }

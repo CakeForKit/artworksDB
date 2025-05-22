@@ -5,6 +5,7 @@ import (
 	"strings"
 	"time"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -83,19 +84,21 @@ func (e *Employee) IsValid() bool {
 	return e.valid
 }
 
-// func (e *Employee) SetValid(valid bool) {
-// 	e.valid = valid
-// }
+func (e *Employee) SetValid(valid bool) {
+	e.valid = valid
+}
 
 func (e *Employee) GetAdminID() uuid.UUID {
 	return e.adminID
 }
 
-// SetAdminID устанавливает ID администратора
-// func (e *Employee) SetAdminID(adminID uuid.UUID) error {
-// 	if adminID == uuid.Nil {
-// 		return ErrEmployeeInvalidAdminID
-// 	}
-// 	e.adminID = adminID
-// 	return nil
-// }
+func (e *Employee) ToEmployeeResponse() jsonreqresp.EmployeeResponse {
+	return jsonreqresp.EmployeeResponse{
+		ID:        e.id.String(),
+		Username:  e.username,
+		Login:     e.login,
+		CreatedAt: e.createdAt,
+		Valid:     e.valid,
+		AdminID:   e.adminID.String(),
+	}
+}

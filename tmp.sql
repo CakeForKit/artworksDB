@@ -8,6 +8,24 @@ select count(*) from artworks;
 
 select count(*) from Events;
 
+select * from TicketPurchases where eventID = 'b10f841d-ba75-48df-a9cf-c86fc9bd3041';
+
+select * from tickets_user where ticketID = 'bf7da5de-6350-4453-bb1b-9e02ff376f93'
+
+update events set canVisit = FALSE where id = '681d817b-fbf8-49fe-a27a-0caa147f8e09';
+
+select *
+from artworks art 
+join author a 
+on a.id = art.authorid
+join collection c 
+on c.id = art.collectionid;
+where creationYear = 1889;
+
+delete from artworks where id = '44a315d0-663c-4813-92a6-d7977c2f2aba';
+
+update employees set valid = false where login = 'notvalid';
+
 -- Исследуемый запрос
 EXPLAIN ANALYZE
 SELECT Artworks.title
@@ -17,6 +35,13 @@ ON Artwork_event.artworkID = Artworks.id
 WHERE Artwork_event.eventID = (select *
                                 from random_event_id()
                                 limit 1);
+
+                                EXPLAIN ANALYZE
+SELECT Artworks.title
+FROM Artworks
+JOIN Artwork_event
+ON Artwork_event.artworkID = Artworks.id
+WHERE Artwork_event.eventID = 'a2c3646d-8f9c-44dc-bf90-0019fc181db6';
 
 CREATE INDEX idx_Artwork_event_eventID ON Artwork_event(eventID);
 DROP INDEX IF EXISTS idx_Artwork_event_eventID;

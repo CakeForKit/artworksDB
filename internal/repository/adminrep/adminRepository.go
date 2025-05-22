@@ -10,9 +10,10 @@ import (
 )
 
 var (
-	ErrAdminNotFound    = errors.New("the Admin was not found in the repository")
-	ErrFailedToAddAdmin = errors.New("failed to add the Admin to the repository")
-	ErrUpdateAdmin      = errors.New("failed to update the Admin in the repository")
+	ErrAdminNotFound = errors.New("the Admin was not found in the repository")
+	// ErrFailedToAddAdmin  = errors.New("failed to add the Admin to the repository")
+	ErrDuplicateLoginAdm = errors.New("an admin with this login already exists")
+	ErrUpdateAdmin       = errors.New("failed to update the Admin in the repository")
 )
 
 type AdminRep interface {
@@ -21,12 +22,12 @@ type AdminRep interface {
 	GetByLogin(ctx context.Context, login string) (*models.Admin, error)
 	Add(ctx context.Context, e *models.Admin) error
 	Delete(ctx context.Context, id uuid.UUID) error
-	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Admin) (*models.Admin, error)) (*models.Admin, error)
+	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Admin) (*models.Admin, error)) error
 	Ping(ctx context.Context) error
 	Close()
 }
 
 func NewAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
-	rep, err := NewPgAdminRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgAdminRep(ctx, pgCreds, dbConf)
+	// return &MockAdminRep{}, nil
 }

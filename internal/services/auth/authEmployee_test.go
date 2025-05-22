@@ -8,7 +8,6 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep/mockemployeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
 	"github.com/google/uuid"
@@ -82,7 +81,7 @@ func TestAuthEmployee_LoginEmployee(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
 
@@ -125,9 +124,8 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 		Username: "new_user",
 		Login:    "new_login",
 		Password: "new_password",
-		Valid:    true,
-		AdminID:  uuid.New(),
 	}
+	adminID := uuid.New()
 
 	tests := []struct {
 		name          string
@@ -161,7 +159,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
 
@@ -177,7 +175,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 				hasher:      hasher,
 			}
 
-			err := service.RegisterEmployee(ctx, tt.request)
+			err := service.RegisterEmployee(ctx, tt.request, adminID)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)

@@ -15,21 +15,1862 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/artworks": {
+        "/admin/employeelist/": {
             "get": {
-                "responses": {}
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all employees",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get all employees by admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EmployeeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/admin/employeelist/change-rights": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Change employee valid field",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Change employee rights",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateValidEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success update"
+                    },
+                    "404": {
+                        "description": "Employee not found"
+                    }
+                }
+            }
+        },
+        "/admin/employeelist/register-employee": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Register a new employee",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Register employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The employee registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    },
+                    "409": {
+                        "description": "Attempt to re-register"
+                    }
+                }
+            }
+        },
+        "/admin/userlist/": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all users",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "admin"
+                ],
+                "summary": "Get all users by admin",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EmployeeResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    }
+                }
+            }
+        },
+        "/auth-admin/login": {
+            "post": {
+                "description": "Authenticates a admin and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login admin",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginAdminRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The admin has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    },
+                    "403": {
+                        "description": "Has no rights"
+                    }
+                }
+            }
+        },
+        "/auth-employee/login": {
+            "post": {
+                "description": "Authenticates a employee and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login employee",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The employee has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    },
+                    "403": {
+                        "description": "Has no rights"
+                    }
+                }
+            }
+        },
+        "/auth-user/login": {
+            "post": {
+                "description": "Authenticates a user and return access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Login user",
+                "parameters": [
+                    {
+                        "description": "Login credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.LoginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user has been authenticated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    }
+                }
+            }
+        },
+        "/auth-user/register": {
+            "post": {
+                "description": "Register a new user",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Register user",
+                "parameters": [
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/auth.RegisterUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The user registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
+                    },
+                    "409": {
+                        "description": "Attempt to re-register"
+                    }
+                }
+            }
+        },
+        "/employee/artworks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all artworks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Get all artworks by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.ArtworkResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Update artwork with already created author and collection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Update artwork by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Updating Artwork with [new] author and [new] collection",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork updated"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Add artwork with already created author and collection.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Add artwork by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "New Artwork with already created author and collection.",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Artworks added"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing artwork",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Artworks"
+                ],
+                "summary": "Delete an artwork",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteArtworkRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/employee/authors": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all authors",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Get all authors by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.AuthorResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Update an author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Add a new author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing author",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Author"
+                ],
+                "summary": "Delete an author by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Author delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteAuthorRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    },
+                    "409": {
+                        "description": "Conflict - Author has linked artworks"
+                    }
+                }
+            }
+        },
+        "/employee/collections": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all collections",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Get all collections by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.CollectionResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates an existing collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Update a collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Add a new collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes an existing collection",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Collection"
+                ],
+                "summary": "Delete a collection by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Collection delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteCollectionRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request"
+                    },
+                    "404": {
+                        "description": "Not Found"
+                    }
+                }
+            }
+        },
+        "/employee/events": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves list of all events",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get all events",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EventResponse"
+                            }
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Updates existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Update event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event update data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UpdateEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event updated successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event not found"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Creates a new event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Add new event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.AddEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Event created successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Employee not found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Deletes existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Event delete data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.DeleteEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Event deleted successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event not found"
+                    }
+                }
+            }
+        },
+        "/employee/events/{id}": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Adds an artwork to an existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Add artwork to event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork to event connection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConArtworkEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork added to event successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error or duplicate artwork"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Removes an artwork from an existing event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Delete artwork from event",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Artwork to event connection data",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConArtworkEventRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Artwork removed from event successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
+                    }
+                }
+            }
+        },
+        "/employee/mailing/": {
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Sends a message to all users using event data",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Mailing"
+                ],
+                "summary": "Send mailing to users",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Mailing sent successfully",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.MailingResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Error: no events found"
+                    }
+                }
+            }
+        },
+        "/guest/tickets": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves all ticket purchases for authenticated user",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Get user's tickets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.TicketPurchaseResponse"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "403": {
+                        "description": "Forbidden"
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Buy tickets for a specific event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Purchase tickets",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Ticket purchase details",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.BuyTicketRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sets purchase data in cookie",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.TxTicketPurchaseResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request format"
+                    },
+                    "401": {
+                        "description": "Unauthorized"
+                    },
+                    "404": {
+                        "description": "Event not found"
+                    },
+                    "409": {
+                        "description": "No tickets available"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
+        "/guest/tickets/cancel": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Cancels a pending ticket purchase",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Cancel purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Transaction ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConfirmCancelTxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Purchase cancelled"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
+        "/guest/tickets/confirm": {
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Confirms a pending ticket purchase",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tickets"
+                ],
+                "summary": "Confirm purchase",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Bearer token",
+                        "name": "Authorization",
+                        "in": "header"
+                    },
+                    {
+                        "description": "Transaction ID",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ConfirmCancelTxRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Purchase confirmed"
+                    },
+                    "400": {
+                        "description": "Invalid request"
+                    },
+                    "404": {
+                        "description": "Transaction not found"
+                    },
+                    "410": {
+                        "description": "Transaction expired"
+                    }
+                }
+            }
+        },
+        "/museum/artworks": {
+            "get": {
+                "description": "Retrieves a list of all artworks",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Searcher"
+                ],
+                "summary": "Get artworks",
+                "parameters": [
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "description": "Filter by artwork title (max 255 chars)",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 100,
+                        "type": "string",
+                        "description": "Filter by author name (max 100 chars)",
+                        "name": "author_name",
+                        "in": "query"
+                    },
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "description": "Filter by collection title (max 255 chars)",
+                        "name": "collection_title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "uuid",
+                        "description": "Filter by event UUID",
+                        "name": "event_id",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "title",
+                            "author_name",
+                            "creationYear"
+                        ],
+                        "type": "string",
+                        "description": "Field to sort by",
+                        "name": "sort_field",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "ASC",
+                            "DESC"
+                        ],
+                        "type": "string",
+                        "description": "Sort direction",
+                        "name": "direction_sort",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.ArtworkResponse"
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "/museum/events": {
+            "get": {
+                "description": "Retrieves a list of all events with optional filtering",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Searcher"
+                ],
+                "summary": "Get events",
+                "parameters": [
+                    {
+                        "maxLength": 255,
+                        "type": "string",
+                        "description": "Filter by event title",
+                        "name": "title",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by minimum start date (format: YYYY-MM-DD)",
+                        "name": "date_begin",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "format": "date",
+                        "description": "Filter by maximum end date (format: YYYY-MM-DD)",
+                        "name": "date_end",
+                        "in": "query"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Filter by visit availability",
+                        "name": "can_visit",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid date format. Use YYYY-MM-DD"
+                    }
+                }
+            }
+        },
+        "/user/self": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns authenticated user's profile information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UserSelfResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Changes user's subscription to email mailings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update mailing subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription preference",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid request body"
+                    }
+                }
             }
         }
     },
     "definitions": {
-        "models.ArtworkResponse": {
+        "auth.LoginAdminRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "admin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "12345678"
+                }
+            }
+        },
+        "auth.LoginEmployeeRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "elogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                }
+            }
+        },
+        "auth.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "ulogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                }
+            }
+        },
+        "auth.RegisterEmployeeRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password",
+                "username"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "elogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "ename"
+                }
+            }
+        },
+        "auth.RegisterUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "login",
+                "password",
+                "subscribe_email",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6,
+                    "example": "uuser@test.ru"
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "ulogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                },
+                "subscribe_email": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "uname"
+                }
+            }
+        },
+        "jsonreqresp.AddArtworkRequest": {
+            "type": "object",
+            "required": [
+                "authorID",
+                "collectionID",
+                "creationYear",
+                "material",
+                "size",
+                "technic",
+                "title"
+            ],
+            "properties": {
+                "authorID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "collectionID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "creationYear": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "example": 1889
+                },
+                "material": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Холст, масляные краски"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "73.7 × 92.1 см"
+                },
+                "technic": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Масло, холст"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.AddAuthorRequest": {
+            "type": "object",
+            "required": [
+                "birthYear",
+                "name"
+            ],
+            "properties": {
+                "birthYear": {
+                    "description": "Обязательное, \u003e= 1000",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "example": 1853
+                },
+                "deathYear": {
+                    "description": "Опциональное, \u003e= BirthYear",
+                    "type": "integer",
+                    "example": 1890
+                },
+                "name": {
+                    "description": "Обязательное, 2-100 символов",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Винсент Ван Гог"
+                }
+            }
+        },
+        "jsonreqresp.AddCollectionRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
+                }
+            }
+        },
+        "jsonreqresp.AddEventRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "canVisit",
+                "cntTickets",
+                "dateBegin",
+                "dateEnd",
+                "employeeID",
+                "title"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "artworkIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "employeeID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Ночная выставка"
+                }
+            }
+        },
+        "jsonreqresp.ArtworkResponse": {
             "type": "object",
             "properties": {
                 "author": {
-                    "$ref": "#/definitions/models.AuthorResponse"
+                    "$ref": "#/definitions/jsonreqresp.AuthorResponse"
                 },
                 "collection": {
-                    "$ref": "#/definitions/models.CollectionResponse"
+                    "$ref": "#/definitions/jsonreqresp.CollectionResponse"
                 },
                 "creationYear": {
                     "type": "integer",
@@ -57,7 +1898,7 @@ const docTemplate = `{
                 }
             }
         },
-        "models.AuthorResponse": {
+        "jsonreqresp.AuthorResponse": {
             "type": "object",
             "properties": {
                 "birthYear": {
@@ -78,7 +1919,44 @@ const docTemplate = `{
                 }
             }
         },
-        "models.CollectionResponse": {
+        "jsonreqresp.BuyTicketRequest": {
+            "type": "object",
+            "required": [
+                "cntTickets",
+                "eventID"
+            ],
+            "properties": {
+                "CustomerEmail": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "myname@test.ru"
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 1
+                },
+                "customerName": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "myname"
+                },
+                "eventID": {
+                    "type": "string",
+                    "example": "b10f841d-ba75-48df-a9cf-c86fc9bd3041"
+                }
+            }
+        },
+        "jsonreqresp.ChangeSubscribeToMailingRequest": {
+            "type": "object",
+            "properties": {
+                "subscribe": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.CollectionResponse": {
             "type": "object",
             "properties": {
                 "id": {
@@ -90,6 +1968,393 @@ const docTemplate = `{
                     "example": "Louvre Museum Collection"
                 }
             }
+        },
+        "jsonreqresp.ConArtworkEventRequest": {
+            "type": "object",
+            "required": [
+                "artworkID",
+                "eventID"
+            ],
+            "properties": {
+                "artworkID": {
+                    "type": "string"
+                },
+                "eventID": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.ConfirmCancelTxRequest": {
+            "type": "object",
+            "required": [
+                "txID"
+            ],
+            "properties": {
+                "txID": {
+                    "type": "string",
+                    "example": "b10f841d-ba75-48df-a9cf-c86fc9bd3041"
+                }
+            }
+        },
+        "jsonreqresp.DeleteArtworkRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.DeleteAuthorRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                }
+            }
+        },
+        "jsonreqresp.DeleteCollectionRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                }
+            }
+        },
+        "jsonreqresp.DeleteEventRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.EmployeeResponse": {
+            "type": "object",
+            "properties": {
+                "adminId": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655443333"
+                },
+                "createdAt": {
+                    "type": "string",
+                    "example": "2023-01-01T00:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "johndoe@example.com"
+                },
+                "username": {
+                    "type": "string",
+                    "example": "john doe"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.EventResponse": {
+            "type": "object",
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "artworkIDs": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "example": 150
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "employeeID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "title": {
+                    "type": "string",
+                    "example": "Выставка импрессионистов"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.MailingResponse": {
+            "type": "object",
+            "properties": {
+                "msg_text": {
+                    "type": "string"
+                },
+                "user_ids": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "jsonreqresp.TicketPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "customerEmail": {
+                    "type": "string"
+                },
+                "customerName": {
+                    "type": "string"
+                },
+                "eventId": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "purchaseDate": {
+                    "type": "string"
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
+        "jsonreqresp.TxTicketPurchaseResponse": {
+            "type": "object",
+            "properties": {
+                "cntTickets": {
+                    "type": "integer"
+                },
+                "expiredAt": {
+                    "type": "string"
+                },
+                "ticketPurchase": {
+                    "$ref": "#/definitions/jsonreqresp.TicketPurchaseResponse"
+                }
+            }
+        },
+        "jsonreqresp.UpdateArtworkRequest": {
+            "type": "object",
+            "required": [
+                "authorID",
+                "collectionID",
+                "creationYear",
+                "id",
+                "material",
+                "size",
+                "technic",
+                "title"
+            ],
+            "properties": {
+                "authorID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "collectionID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "creationYear": {
+                    "type": "integer",
+                    "maximum": 2100,
+                    "example": 1889
+                },
+                "id": {
+                    "type": "string",
+                    "example": "44a315d0-663c-4813-92a6-d7977c2f2aba"
+                },
+                "material": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Холст, масляные краски"
+                },
+                "size": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "73.7 × 92.1 см"
+                },
+                "technic": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "example": "Масло, холст"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Звёздная ночь"
+                }
+            }
+        },
+        "jsonreqresp.UpdateAuthorRequest": {
+            "type": "object",
+            "required": [
+                "birthYear",
+                "id",
+                "name"
+            ],
+            "properties": {
+                "birthYear": {
+                    "description": "Обязательное, \u003e= 1000",
+                    "type": "integer",
+                    "minimum": 1000,
+                    "example": 1853
+                },
+                "deathYear": {
+                    "description": "Опциональное, \u003e= BirthYear",
+                    "type": "integer",
+                    "example": 1890
+                },
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "name": {
+                    "description": "Обязательное, 2-100 символов",
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 2,
+                    "example": "Винсент Ван Гог"
+                }
+            }
+        },
+        "jsonreqresp.UpdateCollectionRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "title"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
+                }
+            }
+        },
+        "jsonreqresp.UpdateEventRequest": {
+            "type": "object",
+            "required": [
+                "address",
+                "canVisit",
+                "cntTickets",
+                "dateBegin",
+                "dateEnd",
+                "id",
+                "title"
+            ],
+            "properties": {
+                "address": {
+                    "type": "string",
+                    "maxLength": 500,
+                    "example": "ул. Пречистенка, 12/2"
+                },
+                "canVisit": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "cntTickets": {
+                    "type": "integer",
+                    "minimum": 0,
+                    "example": 100
+                },
+                "dateBegin": {
+                    "type": "string",
+                    "example": "2023-06-15T10:00:00Z"
+                },
+                "dateEnd": {
+                    "type": "string",
+                    "example": "2023-09-20T18:00:00Z"
+                },
+                "id": {
+                    "type": "string",
+                    "example": "44a315d0-663c-4813-92a6-d7977c2f2aba"
+                },
+                "title": {
+                    "type": "string",
+                    "maxLength": 255,
+                    "example": "Ночная выставка"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.UpdateValidEmployeeRequest": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "bb2e8400-e29b-41d4-a716-446655442222"
+                },
+                "valid": {
+                    "type": "boolean",
+                    "example": true
+                }
+            }
+        },
+        "jsonreqresp.UserSelfResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "alice.smith@example.com"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "alice@example.com"
+                },
+                "subscribeMail": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "example": "alice_smith"
+                }
+            }
         }
     }
 }`
@@ -98,7 +2363,7 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/",
+	BasePath:         "/api/v1",
 	Schemes:          []string{},
 	Title:            "Museum",
 	Description:      "API для системы учета произведений искусств",

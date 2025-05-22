@@ -19,7 +19,7 @@ import (
 )
 
 type QueryTime interface {
-	MeasureTime(start int, stop int, step int, drawGraph bool) error
+	MeasureTime(start int, stop int, step int) error
 }
 
 var (
@@ -90,21 +90,35 @@ func NewQueryTime() (QueryTime, error) {
 	return pgInstance, nil
 }
 
+type PlanNode struct {
+	NodeType            string     `json:"Node Type"`
+	ParallelAware       bool       `json:"Parallel Aware,omitempty"`
+	AsyncCapable        bool       `json:"Async Capable,omitempty"`
+	JoinType            string     `json:"Join Type,omitempty"`
+	StartupCost         float64    `json:"Startup Cost,omitempty"`
+	TotalCost           float64    `json:"Total Cost,omitempty"`
+	PlanRows            int        `json:"Plan Rows,omitempty"`
+	PlanWidth           int        `json:"Plan Width,omitempty"`
+	ActualStartupTime   float64    `json:"Actual Startup Time,omitempty"`
+	ActualTotalTime     float64    `json:"Actual Total Time,omitempty"`
+	ActualRows          int        `json:"Actual Rows"`
+	ActualLoops         int        `json:"Actual Loops,omitempty"`
+	InnerUnique         bool       `json:"Inner Unique,omitempty"`
+	RelationName        string     `json:"Relation Name,omitempty"`
+	Alias               string     `json:"Alias,omitempty"`
+	Filter              string     `json:"Filter,omitempty"`
+	RowsRemovedByFilter int        `json:"Rows Removed by Filter,omitempty"`
+	ScanDirection       string     `json:"Scan Direction,omitempty"`
+	IndexName           string     `json:"Index Name,omitempty"`
+	IndexCond           string     `json:"Index Cond,omitempty"`
+	ParentRelationship  string     `json:"Parent Relationship,omitempty"`
+	Plans               []PlanNode `json:"Plans,omitempty"`
+}
+
 type ExplainResult struct {
-	Plan struct {
-		// NodeType      string           `json:"Node Type"`
-		// ParallelAware bool             `json:"Parallel Aware"`
-		// StartupCost   float64          `json:"Startup Cost"`
-		// TotalCost     float64          `json:"Total Cost"`
-		// PlanRows      int              `json:"Plan Rows"`
-		// PlanWidth     int              `json:"Plan Width"`
-		// ActualTime float64 `json:"Actual Total Time"`
-		ActualRows int `json:"Actual Rows"`
-		// Plans         []*ExplainResult `json:"Plans,omitempty"`
-		// Дополнительные поля
-	} `json:"Plan"`
-	PlanningTime  float64 `json:"Planning Time"`
-	ExecutionTime float64 `json:"Execution Time"`
+	Plan          PlanNode `json:"Plan"`
+	PlanningTime  float64  `json:"Planning Time,omitempty"`
+	ExecutionTime float64  `json:"Execution Time,omitempty"`
 }
 
 func (q *queryTime) getCountRelationsAE(ctx context.Context) (int, error) {
@@ -178,7 +192,59 @@ func (q *queryTime) addRelationArtworkEvent(ctx context.Context, cntInsert int) 
 	return nil
 }
 
-func (q *queryTime) oneMeasure(ctx context.Context) (*ExplainResult, error) {
+func parseExplainJSON(resultJSON []byte) ([]ExplainResult, error) {
+	// Сначала анмаршалим в промежуточную структуру
+	var rawResults []map[string]json.RawMessage
+	if err := json.Unmarshal(resultJSON, &rawResults); err != nil {
+		return nil, fmt.Errorf("failed to unmarshal raw JSON: %w", err)
+	}
+
+	var results []ExplainResult
+	for _, rawResult := range rawResults {
+		var result ExplainResult
+
+		// Обрабатываем Plan отдельно, так как он рекурсивный
+		if planData, ok := rawResult["Plan"]; ok {
+			if err := json.Unmarshal(planData, &result.Plan); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal Plan: %w", err)
+			}
+		}
+
+		// Обрабатываем остальные поля
+		if planningTime, ok := rawResult["Planning Time"]; ok {
+			if err := json.Unmarshal(planningTime, &result.PlanningTime); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal Planning Time: %w", err)
+			}
+		}
+
+		if execTime, ok := rawResult["Execution Time"]; ok {
+			if err := json.Unmarshal(execTime, &result.ExecutionTime); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal Execution Time: %w", err)
+			}
+		}
+
+		results = append(results, result)
+	}
+
+	return results, nil
+}
+
+func printPlan(plan PlanNode, indent int) string {
+	indentStr := ""
+	for i := 0; i < indent; i++ {
+		indentStr += "  "
+	}
+
+	res := fmt.Sprintf("%sNode Type: %s\n", indentStr, plan.NodeType)
+	// fmt.Printf("%sActual Rows: %d\n", indentStr, plan.ActualRows)
+
+	for _, subPlan := range plan.Plans {
+		res += printPlan(subPlan, indent+1)
+	}
+	return res
+}
+
+func (q *queryTime) oneMeasure(ctx context.Context, saveExplain bool, fileExplain *os.File) (*ExplainResult, error) {
 	eventID, err := q.getRandomTableID(ctx, "Events")
 	if err != nil {
 		return nil, fmt.Errorf("oneMeasure: %v", err)
@@ -201,14 +267,35 @@ func (q *queryTime) oneMeasure(ctx context.Context) (*ExplainResult, error) {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 
-	var explainData []ExplainResult
-	if err := json.Unmarshal(resultJSON, &explainData); err != nil {
-		return nil, fmt.Errorf("failed to parse JSON: %w", err)
+	results, err := parseExplainJSON(resultJSON)
+	if err != nil {
+		return nil, fmt.Errorf("error: %v", err)
 	}
-	if len(explainData) == 0 {
-		return nil, fmt.Errorf("empty explain result")
+	resultExplain := results[0]
+	// var explainData []ExplainResult
+	// if err := json.Unmarshal(resultJSON, &explainData); err != nil {
+	// 	return nil, fmt.Errorf("failed to parse JSON: %w", err)
+	// }
+	// if len(explainData) == 0 {
+	// 	return nil, fmt.Errorf("empty explain result")
+	// }
+	// resultExplain := explainData[0]
+
+	if saveExplain {
+		// fmt.Printf("PLAN: %+v\n", resultExplain)
+		// if _, err := fileExplain.Write(resultJSON); err != nil {
+		// 	return nil, fmt.Errorf("failed to write Explain: %w", err)
+		// }
+		cnt, err := q.getCountRelationsAE(ctx)
+		if err != nil {
+			return nil, fmt.Errorf("MeasureTime: %v", err)
+		}
+		text := fmt.Sprintf("\n%d rows in artworks_event\n", cnt)
+		text += printPlan(resultExplain.Plan, 0)
+		if _, err := fileExplain.WriteString(text); err != nil {
+			return nil, fmt.Errorf("failed to write Explain: %w", err)
+		}
 	}
-	resultExplain := explainData[0]
 	return &resultExplain, nil
 }
 
@@ -243,9 +330,9 @@ func (q *queryTime) dropIndex() error {
 	return nil
 }
 
-func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) error {
+func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 	projectRoot := cnfg.GetProjectRoot()
-	dir := filepath.Join(projectRoot, "/measure_results/")
+	dir := filepath.Join(projectRoot, "/measure_results/data/")
 	ctx := context.Background()
 
 	cntForOneMeasure := 20
@@ -272,9 +359,19 @@ func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) e
 			return fmt.Errorf("MeasureTime: %v", err)
 		}
 		defer fileIndex.Close()
+		nifileExplain, err := os.OpenFile("./measure_results/notindex_explain.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer nifileExplain.Close()
+		ifileExplain, err := os.OpenFile("./measure_results/index_explain.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		if err != nil {
+			return fmt.Errorf("failed to open file: %w", err)
+		}
+		defer ifileExplain.Close()
 
-		for range cntForOneMeasure {
-			resultExplain, err := q.oneMeasure(ctx)
+		for i := range cntForOneMeasure {
+			resultExplain, err := q.oneMeasure(ctx, (i == cntForOneMeasure-1), nifileExplain)
 			if err != nil {
 				return fmt.Errorf("MeasureTime: %v", err)
 			}
@@ -288,8 +385,8 @@ func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) e
 			return fmt.Errorf("MeasureTime: %v", err)
 		}
 		fmt.Print("---------------------------------------\n")
-		for range cntForOneMeasure {
-			resultExplain, err := q.oneMeasure(ctx)
+		for i := range cntForOneMeasure {
+			resultExplain, err := q.oneMeasure(ctx, (i == cntForOneMeasure-1), ifileExplain)
 			if err != nil {
 				return fmt.Errorf("MeasureTime: %v", err)
 			}
@@ -309,11 +406,12 @@ func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) e
 		}
 	}
 
-	if drawGraph {
-		err = DrawGraph(start, stop, step)
-		if err != nil {
-			return fmt.Errorf("MeasureTime: %v", err)
-		}
-	}
+	// if drawGraph {
+	// 	dirPath := "/measure_results/good/data"
+	// 	err = DrawGraph(dirPath, start, stop, step)
+	// 	if err != nil {
+	// 		return fmt.Errorf("MeasureTime: %v", err)
+	// 	}
+	// }
 	return nil
 }

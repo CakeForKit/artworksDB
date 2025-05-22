@@ -55,8 +55,9 @@ type RedisCredentials struct {
 }
 
 var (
-	ErrConfigRead = errors.New("ReadInConfig")
-	ErrEnvRead    = errors.New("read env error")
+	ErrConfigRead    = errors.New("ReadInConfig")
+	ErrUnmarshalRead = errors.New("err to unmarshal config ")
+	ErrEnvRead       = errors.New("read env error")
 )
 
 func LoadAppConfig() (config *AppConfig, err error) {
@@ -151,7 +152,7 @@ func GetPgTestConfig() (config *PostgresTestConfig) {
 	projectRoot := GetProjectRoot()
 	migrationDir := filepath.Join(projectRoot, "migrations") // Путь от корня проекта
 	return &PostgresTestConfig{
-		DbName:       "testArtwork",
+		DbName:       "testartwork",
 		Port:         5432,
 		Username:     "testUser",
 		Password:     "testPassword",

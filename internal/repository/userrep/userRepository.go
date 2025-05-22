@@ -4,15 +4,16 @@ import (
 	"context"
 	"errors"
 
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep/mockuserrep"
 	"github.com/google/uuid"
 )
 
 var (
-	ErrUserNotFound    = errors.New("the User was not found in the repository")
-	ErrFailedToAddUser = errors.New("failed to add the User to the repository")
-	ErrUpdateUser      = errors.New("failed to update the User in the repository")
+	ErrUserNotFound       = errors.New("the User was not found in the repository")
+	ErrFailedToAddUser    = errors.New("failed to add the User to the repository")
+	ErrDuplicateLoginUser = errors.New("a user with this login already exists")
+	ErrUpdateUser         = errors.New("failed to update the User in the repository")
 )
 
 type UserRep interface {
@@ -28,6 +29,7 @@ type UserRep interface {
 	Close()
 }
 
-func NewUserRep() UserRep {
-	return &mockuserrep.MockUserRep{}
+func NewUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
+	return NewPgUserRep(ctx, pgCreds, dbConf)
+	// return &MockUserRep{}, nil
 }

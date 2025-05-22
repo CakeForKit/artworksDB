@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	start, stop, step := 1000, 51000, 2000
+	start, stop, step := 1000, 51000, 1000
 
 	flag.Parse()
 	args := flag.Args()
@@ -19,14 +19,15 @@ func main() {
 			return
 		}
 
-		err = measurer.MeasureTime(start, stop, step, true)
+		err = measurer.MeasureTime(start, stop, step)
 		if err != nil {
 			fmt.Printf("%v\n", err)
 			return
 		}
 	}
 
-	err := querytime.DrawGraph(start, stop, step)
+	dirPath := "/measure_results/alljoin"
+	err := querytime.DrawGraph(dirPath, start, stop, step)
 	if err != nil {
 		fmt.Printf("%v\n", err)
 		return

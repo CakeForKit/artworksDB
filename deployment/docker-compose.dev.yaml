@@ -1,0 +1,17 @@
+services:
+  app:
+    container_name: app_artworks_dev
+    build:
+      context: ../
+      dockerfile: ./cmd/app/Dockerfile.dev  # production - ./cmd/app/Dockerfile (образ меньше)
+    ports:
+      - "8080:8080"
+    environment:
+      - GIN_MODE=debug
+      - AIR_WATCH=.  # Следить за изменениями во всей директории
+    volumes:
+      - ../:/app          # Монтируем весь проект в контейнер
+      - /app/go/pkg/mod   # Кэш для модулей Go
+      - /app/bin          # Для бинарников (если нужно)
+    command: air -c .air.toml  # Заменяем стандартную команду на air
+

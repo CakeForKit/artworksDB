@@ -1,0 +1,28 @@
+openapi: 3.0.0
+info:
+  title: Simple Hello World API
+  description: API возвращающее приветственное сообщение
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080
+    description: Local development server
+paths:
+  /hello:
+    get:
+      summary: Получить приветственное сообщение
+      description: Возвращает простое JSON сообщение с приветствием
+      responses:
+        '200':
+          description: Успешный ответ с приветствием
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Привет, мир! Вау"
+                required:
+                  - message
+      tags:
+        - Greetings

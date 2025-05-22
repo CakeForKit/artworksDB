@@ -23,10 +23,7 @@ var (
 	ErrTxNotFound = errors.New("transaction not found")
 )
 
-func NewBuyTicketsTxRep(
-	ctx context.Context,
-	redisCreds *cnfg.RedisCredentials,
-) (BuyTicketsTxRep, error) {
-	return &MockBuyTicketsTxRep{}, nil
-	// return NewRedisBuyTicketsTxRep(ctx, redisCreds)
+func NewBuyTicketsTxRep(ctx context.Context, redisCreds *cnfg.RedisCredentials) (BuyTicketsTxRep, error) {
+	// return &MockBuyTicketsTxRep{}, nil
+	return NewRedisBuyTicketsTxRep(ctx, redisCreds)
 }

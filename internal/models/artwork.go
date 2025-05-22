@@ -4,6 +4,7 @@ import (
 	"errors"
 	"strings"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -19,6 +20,7 @@ type Artwork struct {
 }
 
 var (
+	ErrValidateArtwork          = errors.New("invalid model")
 	ErrArtworkEmptyTitle        = errors.New("empty title")
 	ErrArtworkTitleTooLong      = errors.New("title exceeds maximum length (255 chars)")
 	ErrArtworkEmptyTechnic      = errors.New("empty technic")
@@ -58,10 +60,6 @@ func NewArtwork(
 		return Artwork{}, err
 	}
 
-	if err := artwork.validateWithAuthor(); err != nil {
-		return Artwork{}, err
-	}
-
 	return artwork, nil
 }
 
@@ -90,22 +88,27 @@ func (a *Artwork) validate() error {
 	case a.collection == nil:
 		return ErrArtworkInvalidCollection
 	}
-	return nil
-}
 
-func (a *Artwork) validateWithAuthor() error {
-	if a.author == nil {
-		return ErrArtworkInvalidAuthor
-	}
-
+	// validateWithAuthor
 	birthYear := a.author.GetBirthYear()
 	deathYear := a.author.GetDeathYear()
-
 	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
 		return ErrArtworkYearNotInRange
 	}
-
 	return nil
+}
+
+func (a *Artwork) ToArtworkResponse() jsonreqresp.ArtworkResponse {
+	return jsonreqresp.ArtworkResponse{
+		ID:           a.id.String(),
+		Title:        a.title,
+		CreationYear: a.creationYear,
+		Technic:      a.technic,
+		Material:     a.material,
+		Size:         a.size,
+		Author:       a.GetAuthor().ToAuthorResponse(),
+		Collection:   a.GetCollection().ToCollectionResponse(),
+	}
 }
 
 func (a *Artwork) GetID() uuid.UUID {
@@ -138,4 +141,20 @@ func (a *Artwork) GetMaterial() string {
 
 func (a *Artwork) GetTechnic() string {
 	return a.technic
+}
+
+func (a *Artwork) Update(updateReq jsonreqresp.ArtworkUpdate) error {
+	copyA := *a
+	copyA.title = updateReq.Title
+	copyA.creationYear = updateReq.CreationYear
+	copyA.technic = updateReq.Technic
+	copyA.material = updateReq.Material
+	copyA.size = updateReq.Size
+
+	if err := copyA.validate(); err != nil {
+		return err
+	}
+
+	*a = copyA
+	return nil
 }

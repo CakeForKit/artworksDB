@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrEmployeeNotFound    = errors.New("the Employee was not found in the repository")
+	ErrDuplicateLoginEmp   = errors.New("an employee with this login already exists")
 	ErrFailedToAddEmployee = errors.New("failed to add the Employee to the repository")
 	ErrUpdateEmployee      = errors.New("failed to update the Employee in the repository")
 )
@@ -27,6 +28,6 @@ type EmployeeRep interface {
 }
 
 func NewEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
-	rep, err := NewPgEmployeeRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgEmployeeRep(ctx, pgCreds, dbConf)
+	// return &MockEmployeeRep{}, nil
 }
