@@ -16,6 +16,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/projlog"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
@@ -43,10 +44,24 @@ import (
 func main() {
 	ctx := context.Background()
 	engine := gin.New()
-	engine.Use(gin.Logger())
-	engine.Use(gin.Recovery())
-
 	apiGroup := engine.Group("/api/v1")
+
+	logCnfg, err := cnfg.GetLogConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load LogConfig: %v", err))
+	}
+	projLogger, err := projlog.NewLogger(logCnfg)
+	if err != nil {
+		panic(err)
+	}
+	defer projLogger.Sync()
+
+	apiGroup.Use(middleware.LogMiddleware(projLogger))
+
+	// engine.Use(ginzap.Ginzap(projLogger, viper.GetString("logging.time_format"), true))
+	// engine.Use(ginzap.RecoveryWithZap(projLogger, true))
+	// engine.Use(gin.Logger())
+	engine.Use(gin.Recovery())
 
 	// для Swagger - НЕ ТРОГАТЬ
 	url := ginSwagger.URL("http://localhost:8080/swagger/doc.json")

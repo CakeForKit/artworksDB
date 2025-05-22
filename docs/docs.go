@@ -200,7 +200,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth-admin"
+                    "auth"
                 ],
                 "summary": "Login admin",
                 "parameters": [
@@ -230,40 +230,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/auth-admin/register": {
-            "post": {
-                "description": "Register a new admin",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth-admin"
-                ],
-                "summary": "Register admin",
-                "parameters": [
-                    {
-                        "description": "Register credentials",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.RegisterAdminRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The admin registered"
-                    },
-                    "400": {
-                        "description": "Wrong input parameters"
-                    },
-                    "401": {
-                        "description": "Auth error"
-                    }
-                }
-            }
-        },
         "/auth-employee/login": {
             "post": {
                 "description": "Authenticates a employee and return access token",
@@ -271,7 +237,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth-employee"
+                    "auth"
                 ],
                 "summary": "Login employee",
                 "parameters": [
@@ -308,7 +274,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth-user"
+                    "auth"
                 ],
                 "summary": "Login user",
                 "parameters": [
@@ -342,7 +308,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth-user"
+                    "auth"
                 ],
                 "summary": "Register user",
                 "parameters": [
@@ -1689,31 +1655,6 @@ const docTemplate = `{
                 "password": {
                     "type": "string",
                     "minLength": 4,
-                    "example": "12345678"
-                }
-            }
-        },
-        "auth.RegisterAdminRequest": {
-            "type": "object",
-            "required": [
-                "adminname",
-                "login",
-                "password"
-            ],
-            "properties": {
-                "adminname": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "example": "admin"
-                },
-                "login": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "example": "admin"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 6,
                     "example": "12345678"
                 }
             }

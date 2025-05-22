@@ -44,25 +44,6 @@ definitions:
     - login
     - password
     type: object
-  auth.RegisterAdminRequest:
-    properties:
-      adminname:
-        example: admin
-        maxLength: 50
-        type: string
-      login:
-        example: admin
-        maxLength: 50
-        type: string
-      password:
-        example: "12345678"
-        minLength: 6
-        type: string
-    required:
-    - adminname
-    - login
-    - password
-    type: object
   auth.RegisterEmployeeRequest:
     properties:
       login:
@@ -718,29 +699,7 @@ paths:
           description: Has no rights
       summary: Login admin
       tags:
-      - auth-admin
-  /auth-admin/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new admin
-      parameters:
-      - description: Register credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.RegisterAdminRequest'
-      responses:
-        "200":
-          description: The admin registered
-        "400":
-          description: Wrong input parameters
-        "401":
-          description: Auth error
-      summary: Register admin
-      tags:
-      - auth-admin
+      - auth
   /auth-employee/login:
     post:
       consumes:
@@ -764,7 +723,7 @@ paths:
           description: Has no rights
       summary: Login employee
       tags:
-      - auth-employee
+      - auth
   /auth-user/login:
     post:
       consumes:
@@ -786,7 +745,7 @@ paths:
           description: Auth error
       summary: Login user
       tags:
-      - auth-user
+      - auth
   /auth-user/register:
     post:
       consumes:
@@ -810,7 +769,7 @@ paths:
           description: Attempt to re-register
       summary: Register user
       tags:
-      - auth-user
+      - auth
   /employee/artworks:
     delete:
       consumes:

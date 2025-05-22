@@ -55,8 +55,9 @@ type RedisCredentials struct {
 }
 
 var (
-	ErrConfigRead = errors.New("ReadInConfig")
-	ErrEnvRead    = errors.New("read env error")
+	ErrConfigRead    = errors.New("ReadInConfig")
+	ErrUnmarshalRead = errors.New("err to unmarshal config ")
+	ErrEnvRead       = errors.New("read env error")
 )
 
 func LoadAppConfig() (config *AppConfig, err error) {

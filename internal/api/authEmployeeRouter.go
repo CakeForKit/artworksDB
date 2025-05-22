@@ -23,7 +23,7 @@ func (r *AuthEmployeeRouter) Init(router *gin.RouterGroup, authu auth.AuthEmploy
 // Login Handler
 // @Summary Login employee
 // @Description Authenticates a employee and return access token
-// @Tags auth-employee
+// @Tags auth
 // @Accept json
 // @Param request body auth.LoginEmployeeRequest true "Login credentials"
 // @Success 200 "The employee has been authenticated"
