@@ -1898,7 +1898,7 @@
 											"top": 391,
 											"width": 115.958984375,
 											"height": 13,
-											"text": "EmployeeService"
+											"text": "adminservice"
 										},
 										{
 											"_type": "LabelView",
@@ -1990,23 +1990,6 @@
 										},
 										{
 											"_type": "UMLOperationView",
-											"_id": "AAAAAAGVjhVpsPxjVPE=",
-											"_parent": {
-												"$ref": "AAAAAAGVjgJtEvWrLfM="
-											},
-											"model": {
-												"$ref": "AAAAAAGVjhVppvxg4e8="
-											},
-											"font": "Arial;13;0",
-											"left": 53,
-											"top": 439,
-											"width": 115.958984375,
-											"height": 13,
-											"text": "+Delete()",
-											"horizontalAlignment": 0
-										},
-										{
-											"_type": "UMLOperationView",
 											"_id": "AAAAAAGVjhV2T/xqQTQ=",
 											"_parent": {
 												"$ref": "AAAAAAGVjgJtEvWrLfM="
@@ -2016,10 +1999,10 @@
 											},
 											"font": "Arial;13;0",
 											"left": 53,
-											"top": 454,
+											"top": 439,
 											"width": 115.958984375,
 											"height": 13,
-											"text": "+Update()",
+											"text": "+ChangeRights()",
 											"horizontalAlignment": 0
 										}
 									],
@@ -2027,7 +2010,7 @@
 									"left": 48,
 									"top": 419,
 									"width": 125.958984375,
-									"height": 53
+									"height": 38
 								},
 								{
 									"_type": "UMLReceptionCompartmentView",
@@ -2127,7 +2110,7 @@
 											"top": 583,
 											"width": 111,
 											"height": 13,
-											"text": "employeeService"
+											"text": "adminservice"
 										},
 										{
 											"_type": "LabelView",
@@ -10870,7 +10853,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "EmployeeService",
+					"name": "adminservice",
 					"operations": [
 						{
 							"_type": "UMLOperation",
@@ -10882,19 +10865,11 @@
 						},
 						{
 							"_type": "UMLOperation",
-							"_id": "AAAAAAGVjhVppvxg4e8=",
-							"_parent": {
-								"$ref": "AAAAAAGVjgJtEfWigf4="
-							},
-							"name": "Delete"
-						},
-						{
-							"_type": "UMLOperation",
 							"_id": "AAAAAAGVjhV2Rvxn2D8=",
 							"_parent": {
 								"$ref": "AAAAAAGVjgJtEfWigf4="
 							},
-							"name": "Update"
+							"name": "ChangeRights"
 						}
 					]
 				},
@@ -10904,7 +10879,7 @@
 					"_parent": {
 						"$ref": "AAAAAAFF+qBWK6M3Z8Y="
 					},
-					"name": "employeeService",
+					"name": "adminservice",
 					"ownedElements": [
 						{
 							"_type": "UMLGeneralization",

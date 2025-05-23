@@ -8,7 +8,7 @@ import (
 )
 
 func main() {
-	start, stop, step := 1000, 51000, 2000
+	start, stop, step := 1000, 51000, 1000
 
 	flag.Parse()
 	args := flag.Args()

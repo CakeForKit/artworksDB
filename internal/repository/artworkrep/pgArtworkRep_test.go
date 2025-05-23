@@ -146,7 +146,7 @@ func TestArtworkRep_GetAll(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			expectedArtworks := tt.setup()
 
-			artworks, err := th.arep.GetAll(th.ctx)
+			artworks, err := th.arep.GetAllArtworks(th.ctx)
 
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)

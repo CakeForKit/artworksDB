@@ -258,7 +258,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Генерация 10,000 произведений искусства
+-- Генерация 20,000 произведений искусства
 DO $$
 DECLARE
     i INTEGER;
@@ -268,7 +268,7 @@ DECLARE
     size_w INT;
     size_h INT;
 BEGIN
-    FOR i IN 1..10000 LOOP
+    FOR i IN 1..20000 LOOP
         -- Выбираем случайного автора
         SELECT id INTO author_rec FROM Author ORDER BY random() LIMIT 1;
         
@@ -385,7 +385,7 @@ SELECT
     'ул. ' || 
     (ARRAY['Ленина', 'Пушкина', 'Гоголя', 'Толстого', 'Достоевского'])[1 + floor(random() * 5)] || 
     ', д. ' || (1 + floor(random() * 100))::TEXT,
-    50 + floor(random() * 500)::INT, -- от 50 до 550 билетов
+    50 + floor(random() * 500)::INT, -- от 50 до 1050 билетов
     (SELECT id FROM Employees WHERE valid = true ORDER BY random() LIMIT 1)
 FROM generate_series(1, 500);
 
@@ -495,3 +495,5 @@ SELECT
 FROM TicketPurchases tp
 WHERE random() > 0.5 -- 50% билетов с привязкой к пользователям
 ON CONFLICT DO NOTHING;
+
+ANALYZE;

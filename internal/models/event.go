@@ -3,9 +3,11 @@ package models
 import (
 	"errors"
 	"fmt"
+	"slices"
 	"strings"
 	"time"
 
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 
@@ -18,9 +20,14 @@ type Event struct {
 	canVisit   bool
 	employeeID uuid.UUID
 	cntTickets int
+	artworkIDs uuid.UUIDs
+	valid      bool
 }
 
 var (
+	ErrValidateEvent        = errors.New("invalid model Event")
+	ErrAddArtwork           = errors.New("the artowrk is already participating in the event")
+	ErrDeleteArtwork        = errors.New("the artwork was not in event")
 	ErrEventEmptyTitle      = errors.New("empty title")
 	ErrEventTitleTooLong    = errors.New("title exceeds maximum length (255 chars)")
 	ErrEventInvalidDates    = errors.New("end date must be after start date")
@@ -29,6 +36,7 @@ var (
 	ErrEventInvalidAccess   = errors.New("invalid canVisit value")
 	ErrEventInvalidEmployee = errors.New("invalid employee ID")
 	ErrEventNegativeTickets = errors.New("ticket count cannot be negative")
+	ErrDuplicateArtwokIDs   = errors.New("duplicate artwork ids")
 )
 
 func NewEvent(
@@ -40,6 +48,8 @@ func NewEvent(
 	canVisit bool,
 	employeeID uuid.UUID,
 	cntTickets int,
+	valid bool,
+	artworkIDs uuid.UUIDs,
 ) (Event, error) {
 	event := Event{
 		id:         id,
@@ -50,6 +60,8 @@ func NewEvent(
 		canVisit:   canVisit,
 		employeeID: employeeID,
 		cntTickets: cntTickets,
+		artworkIDs: artworkIDs,
+		valid:      valid,
 	}
 
 	if err := event.validate(); err != nil {
@@ -75,8 +87,21 @@ func (e *Event) validate() error {
 		return ErrEventInvalidEmployee
 	case e.cntTickets < 0:
 		return ErrEventNegativeTickets
+	case HasDuplicateUUIDs(e.artworkIDs):
+		return ErrDuplicateArtwokIDs
 	}
 	return nil
+}
+
+func HasDuplicateUUIDs(ids uuid.UUIDs) bool {
+	seen := make(map[uuid.UUID]struct{})
+	for _, id := range ids {
+		if _, exists := seen[id]; exists {
+			return true
+		}
+		seen[id] = struct{}{}
+	}
+	return false
 }
 
 func (e *Event) TextAbout() string {
@@ -123,4 +148,64 @@ func (e *Event) GetEmployeeID() uuid.UUID {
 
 func (e *Event) GetTicketCount() int {
 	return e.cntTickets
+}
+
+func (e *Event) GetArtworkIDs() uuid.UUIDs {
+	return e.artworkIDs
+}
+
+func (e *Event) IsValid() bool {
+	return e.valid
+}
+
+func (e *Event) AddArtworks(idArts uuid.UUIDs) error {
+	for _, oldID := range e.artworkIDs {
+		if slices.Contains(idArts, oldID) {
+			return fmt.Errorf("Event.AddArtworks %w %w", ErrValidateEvent, ErrAddArtwork)
+		}
+	}
+	e.artworkIDs = append(e.artworkIDs, idArts...)
+	return nil
+}
+
+func (e *Event) DeleteArtwork(idArt uuid.UUID) error {
+	for i, v := range e.artworkIDs {
+		if v == idArt {
+			e.artworkIDs = append(e.artworkIDs[:i], e.artworkIDs[i+1:]...)
+			return nil
+		}
+	}
+	return ErrDeleteArtwork
+}
+
+func (e *Event) Update(updateReq *jsonreqresp.EventUpdate) error {
+	copyE := *e
+	copyE.title = updateReq.Title
+	copyE.dateBegin = updateReq.DateBegin
+	copyE.dateEnd = updateReq.DateEnd
+	copyE.address = updateReq.Address
+	copyE.canVisit = updateReq.CanVisit
+	copyE.cntTickets = updateReq.CntTickets
+	copyE.valid = updateReq.Valid
+
+	if err := copyE.validate(); err != nil {
+		return err
+	}
+	*e = copyE
+	return nil
+}
+
+func (e *Event) ToEventResponse() jsonreqresp.EventResponse {
+	return jsonreqresp.EventResponse{
+		ID:         e.id.String(),
+		Title:      e.title,
+		DateBegin:  e.dateBegin,
+		DateEnd:    e.dateEnd,
+		Address:    e.address,
+		CanVisit:   e.canVisit,
+		EmployeeID: e.employeeID.String(),
+		CntTickets: e.cntTickets,
+		Valid:      e.valid,
+		ArtworkIDs: e.GetArtworkIDs().Strings(),
+	}
 }

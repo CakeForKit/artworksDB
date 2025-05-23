@@ -1,6 +1,6 @@
 app:
   token_symmetric_key: "12345678901234567890123456789012"
-  access_token_duration: "15m"
+  access_token_duration: "15h"
   buy_ticket_transaction_duration: "15m"
 
 datebase:

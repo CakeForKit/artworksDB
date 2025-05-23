@@ -11,14 +11,14 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Генерация 500 авторов
+-- Генерация 5 авторов
 DO $$
 DECLARE
     i INTEGER;
     birth_year INT;
     death_year INT;
 BEGIN
-    FOR i IN 1..500 LOOP
+    FOR i IN 1..5 LOOP
         birth_year := 1200 + floor(random() * 800)::INT;
         death_year := birth_year + 20 + floor(random() * 80)::INT;
         
@@ -33,14 +33,14 @@ BEGIN
     RAISE NOTICE 'Добавлено % Author', (SELECT  COUNT(*) FROM Author LIMIT 1);
 END $$;
 
--- Генерация 100 коллекций
+-- Генерация 3 коллекций
 DO $$
 DECLARE
     i INTEGER;
     styles VARCHAR[] := ARRAY['Импрессионизм', 'Экспрессионизм', 'Кубизм', 'Сюрреализм', 'Футуризм', 'Дадаизм', 'Поп-арт', 'Минимализм', 'Концептуализм', 'Барокко', 'Рококо', 'Классицизм', 'Романтизм', 'Реализм', 'Символизм', 'Модерн', 'Постимпрессионизм', 'Фовизм', 'Абстракционизм', 'Супрематизм'];
     prefixes VARCHAR[] := ARRAY['Великие произведения', 'Шедевры', 'Коллекция', 'Сокровища', 'Архив', 'Галерея', 'Музей', 'Собрание', 'Альбом', 'Выставка'];
 BEGIN
-    FOR i IN 1..100 LOOP
+    FOR i IN 1..3 LOOP
         INSERT INTO Collection (id, title)
         VALUES (
             gen_random_uuid(),
@@ -80,7 +80,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Генерация 10,000 произведений искусства
+-- Генерация 10 произведений искусства
 DO $$
 DECLARE
     i INTEGER;
@@ -90,7 +90,7 @@ DECLARE
     size_w INT;
     size_h INT;
 BEGIN
-    FOR i IN 1..10000 LOOP
+    FOR i IN 1..10 LOOP
         -- Выбираем случайного автора
         SELECT id INTO author_rec FROM Author ORDER BY random() LIMIT 1;
         
@@ -157,7 +157,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Заполнение таблицы Admins (5 записей)
+-- Заполнение таблицы Admins (2 записей)
 INSERT INTO Admins (id, username, login, hashedPassword, createdAt, valid)
 SELECT 
     gen_random_uuid(),
@@ -166,9 +166,9 @@ SELECT
     random_password_hash(),
     NOW() - (random() * 365 * 5 || ' days')::INTERVAL,
     random() > 0.1 -- 90% активных
-FROM generate_series(1, 5);
+FROM generate_series(1, 2);
 
--- Заполнение таблицы Employees (100 записей)
+-- Заполнение таблицы Employees (4 записей)
 INSERT INTO Employees (id, username, login, hashedPassword, createdAt, valid, adminID)
 SELECT 
     gen_random_uuid(),
@@ -178,9 +178,9 @@ SELECT
     NOW() - (random() * 365 * 3 || ' days')::INTERVAL,
     random() > 0.2, -- 80% активных
     (SELECT id FROM Admins ORDER BY random() LIMIT 1)
-FROM generate_series(1, 100);
+FROM generate_series(1, 4);
 
--- Заполнение таблицы Users (5000 записей)
+-- Заполнение таблицы Users (6 записей)
 INSERT INTO Users (id, username, login, hashedPassword, createdAt, email, subscribeMail)
 SELECT 
     gen_random_uuid(),
@@ -190,10 +190,10 @@ SELECT
     NOW() - (random() * 365 * 5 || ' days')::INTERVAL,
     random_email(random_name()),
     random() > 0.7 -- 30% подписаны
-FROM generate_series(1, 5000)
+FROM generate_series(1, 6)
 ON CONFLICT DO NOTHING;
 
--- Заполнение таблицы Events (500 записей)
+-- Заполнение таблицы Events (7 записей)
 INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID)
 SELECT 
     gen_random_uuid(),
@@ -207,9 +207,9 @@ SELECT
     'ул. ' || 
     (ARRAY['Ленина', 'Пушкина', 'Гоголя', 'Толстого', 'Достоевского'])[1 + floor(random() * 5)] || 
     ', д. ' || (1 + floor(random() * 100))::TEXT,
-    50 + floor(random() * 500)::INT, -- от 50 до 550 билетов
+    50 + floor(random() * 100)::INT, -- от 50 до 150 билетов
     (SELECT id FROM Employees WHERE valid = true ORDER BY random() LIMIT 1)
-FROM generate_series(1, 500);
+FROM generate_series(1, 7);
 
 -- Заполнение таблицы Artwork_event
 CREATE OR REPLACE FUNCTION random_artwork_id() RETURNS UUID AS $$
@@ -226,10 +226,10 @@ $$ LANGUAGE plpgsql;
 
 INSERT INTO Artwork_event (artworkID, eventID)
 SELECT random_artwork_id(), random_event_id()
-FROM generate_series(1, 3000)
+FROM generate_series(1, 20)
 ON CONFLICT DO NOTHING;
 
--- Заполнение таблицы TicketPurchases (5000 записей)
+-- Заполнение таблицы TicketPurchases (x записей)
 DO $$
 DECLARE
     event_rec RECORD;

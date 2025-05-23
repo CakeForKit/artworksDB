@@ -51,7 +51,7 @@ func (r *RedisBuyTicketsTxRep) GetByID(ctx context.Context, txID uuid.UUID) (*mo
 	data, err := r.rdb.Get(ctx, txID.String()).Bytes()
 	if err != nil {
 		if err == redis.Nil {
-			return nil, fmt.Errorf("redisRep GetByID: %v", ErrTxNotFound)
+			return nil, fmt.Errorf("redisRep GetByID: %w", ErrTxNotFound)
 		}
 		return nil, fmt.Errorf("redisRep GetByID: %v", err)
 	}

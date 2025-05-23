@@ -2,51 +2,46 @@ package userservice
 
 import (
 	"context"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"github.com/google/uuid"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
 )
 
 type UserService interface {
-	GetAllUsers(ctx context.Context) ([]*models.User, error)
-	GetByID(ctx context.Context, id uuid.UUID) (*models.User, error)
-	// GetByLogin(login string) (*models.User, error)
-	// Add(*models.User) error // нехешированный пароль (здесь он и хешируется)
-	Delete(ctx context.Context, id uuid.UUID) error
-	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error)
+	ChangeSubscribeToMailing(ctx context.Context, subscr bool) error
+	GetSelf(ctx context.Context) (*models.User, error)
 }
 
 type userService struct {
 	userRep userrep.UserRep
+	authZ   auth.AuthZ
 }
 
-func NewUserService(empRep userrep.UserRep) UserService {
+func NewUserService(userRep userrep.UserRep, authZ auth.AuthZ) UserService {
 	return &userService{
-		userRep: empRep,
+		userRep: userRep,
+		authZ:   authZ,
 	}
 }
 
-func (e *userService) GetAllUsers(ctx context.Context) ([]*models.User, error) {
-	return e.userRep.GetAll(ctx)
+func (m *userService) ChangeSubscribeToMailing(ctx context.Context, subscr bool) error {
+	userID, err := m.authZ.UserIDFromContext(ctx)
+	if err != nil {
+		return fmt.Errorf("userService.ChangeSubscribeToMailing: %w", err)
+	}
+	return m.userRep.UpdateSubscribeToMailing(ctx, userID, subscr)
 }
 
-func (e *userService) GetByID(ctx context.Context, id uuid.UUID) (*models.User, error) {
-	return e.userRep.GetByID(ctx, id)
-}
-
-// func (e *userService) GetByLogin(login string) (*models.User, error) {
-// 	return e.userRep.GetByLogin(login)
-// }
-
-// func (e *userService) Add(emp *models.User) error {
-// 	return e.userRep.Add(emp)
-// }
-
-func (e *userService) Delete(ctx context.Context, id uuid.UUID) error {
-	return e.userRep.Delete(ctx, id)
-}
-
-func (e *userService) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
-	return e.userRep.Update(ctx, id, funcUpdate)
+func (m *userService) GetSelf(ctx context.Context) (*models.User, error) {
+	userID, err := m.authZ.UserIDFromContext(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("userService.GetSelf: %w", err)
+	}
+	user, err := m.userRep.GetByID(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("userService.GetSelf: %w", err)
+	}
+	return user, nil
 }
