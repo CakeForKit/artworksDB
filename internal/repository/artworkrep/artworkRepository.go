@@ -11,9 +11,8 @@ import (
 )
 
 var (
-	ErrArtworkNotFound    = errors.New("the Artwork was not found in the repository")
-	ErrFailedToAddArtwork = errors.New("failed to add the Artwork to the repository")
-	ErrUpdateArtwork      = errors.New("err update artwork params")
+	ErrArtworkNotFound = errors.New("the Artwork was not found in the repository")
+	ErrUpdateArtwork   = errors.New("err update artwork params")
 )
 
 type ArtworkRep interface {
@@ -28,6 +27,6 @@ type ArtworkRep interface {
 }
 
 func NewArtworkRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (ArtworkRep, error) {
-	rep, err := NewPgArtworkRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgArtworkRep(ctx, pgCreds, dbConf)
+	// return &MockArtworkRep{}, nil
 }

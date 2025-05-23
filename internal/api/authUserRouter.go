@@ -23,7 +23,7 @@ func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu auth.AuthUser) {
 // Register Handler
 // @Summary Register user
 // @Description Register a new user
-// @Tags auth-user
+// @Tags auth
 // @Accept json
 // @Param request body auth.RegisterUserRequest true "Register credentials"
 // @Success 200 "The user registered"
@@ -54,7 +54,7 @@ func (r *AuthUserRouter) Register(c *gin.Context) {
 // Login Handler
 // @Summary Login user
 // @Description Authenticates a user and return access token
-// @Tags auth-user
+// @Tags auth
 // @Accept json
 // @Param request body auth.LoginUserRequest true "Login credentials"
 // @Success 200 "The user has been authenticated"

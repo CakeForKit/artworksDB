@@ -96,9 +96,10 @@
  
  ## Описание типа приложения и выбранного технологического стека
 
-- backend: Go, gin, ...
+- backend: Go, gin, squirrel, paseto, gswaggo
+- test: testify, testcontainers
 - frontend: Web MPA
-- БД: PostgreSQL, (+redis?)
+- БД: PostgreSQL, redis
 
  ## Верхнеуровневое разбиение на компоненты
 
@@ -112,6 +113,12 @@
 MV*-подобного паттерна (MVC, MTV, MVP, MVVM, MVPVM, MVI и др.).
 
 ![uml](img/uml.svg)
+
+## Swagger
+
+![swagger1](img/SwaggerUI_page-0001.jpg)
+![swagger1](img/SwaggerUI_page-0002.jpg)
+![swagger1](img/SwaggerUI_page-0003.jpg)
 
 
 

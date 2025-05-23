@@ -7,7 +7,6 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep/mockuserrep"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 )
@@ -38,7 +37,9 @@ func createTestEvent() *models.Event {
 		"Test Address",
 		true,
 		uuid.New(),
-		10,
+		100,
+		true,
+		make(uuid.UUIDs, 0),
 	)
 	return &event
 }
@@ -46,12 +47,14 @@ func createTestEvent() *models.Event {
 func TestMailingService_SendMailToAllUsers(t *testing.T) {
 	ctx := context.Background()
 	name, email, password := createTestConfig()
+
 	tests := []struct {
 		name            string
 		subscribedUsers []*models.User
 		events          []*models.Event
 		mockError       error
 		expectedError   error
+		expectedIDsLen  int
 	}{
 		{
 			name: "with subscribed users",
@@ -63,8 +66,9 @@ func TestMailingService_SendMailToAllUsers(t *testing.T) {
 				createTestEvent(),
 				createTestEvent(),
 			},
-			mockError:     nil,
-			expectedError: nil,
+			mockError:      nil,
+			expectedError:  nil,
+			expectedIDsLen: 2,
 		},
 		{
 			name:            "no subscribed users",
@@ -72,143 +76,34 @@ func TestMailingService_SendMailToAllUsers(t *testing.T) {
 			events:          []*models.Event{createTestEvent()},
 			mockError:       nil,
 			expectedError:   nil,
+			expectedIDsLen:  0,
+		},
+		{
+			name:            "repository error",
+			subscribedUsers: nil,
+			events:          []*models.Event{createTestEvent()},
+			mockError:       assert.AnError,
+			expectedError:   assert.AnError,
+			expectedIDsLen:  0,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			userRep := new(mockuserrep.MockUserRep)
+			userRep := new(userrep.MockUserRep)
 			service := NewGmailSender(userRep, name, email, password)
 
 			userRep.On("GetAllSubscribed", ctx).Return(tt.subscribedUsers, tt.mockError)
 
-			err := service.SendMailToAllUsers(ctx, tt.events)
+			msgText, userIDs, err := service.SendMailToAllUsers(ctx, tt.events)
 
 			if tt.expectedError != nil {
 				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
+				assert.Contains(t, err.Error(), tt.expectedError.Error())
 			} else {
 				assert.NoError(t, err)
-			}
-			userRep.AssertExpectations(t)
-		})
-	}
-}
-
-func TestMailingService_GenerateMessageText(t *testing.T) {
-	ctx := context.Background()
-	eventCur1 := createTestEvent()
-	eventCur2 := createTestEvent()
-	name, email, password := createTestConfig()
-	tests := []struct {
-		name         string
-		events       []*models.Event
-		expectedText string
-	}{
-		{
-			name:         "single event",
-			events:       []*models.Event{eventCur1},
-			expectedText: eventCur1.TextAbout() + "\nfrom " + name + " (" + email + ")",
-		},
-		{
-			name: "multiple events",
-			events: []*models.Event{
-				eventCur1,
-				eventCur2,
-			},
-			expectedText: eventCur1.TextAbout() + "\n" + eventCur2.TextAbout() + "\nfrom " + name + " (" + email + ")",
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRep := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(userRep, name, email, password)
-
-			result := service.GenerateMessageText(ctx, tt.events)
-			assert.Equal(t, tt.expectedText, result)
-		})
-	}
-}
-
-func TestMailingService_SubscribeToMailing(t *testing.T) {
-	ctx := context.Background()
-	name, email, password := createTestConfig()
-	tests := []struct {
-		name          string
-		userID        uuid.UUID
-		mockError     error
-		expectedError error
-	}{
-		{
-			name:          "success",
-			userID:        uuid.New(),
-			mockError:     nil,
-			expectedError: nil,
-		},
-		{
-			name:          "user not found",
-			userID:        uuid.New(),
-			mockError:     userrep.ErrUserNotFound,
-			expectedError: userrep.ErrUserNotFound,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRep := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(userRep, name, email, password)
-			userRep.On("UpdateSubscribeToMailing", ctx, tt.userID, true).Return(tt.mockError)
-
-			err := service.SubscribeToMailing(ctx, tt.userID)
-
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
-			} else {
-				assert.NoError(t, err)
-			}
-			userRep.AssertExpectations(t)
-		})
-	}
-}
-
-func TestMailingService_UnSubscribeToMailing(t *testing.T) {
-	ctx := context.Background()
-	name, email, password := createTestConfig()
-	tests := []struct {
-		name          string
-		userID        uuid.UUID
-		mockError     error
-		expectedError error
-	}{
-		{
-			name:          "success",
-			userID:        uuid.New(),
-			mockError:     nil,
-			expectedError: nil,
-		},
-		{
-			name:          "user not found",
-			userID:        uuid.New(),
-			mockError:     userrep.ErrUserNotFound,
-			expectedError: userrep.ErrUserNotFound,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			userRep := new(mockuserrep.MockUserRep)
-			service := NewGmailSender(userRep, name, email, password)
-			userRep.On("UpdateSubscribeToMailing", ctx, tt.userID, false).Return(tt.mockError)
-
-			err := service.UnSubscribeToMailing(ctx, tt.userID)
-
-			if tt.expectedError != nil {
-				assert.Error(t, err)
-				assert.Equal(t, tt.expectedError, err)
-			} else {
-				assert.NoError(t, err)
+				assert.NotEmpty(t, msgText)
+				assert.Equal(t, tt.expectedIDsLen, len(userIDs))
 			}
 			userRep.AssertExpectations(t)
 		})

@@ -104,7 +104,7 @@ func (tp *TicketPurchase) GetUserID() uuid.UUID {
 
 func (t *TicketPurchase) ToTicketPurchaseResponse() jsonreqresp.TicketPurchaseResponse {
 	return jsonreqresp.TicketPurchaseResponse{
-		ID:            t.id,
+		TxID:          t.id,
 		CustomerName:  t.customerName,
 		CustomerEmail: t.customerEmail,
 		PurchaseDate:  t.purchaseDate,

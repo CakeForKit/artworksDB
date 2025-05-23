@@ -92,7 +92,7 @@ func (t *TicketPurchaseTx) FromJson(data []byte) error {
 
 func (t *TicketPurchaseTx) ToTxTicketPurchaseResponse() jsonreqresp.TxTicketPurchaseResponse {
 	ticketPurchaseJson := jsonreqresp.TicketPurchaseResponse{
-		ID:            t.ticketPurchase.id,
+		TxID:          t.ticketPurchase.id,
 		CustomerName:  t.ticketPurchase.customerName,
 		CustomerEmail: t.ticketPurchase.customerEmail,
 		PurchaseDate:  t.ticketPurchase.purchaseDate,

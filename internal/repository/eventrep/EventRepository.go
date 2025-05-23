@@ -15,7 +15,8 @@ var (
 	ErrEventNotFound        = errors.New("the Event was not found in the repository")
 	ErrEventArtowrkNotFound = errors.New("the Event_artwork was not found in the repository")
 	ErrAddNoEmployee        = errors.New("failed to add the Event, no employeee")
-	ErrUpdateNoEmployee     = errors.New("failed to update the Events, no employeee")
+	ErrUpdateEvent          = errors.New("err update Event params")
+	// ErrUpdateNoEmployee     = errors.New("failed to update the Events, no employeee")
 )
 
 type EventRep interface {
@@ -27,6 +28,7 @@ type EventRep interface {
 	//
 	Add(ctx context.Context, e *models.Event) error
 	Delete(ctx context.Context, eventID uuid.UUID) error
+	RealDelete(ctx context.Context, eventID uuid.UUID) error
 	Update(ctx context.Context, eventID uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) error
 	AddArtworksToEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUIDs) error
 	DeleteArtworkFromEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUID) error
@@ -35,6 +37,6 @@ type EventRep interface {
 }
 
 func NewEventRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (EventRep, error) {
-	rep, err := NewPgEventRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgEventRep(ctx, pgCreds, dbConf)
+	// return &MockEventRep{}, nil
 }

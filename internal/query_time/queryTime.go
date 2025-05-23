@@ -19,7 +19,7 @@ import (
 )
 
 type QueryTime interface {
-	MeasureTime(start int, stop int, step int, drawGraph bool) error
+	MeasureTime(start int, stop int, step int) error
 }
 
 var (
@@ -90,25 +90,6 @@ func NewQueryTime() (QueryTime, error) {
 	return pgInstance, nil
 }
 
-//	type ExplainResult struct {
-//		Plan struct {
-//			NodeType           string          `json:"Node Type"`
-//			JoinType           string          `json:"Join Type,omitempty"`
-//			InnerUnique        bool            `json:"Inner Unique,omitempty"`
-//			RelationName       string          `json:"Relation Name,omitempty"`
-//			Alias              string          `json:"Alias,omitempty"`
-//			RecheckCond        string          `json:"Recheck Cond,omitempty"`
-//			ScanDirection      string          `json:"Scan Direction,omitempty"`
-//			IndexName          string          `json:"Index Name,omitempty"`
-//			IndexCond          string          `json:"Index Cond,omitempty"`
-//			ParentRelationship string          `json:"Parent Relationship,omitempty"`
-//			Filter             string          `json:"Filter,omitempty"`
-//			ActualRows         int             `json:"Actual Rows"`
-//			Plans              []ExplainResult `json:"Plans,omitempty"`
-//		} `json:"Plan"`
-//		PlanningTime  float64 `json:"Planning Time"`
-//		ExecutionTime float64 `json:"Execution Time"`
-//	}
 type PlanNode struct {
 	NodeType            string     `json:"Node Type"`
 	ParallelAware       bool       `json:"Parallel Aware,omitempty"`
@@ -349,7 +330,7 @@ func (q *queryTime) dropIndex() error {
 	return nil
 }
 
-func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) error {
+func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 	projectRoot := cnfg.GetProjectRoot()
 	dir := filepath.Join(projectRoot, "/measure_results/data/")
 	ctx := context.Background()
@@ -425,11 +406,12 @@ func (q *queryTime) MeasureTime(start int, stop int, step int, drawGraph bool) e
 		}
 	}
 
-	if drawGraph {
-		err = DrawGraph(start, stop, step)
-		if err != nil {
-			return fmt.Errorf("MeasureTime: %v", err)
-		}
-	}
+	// if drawGraph {
+	// 	dirPath := "/measure_results/good/data"
+	// 	err = DrawGraph(dirPath, start, stop, step)
+	// 	if err != nil {
+	// 		return fmt.Errorf("MeasureTime: %v", err)
+	// 	}
+	// }
 	return nil
 }

@@ -58,6 +58,15 @@ func AuthMiddleware(authServ TokenVerifier, authZ auth.AuthZ, mandatory bool) gi
 		ctx = authZ.Authorize(ctx, *payload)
 		c.Request = c.Request.WithContext(ctx)
 
+		projLogger := ctx.Value(LoggerKey)
+		projLogger.(MiddlewareLogger).Infow("Auth",
+			"method", c.Request.Method,
+			"path", c.Request.URL.Path,
+			"ip", c.ClientIP(),
+			"payload", payload,
+			// "user-agent", c.Request.UserAgent(),
+		)
+
 		c.Next()
 	}
 }

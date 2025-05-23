@@ -2,7 +2,6 @@ package api
 
 import (
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -125,8 +124,6 @@ func (r *SearcherRouter) GetAllEvents(c *gin.Context) {
 		}
 		filterOps.CanVisit = canVisitStr
 	}
-
-	fmt.Printf("filterOps: %+v\n\n", filterOps)
 
 	events, err := r.serv.GetAllEvents(ctx, &filterOps)
 	if err != nil {

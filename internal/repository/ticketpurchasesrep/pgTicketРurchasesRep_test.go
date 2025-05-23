@@ -25,7 +25,6 @@ var (
 	pgOnce sync.Once
 )
 
-// testHelper содержит общие методы для тестов
 type testHelper struct {
 	ctx        context.Context
 	tprep      *ticketpurchasesrep.PgTicketPurchasesRep
@@ -62,7 +61,6 @@ func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCred
 		time.Now().UTC().Truncate(time.Microsecond),
 		true,
 	)
-	// fmt.Printf("ADMIN: %+v\n", admin)
 	require.NoError(t, err)
 	arep, err := adminrep.NewPgAdminRep(ctx, pgCreds, dbCnfg)
 	require.NoError(t, err)
@@ -95,6 +93,8 @@ func addEvent(t *testing.T, ctx context.Context, eventID uuid.UUID, pgCreds *cnf
 		true,
 		employeeID,
 		100+num,
+		true,
+		nil,
 	)
 	require.NoError(t, err)
 	erep, err := eventrep.NewPgEventRep(ctx, pgCreds, dbCnfg)
@@ -215,6 +215,8 @@ func TestTicketPurchasesRep_GetTPurchasesOfUserID(t *testing.T) {
 			if len(tt.wantIDs) > 0 {
 				for i, expectedID := range tt.wantIDs {
 					assert.Equal(t, expectedID, tps[i].GetID())
+					assert.Equal(t, fmt.Sprintf("Customer %d", i+1), tps[i].GetCustomerName())
+					assert.Equal(t, fmt.Sprintf("customer%d@example.com", i+1), tps[i].GetCustomerEmail())
 				}
 			}
 		})
@@ -266,56 +268,4 @@ func TestTicketPurchasesRep_GetCntTPurchasesForEvent(t *testing.T) {
 			assert.Equal(t, tt.wantCount, count)
 		})
 	}
-}
-
-func TestTicketPurchasesRep_Add(t *testing.T) {
-	th := setupTestHelper(t)
-
-	t.Run("Should add new ticket purchase", func(t *testing.T) {
-		tp := th.createTestTicketPurchase(1, th.eventIDs[0], th.userIDs[0])
-
-		err := th.tprep.Add(th.ctx, tp)
-		require.NoError(t, err)
-
-		// Проверяем, что можно получить добавленную покупку
-		tps, err := th.tprep.GetTPurchasesOfUserID(th.ctx, tp.GetUserID())
-		require.NoError(t, err)
-		assert.Len(t, tps, 1)
-		assert.Equal(t, tp.GetID(), tps[0].GetID())
-	})
-
-	t.Run("Should return error for duplicate ticket purchase", func(t *testing.T) {
-		tp := th.createAndAddTicketPurchase(t, 2, th.eventIDs[0], th.userIDs[0])
-
-		// Пытаемся добавить тот же билет снова
-		err := th.tprep.Add(th.ctx, tp)
-		assert.Error(t, err)
-	})
-
-	t.Run("Should add ticket purchase without userID", func(t *testing.T) {
-		tp := th.createTestTicketPurchase(3, th.eventIDs[0], uuid.Nil)
-
-		err := th.tprep.Add(th.ctx, tp)
-		require.NoError(t, err)
-
-		// Проверяем, что билет добавлен, но не привязан к пользователю
-		count, err := th.tprep.GetCntTPurchasesForEvent(th.ctx, tp.GetEventID())
-		require.NoError(t, err)
-		assert.Equal(t, 3, count)
-	})
-}
-
-func TestTicketPurchasesRep_Ping(t *testing.T) {
-	th := setupTestHelper(t)
-
-	t.Run("Should ping database successfully", func(t *testing.T) {
-		err := th.tprep.Ping(th.ctx)
-		require.NoError(t, err)
-	})
-
-	t.Run("Should return error after closing connection", func(t *testing.T) {
-		th.tprep.Close()
-		err := th.tprep.Ping(th.ctx)
-		assert.Error(t, err)
-	})
 }

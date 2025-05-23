@@ -8,7 +8,6 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep/mockemployeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
 	"github.com/google/uuid"
@@ -82,7 +81,7 @@ func TestAuthEmployee_LoginEmployee(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
 
@@ -160,7 +159,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := new(mockemployeerep.MockEmployeeRep)
+			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
 			hasher := new(MockHasher)
 

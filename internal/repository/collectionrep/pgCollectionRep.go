@@ -82,101 +82,93 @@ func (pg *PgCollectionRep) parseCollectionsRows(rows *sql.Rows) ([]*models.Colle
 	return resCollections, nil
 }
 
-func (pg *PgCollectionRep) GetAllCollections(ctx context.Context) ([]*models.Collection, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "title").
-		From("collection").
-		ToSql()
+func (pg *PgCollectionRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Collection, error) {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
-	arts, err := pg.parseCollectionsRows(rows)
+	res, err := pg.parseCollectionsRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
-	if len(arts) == 0 {
-		return nil, ErrCollectionNotFound
+	return res, nil
+}
+
+func (pg *PgCollectionRep) GetAllCollections(ctx context.Context) ([]*models.Collection, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select("id", "title").
+		From("collection")
+	res, err := pg.execSelectQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgCollectionRep.GetAll: %v", err)
 	}
-	return arts, nil
+	return res, nil
 }
 
 func (pg *PgCollectionRep) GetCollectionByID(ctx context.Context, id uuid.UUID) (*models.Collection, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "title").
+	query := psql.Select("id", "title").
 		From("Collection").
-		Where(sq.Eq{"id": id}).
-		ToSql()
+		Where(sq.Eq{"id": id})
+	res, err := pg.execSelectQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("PgCollectionRep.GetByID: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgCollectionRep.GetByID: %v", err)
 	}
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgCollectionRep.GetByID: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	cols, err := pg.parseCollectionsRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgCollectionRep.GetByID %v", err)
-	}
-	if len(cols) == 0 {
+	if len(res) == 0 {
 		return nil, ErrCollectionNotFound
-	} else if len(cols) > 1 {
-		return nil, fmt.Errorf("PgCollectionRep.GetByID %w: %v", ErrExpectedOneCollection, err)
+	} else if len(res) > 1 {
+		return nil, fmt.Errorf("PgCollectionRep.GetByID: %w", ErrExpectedOneCollection)
 	}
-	return cols[0], nil
+	return res[0], nil
+}
+
+func (pg *PgCollectionRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
+	querySQL, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+	}
+	result, err := pg.db.ExecContext(ctx, querySQL, args...)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+	}
+	// проверка количества затронутых строк
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("%w: no added", ErrRowsAffected)
+	}
+	return nil
 }
 
 func (pg *PgCollectionRep) AddCollection(ctx context.Context, e *models.Collection) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
-	query, args, err := psql.Insert("Collection").
+	query := psql.Insert("Collection").
 		Columns("id", "title").
-		Values(e.GetID(), e.GetTitle()).
-		ToSql()
+		Values(e.GetID(), e.GetTitle())
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgCollectionRep.CheckCollectionByID: %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgCollectionRep.CheckCollectionByID: %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgCollectionRep.CheckCollectionByID: %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgCollectionRep.CheckCollectionByID: %w: no Collection added", ErrRowsAffected)
+		return fmt.Errorf("PgCollectionRep.Add: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgCollectionRep) DeleteCollection(ctx context.Context, idCol uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Collection").
-		Where(sq.Eq{"id": idCol}).
-		ToSql()
+	query := psql.Delete("Collection").
+		Where(sq.Eq{"id": idCol})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgCollectionRep.Delete %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgCollectionRep.Delete %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgCollectionRep.Delete %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgCollectionRep.Delete %w: no collection with id %s", ErrCollectionNotFound, idCol)
+		return fmt.Errorf("PgCollectionRep.Delete: %w", err)
 	}
 	return nil
 }
@@ -194,25 +186,14 @@ func (pg *PgCollectionRep) UpdateCollection(
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEmployee, err := funcUpdate(col)
 	if err != nil {
-		return fmt.Errorf("PgEmployeeRep.Update funcUpdate: %v", err)
+		return fmt.Errorf("pgCollectionRep.Update: %w", ErrUpdateCollection)
 	}
-	query, args, err := psql.Update("Collection").
+	query := psql.Update("Collection").
 		Set("title", updatedEmployee.GetTitle()).
-		Where(sq.Eq{"id": idCol}).ToSql()
+		Where(sq.Eq{"id": idCol})
+	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("pgCollectionRep.Update %w: no employee added", ErrCollectionNotFound)
+		return fmt.Errorf("pgCollectionRep.Update: %w", err)
 	}
 	return nil
 }

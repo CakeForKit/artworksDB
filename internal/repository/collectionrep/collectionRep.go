@@ -11,6 +11,7 @@ import (
 
 var (
 	ErrCollectionNotFound = errors.New("the Collection was not found in the repository")
+	ErrUpdateCollection   = errors.New("err update Collection params")
 )
 
 type CollectionRep interface {
@@ -22,6 +23,6 @@ type CollectionRep interface {
 }
 
 func NewCollectionRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {
-	rep, err := NewPgCollectionRep(ctx, pgCreds, dbConf)
-	return rep, err
+	return NewPgCollectionRep(ctx, pgCreds, dbConf)
+	// return &MockCollectionRep{}, nil
 }

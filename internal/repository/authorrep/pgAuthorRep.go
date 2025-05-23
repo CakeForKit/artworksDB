@@ -88,55 +88,72 @@ func (pg *PgAuthorRep) parseAuthorsRows(rows *sql.Rows) ([]*models.Author, error
 	return resAuthors, nil
 }
 
-func (pg *PgAuthorRep) GetAll(ctx context.Context) ([]*models.Author, error) {
-	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "name", "birthyear", "deathyear").
-		From("author").
-		ToSql()
+func (pg *PgAuthorRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Author, error) {
+	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
 
-	rows, err := pg.db.QueryContext(ctx, query, args...)
+	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
-	arts, err := pg.parseAuthorsRows(rows)
+	res, err := pg.parseAuthorsRows(rows)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("%w", err)
 	}
-	if len(arts) == 0 {
-		return nil, ErrAuthorNotFound
+	return res, nil
+}
+
+func (pg *PgAuthorRep) GetAll(ctx context.Context) ([]*models.Author, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query := psql.Select("id", "name", "birthyear", "deathyear").
+		From("author")
+	res, err := pg.execSelectQuery(ctx, query)
+	if err != nil {
+		return nil, fmt.Errorf("PgAuthorRep.GetAll: %v", err)
 	}
-	return arts, nil
+	return res, nil
 }
 
 func (pg *PgAuthorRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Author, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Select("id", "name", "birthyear", "deathyear").
+	query := psql.Select("id", "name", "birthyear", "deathyear").
 		From("Author").
-		Where(sq.Eq{"id": id}).
-		ToSql()
+		Where(sq.Eq{"id": id})
+	res, err := pg.execSelectQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("PgAuthorRep.GetByID: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgAuthorRep.GetByID: %v", err)
 	}
-	rows, err := pg.db.QueryContext(ctx, query, args...)
-	if err != nil {
-		return nil, fmt.Errorf("PgAuthorRep.GetByID: %w: %v", ErrQueryExec, err)
-	}
-	defer rows.Close()
-	authors, err := pg.parseAuthorsRows(rows)
-	if err != nil {
-		return nil, fmt.Errorf("PgAuthorRep.GetByID %v", err)
-	}
-	if len(authors) == 0 {
+
+	if len(res) == 0 {
 		return nil, ErrAuthorNotFound
-	} else if len(authors) > 1 {
-		return nil, fmt.Errorf("PgAuthorRep.GetByID %w: %v", ErrAuthorNotFound, err)
+	} else if len(res) > 1 {
+		return nil, fmt.Errorf("PgAuthorRep.GetByID %w", ErrExpectedOneAuthor)
 	}
-	return authors[0], nil
+	return res[0], nil
+}
+
+func (pg *PgAuthorRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
+	querySQL, args, err := query.ToSql()
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+	}
+	result, err := pg.db.ExecContext(ctx, querySQL, args...)
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+	}
+	// проверка количества затронутых строк
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+	}
+	if rowsAffected == 0 {
+		return fmt.Errorf("%w: no added", ErrRowsAffected)
+	}
+	return nil
 }
 
 func (pg *PgAuthorRep) Add(ctx context.Context, a *models.Author) error {
@@ -146,47 +163,23 @@ func (pg *PgAuthorRep) Add(ctx context.Context, a *models.Author) error {
 	if deathYear == 0 {
 		deathYear = nil
 	}
-	query, args, err := psql.Insert("Author").
+	query := psql.Insert("Author").
 		Columns("id", "name", "birthYear", "deathYear").
-		Values(a.GetID(), a.GetName(), a.GetBirthYear(), deathYear).
-		ToSql()
+		Values(a.GetID(), a.GetName(), a.GetBirthYear(), deathYear)
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgAuthorRep.CheckAuthorByID: %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgAuthorRep.CheckAuthorByID: %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgAuthorRep.CheckAuthorByID: %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgAuthorRep.CheckAuthorByID: %w: no Author added", ErrRowsAffected)
+		return fmt.Errorf("PgAuthorRep.Add: %w", err)
 	}
 	return nil
 }
 
 func (pg *PgAuthorRep) Delete(ctx context.Context, idAuthor uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	query, args, err := psql.Delete("Author").
-		Where(sq.Eq{"id": idAuthor}).
-		ToSql()
+	query := psql.Delete("Author").
+		Where(sq.Eq{"id": idAuthor})
+	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgAuthorRep.Delete %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("PgAuthorRep.Delete %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("PgAuthorRep.Delete %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("PgAuthorRep.Delete %w: no collection with id %s", ErrAuthorNotFound, idAuthor)
+		return fmt.Errorf("PgAuthorRep.Delete: %w", err)
 	}
 	return nil
 }
@@ -196,35 +189,24 @@ func (pg *PgAuthorRep) Update(
 	idAuthor uuid.UUID,
 	funcUpdate func(*models.Author) (*models.Author, error),
 ) error {
-	col, err := pg.GetByID(ctx, idAuthor)
+	author, err := pg.GetByID(ctx, idAuthor)
 	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w", err)
+		return fmt.Errorf("PgAuthorRep.Update %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
-	updatedEmployee, err := funcUpdate(col)
+	updatedAuthor, err := funcUpdate(author)
 	if err != nil {
-		return fmt.Errorf("PgEmployeeRep.Update funcUpdate: %v", err)
+		return fmt.Errorf("PgAuthorRep.Update: %w", ErrUpdateAuthor)
 	}
-	query, args, err := psql.Update("Collection").
-		Set("name", updatedEmployee.GetName()).
-		Set("birthYear", updatedEmployee.GetDeathYear()).
-		Set("deathYear", updatedEmployee.GetDeathYear()).
-		Where(sq.Eq{"id": idAuthor}).ToSql()
+	query := psql.Update("Author").
+		Set("name", updatedAuthor.GetName()).
+		Set("birthYear", updatedAuthor.GetBirthYear()).
+		Set("deathYear", updatedAuthor.GetDeathYear()).
+		Where(sq.Eq{"id": idAuthor})
+	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrQueryBuilds, err)
-	}
-	result, err := pg.db.ExecContext(ctx, query, args...)
-	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrQueryExec, err)
-	}
-	// проверка количества затронутых строк
-	rowsAffected, err := result.RowsAffected()
-	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update %w: %v", ErrRowsAffected, err)
-	}
-	if rowsAffected == 0 {
-		return fmt.Errorf("pgCollectionRep.Update %w: no employee added", ErrAuthorNotFound)
+		return fmt.Errorf("PgAuthorRep.Update: %w", err)
 	}
 	return nil
 }
@@ -240,7 +222,7 @@ func (pg *PgAuthorRep) HasArtworks(ctx context.Context, authorID uuid.UUID) (boo
 	}
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("PgArtworkRep.GetByEvent: %w: %v", ErrQueryExec, err)
+		return false, fmt.Errorf("PgAuthorRep.HasArtworks: %w: %v", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	return rows.Next(), nil

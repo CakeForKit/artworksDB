@@ -22,6 +22,7 @@ type AppConfig struct {
 	TokenSymmetricKey            string        `mapstructure:"token_symmetric_key"`
 	AccessTokenDuration          time.Duration `mapstructure:"access_token_duration"`
 	BuyTicketTransactionDuration time.Duration `mapstructure:"buy_ticket_transaction_duration"`
+	Port                         int           `mapstructure:"port"`
 }
 
 type DatebaseConfig struct {
@@ -55,8 +56,9 @@ type RedisCredentials struct {
 }
 
 var (
-	ErrConfigRead = errors.New("ReadInConfig")
-	ErrEnvRead    = errors.New("read env error")
+	ErrConfigRead    = errors.New("ReadInConfig")
+	ErrUnmarshalRead = errors.New("err to unmarshal config ")
+	ErrEnvRead       = errors.New("read env error")
 )
 
 func LoadAppConfig() (config *AppConfig, err error) {
@@ -151,7 +153,7 @@ func GetPgTestConfig() (config *PostgresTestConfig) {
 	projectRoot := GetProjectRoot()
 	migrationDir := filepath.Join(projectRoot, "migrations") // Путь от корня проекта
 	return &PostgresTestConfig{
-		DbName:       "testArtwork",
+		DbName:       "testartwork",
 		Port:         5432,
 		Username:     "testUser",
 		Password:     "testPassword",

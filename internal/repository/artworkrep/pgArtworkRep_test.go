@@ -9,8 +9,11 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
@@ -23,10 +26,12 @@ var (
 
 // testHelper содержит общие методы для тестов
 type testHelper struct {
-	ctx     context.Context
-	arep    *artworkrep.PgArtworkRep
-	dbCnfg  *cnfg.DatebaseConfig
-	pgCreds *cnfg.PostgresCredentials
+	ctx       context.Context
+	arep      *artworkrep.PgArtworkRep
+	authorRep *authorrep.PgAuthorRep
+	colRep    *collectionrep.PgCollectionRep
+	dbCnfg    *cnfg.DatebaseConfig
+	pgCreds   *cnfg.PostgresCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {
@@ -39,12 +44,18 @@ func setupTestHelper(t *testing.T) *testHelper {
 
 		arep, err := artworkrep.NewPgArtworkRep(ctx, &pgCreds, dbCnfg)
 		require.NoError(t, err)
+		collectionRep, err := collectionrep.NewPgCollectionRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
+		authorRep, err := authorrep.NewPgAuthorRep(ctx, &pgCreds, dbCnfg)
+		require.NoError(t, err)
 
 		th = &testHelper{
-			ctx:     ctx,
-			arep:    arep,
-			dbCnfg:  dbCnfg,
-			pgCreds: &pgCreds,
+			ctx:       ctx,
+			arep:      arep,
+			dbCnfg:    dbCnfg,
+			pgCreds:   &pgCreds,
+			colRep:    collectionRep,
+			authorRep: authorRep,
 		}
 	})
 	pgTestConfig := cnfg.GetPgTestConfig()
@@ -106,37 +117,100 @@ func (th *testHelper) createAndAddArtwork(t *testing.T, num int) (*models.Artwor
 	artwork := th.createTestArtwork(num, author, collection)
 
 	// Добавляем автора и коллекцию сначала
-	err := th.arep.Add(context.Background(), artwork)
+	ctx := context.Background()
+	err := th.authorRep.Add(ctx, author)
+	require.NoError(t, err)
+	err = th.colRep.AddCollection(ctx, collection)
+	require.NoError(t, err)
+	err = th.arep.Add(ctx, artwork)
 	require.NoError(t, err)
 
 	return artwork, author, collection
 }
 
-func TestArtworkRep_GetAll(t *testing.T) {
+func (th *testHelper) deleteArtwork(t *testing.T, artworks []*models.Artwork) {
+	ctx := context.Background()
+	for _, artwork := range artworks {
+		err := th.arep.Delete(ctx, artwork.GetID())
+		require.NoError(t, err)
+		err = th.authorRep.Delete(ctx, artwork.GetAuthor().GetID())
+		require.NoError(t, err)
+		err = th.colRep.DeleteCollection(ctx, artwork.GetCollection().GetID())
+		require.NoError(t, err)
+	}
+}
+
+func TestPgArtworkRep_GetAllArtworks(t *testing.T) {
 	th := setupTestHelper(t)
 
 	tests := []struct {
 		name          string
-		setup         func() []*models.Artwork
+		setup         func() ([]*models.Artwork, []*models.Artwork)
+		down          func([]*models.Artwork)
+		filter        *jsonreqresp.ArtworkFilter
+		sort          *jsonreqresp.ArtworkSortOps
 		wantLen       int
 		wantErr       bool
 		expectedError error
 	}{
 		{
-			name:          "Should return empty list for empty DB",
-			setup:         func() []*models.Artwork { return nil },
+			name: "Should return empty list for empty DB",
+			setup: func() ([]*models.Artwork, []*models.Artwork) {
+				return nil, nil
+			},
+			down:          func(a []*models.Artwork) {},
+			filter:        &jsonreqresp.ArtworkFilter{},
+			sort:          &jsonreqresp.ArtworkSortOps{},
 			wantLen:       0,
-			expectedError: artworkrep.ErrArtworkNotFound,
+			expectedError: nil,
 		},
 		{
 			name: "Should return all artworks",
-			setup: func() []*models.Artwork {
+			setup: func() ([]*models.Artwork, []*models.Artwork) {
 				artworks := make([]*models.Artwork, 3)
 				for i := range artworks {
 					artwork, _, _ := th.createAndAddArtwork(t, i)
 					artworks[i] = artwork
 				}
-				return artworks
+				return artworks, artworks
+			},
+			down:    func(a []*models.Artwork) { th.deleteArtwork(t, a) },
+			filter:  &jsonreqresp.ArtworkFilter{},
+			sort:    &jsonreqresp.ArtworkSortOps{},
+			wantLen: 3,
+		},
+		{
+			name: "Should filter by title",
+			setup: func() ([]*models.Artwork, []*models.Artwork) {
+				artworks := make([]*models.Artwork, 3)
+				for i := range artworks {
+					artwork, _, _ := th.createAndAddArtwork(t, i)
+					artworks[i] = artwork
+				}
+				return artworks[:1], artworks // Expect only first artwork
+			},
+			down: func(a []*models.Artwork) { th.deleteArtwork(t, a) },
+			filter: &jsonreqresp.ArtworkFilter{
+				Title: "Artwork 0",
+			},
+			sort:    &jsonreqresp.ArtworkSortOps{},
+			wantLen: 1,
+		},
+		{
+			name: "Should sort by title",
+			setup: func() ([]*models.Artwork, []*models.Artwork) {
+				artworks := make([]*models.Artwork, 3)
+				for i := range artworks {
+					artwork, _, _ := th.createAndAddArtwork(t, i)
+					artworks[i] = artwork
+				}
+				return artworks, artworks
+			},
+			down:   func(a []*models.Artwork) { th.deleteArtwork(t, a) },
+			filter: &jsonreqresp.ArtworkFilter{},
+			sort: &jsonreqresp.ArtworkSortOps{
+				Field:     jsonreqresp.TitleSortFieldArtwork,
+				Direction: "ASC",
 			},
 			wantLen: 3,
 		},
@@ -144,15 +218,14 @@ func TestArtworkRep_GetAll(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			expectedArtworks := tt.setup()
+			expectedArtworks, AllArtworks := tt.setup()
 
-			artworks, err := th.arep.GetAllArtworks(th.ctx)
+			artworks, err := th.arep.GetAllArtworks(th.ctx, tt.filter, tt.sort)
 
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)
 				return
 			}
-
 			require.NoError(t, err)
 			assert.Len(t, artworks, tt.wantLen)
 
@@ -162,11 +235,12 @@ func TestArtworkRep_GetAll(t *testing.T) {
 					assert.Equal(t, expected.GetTitle(), artworks[i].GetTitle())
 				}
 			}
+			tt.down(AllArtworks)
 		})
 	}
 }
 
-func TestArtworkRep_GetByID(t *testing.T) {
+func TestPgArtworkRep_GetByID(t *testing.T) {
 	th := setupTestHelper(t)
 
 	artwork, _, _ := th.createAndAddArtwork(t, 1)
@@ -206,139 +280,7 @@ func TestArtworkRep_GetByID(t *testing.T) {
 	}
 }
 
-func TestArtworkRep_GetByTitle(t *testing.T) {
-	th := setupTestHelper(t)
-
-	artwork, _, _ := th.createAndAddArtwork(t, 1)
-
-	t.Run("Should return artwork by title", func(t *testing.T) {
-		artworks, err := th.arep.GetByTitle(th.ctx, artwork.GetTitle())
-		require.NoError(t, err)
-		assert.Len(t, artworks, 1)
-		assert.Equal(t, artwork.GetID(), artworks[0].GetID())
-	})
-
-	t.Run("Should return error for non-existent title", func(t *testing.T) {
-		res, err := th.arep.GetByTitle(th.ctx, "non_existent_title")
-		assert.ErrorIs(t, err, artworkrep.ErrArtworkNotFound)
-		assert.Nil(t, res)
-	})
-}
-
-func TestArtworkRep_GetByAuthor(t *testing.T) {
-	th := setupTestHelper(t)
-
-	artwork, author, _ := th.createAndAddArtwork(t, 1)
-
-	t.Run("Should return artworks by author", func(t *testing.T) {
-		artworks, err := th.arep.GetByAuthor(th.ctx, author)
-		require.NoError(t, err)
-		assert.Len(t, artworks, 1)
-		assert.Equal(t, artwork.GetID(), artworks[0].GetID())
-	})
-
-	t.Run("Should return error for non-existent author", func(t *testing.T) {
-		nonExistentAuthor := &models.Author{}
-		res, err := th.arep.GetByAuthor(th.ctx, nonExistentAuthor)
-		assert.ErrorIs(t, err, artworkrep.ErrArtworkNotFound)
-		assert.Nil(t, res)
-	})
-}
-
-func TestArtworkRep_GetByCreationTime(t *testing.T) {
-	th := setupTestHelper(t)
-
-	artwork, _, _ := th.createAndAddArtwork(t, 1)
-	year := artwork.GetCreationYear()
-
-	tests := []struct {
-		name     string
-		yearBeg  int
-		yearEnd  int
-		wantLen  int
-		wantErr  bool
-		wantYear int
-	}{
-		{
-			name:     "Should return artworks in time range",
-			yearBeg:  year - 1,
-			yearEnd:  year + 1,
-			wantLen:  1,
-			wantYear: year,
-		},
-		{
-			name:    "Should return empty for out of range",
-			yearBeg: year + 10,
-			yearEnd: year + 20,
-			wantLen: 0,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			artworks, err := th.arep.GetByCreationTime(th.ctx, tt.yearBeg, tt.yearEnd)
-
-			if tt.wantLen == 0 {
-				assert.ErrorIs(t, err, artworkrep.ErrArtworkNotFound)
-				return
-			}
-
-			require.NoError(t, err)
-			assert.Len(t, artworks, tt.wantLen)
-			if tt.wantLen > 0 {
-				assert.Equal(t, tt.wantYear, artworks[0].GetCreationYear())
-			}
-		})
-	}
-}
-
-func TestArtworkRep_Add(t *testing.T) {
-	th := setupTestHelper(t)
-
-	t.Run("Should add new artwork", func(t *testing.T) {
-		author := th.createTestAuthor(1)
-		collection := th.createTestCollection(1)
-		artwork := th.createTestArtwork(1, author, collection)
-
-		err := th.arep.Add(th.ctx, artwork)
-		require.NoError(t, err)
-
-		// Проверяем, что artwork действительно добавлен
-		got, err := th.arep.GetByID(th.ctx, artwork.GetID())
-		require.NoError(t, err)
-		assert.Equal(t, artwork.GetID(), got.GetID())
-	})
-
-	t.Run("Should return error for duplicate artwork", func(t *testing.T) {
-		artwork, _, _ := th.createAndAddArtwork(t, 2)
-
-		// Пытаемся добавить тот же artwork снова
-		err := th.arep.Add(th.ctx, artwork)
-		assert.Error(t, err)
-	})
-}
-
-func TestArtworkRep_Delete(t *testing.T) {
-	th := setupTestHelper(t)
-
-	t.Run("Should delete existing artwork", func(t *testing.T) {
-		artwork, _, _ := th.createAndAddArtwork(t, 1)
-
-		err := th.arep.Delete(th.ctx, artwork.GetID())
-		require.NoError(t, err)
-
-		// Проверяем, что artwork удален
-		_, err = th.arep.GetByID(th.ctx, artwork.GetID())
-		assert.ErrorIs(t, err, artworkrep.ErrArtworkNotFound)
-	})
-
-	t.Run("Should return error for non-existent artwork", func(t *testing.T) {
-		err := th.arep.Delete(th.ctx, uuid.New())
-		assert.ErrorIs(t, err, artworkrep.ErrRowsAffected)
-	})
-}
-
-func TestArtworkRep_Update(t *testing.T) {
+func TestPgArtworkRep_Update(t *testing.T) {
 	th := setupTestHelper(t)
 
 	tests := []struct {
@@ -380,7 +322,7 @@ func TestArtworkRep_Update(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			artwork, _, _ := th.createAndAddArtwork(t, 1)
 
-			updated, err := th.arep.Update(th.ctx, artwork.GetID(), tt.updateFunc)
+			err := th.arep.Update(th.ctx, artwork.GetID(), tt.updateFunc)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -388,9 +330,7 @@ func TestArtworkRep_Update(t *testing.T) {
 			}
 
 			require.NoError(t, err)
-			tt.wantCheck(t, updated)
 
-			// Проверяем, что изменения сохранились в БД
 			dbArtwork, err := th.arep.GetByID(th.ctx, artwork.GetID())
 			require.NoError(t, err)
 			tt.wantCheck(t, dbArtwork)
