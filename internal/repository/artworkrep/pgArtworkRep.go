@@ -124,6 +124,7 @@ func (pg *PgArtworkRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonr
 }
 
 func (pg *PgArtworkRep) addSortParams(query sq.SelectBuilder, sortOps *jsonreqresp.ArtworkSortOps) sq.SelectBuilder {
+	fmt.Printf("\nPgArtworkRep: field=%s dir=%s\n\n", sortOps.Field, sortOps.Direction)
 	switch sortOps.Field {
 	case jsonreqresp.TitleSortFieldArtwork:
 		query = query.OrderBy("artworks.title " + sortOps.Direction)

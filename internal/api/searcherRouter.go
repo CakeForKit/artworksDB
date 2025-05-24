@@ -22,9 +22,6 @@ func NewSearcherRouter(router *gin.RouterGroup, serv searcher.Searcher) Searcher
 	}
 	gr := router.Group("museum")
 	gr.GET("/artworks", r.GetAllArtworks)
-	// gr.POST("/", r.AddSearcher)
-	// gr.DELETE("/", r.DeleteSearcher)
-	// gr.PUT("/", r.UpdateSearcher)
 	gr.GET("/events", r.GetAllEvents)
 	return r
 }

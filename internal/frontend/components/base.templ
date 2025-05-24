@@ -1,0 +1,49 @@
+package components
+
+import (
+	"time"
+)
+
+templ Base(title string) {
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/style.css">
+        <title>{ title } | Музейный каталог</title>
+        <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    </head>
+    <body class="bg-cream" id="bg-cream">
+        <!-- Главный заголовок -->
+        <header class="header-container">
+            <div class="header-content">
+                <h1 class="museum-title">Музей Искусств</h1>
+                <p class="museum-subtitle">Коллекция шедевров мирового значения</p>
+            </div>
+            
+            <!-- Навигация -->
+            <nav class="nav-container">
+                <a href="/museum/artworks" class="nav-button">
+                    // <span class="button-icon">🖼️</span>
+                    <span class="button-text">Коллекция</span>
+                </a>
+                <a href="/museum/artworks" class="nav-button">
+                    // <span class="button-icon">🖼️</span>
+                    <span class="button-text">Коллекция</span>
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            { children... }
+        </main>
+
+        <footer class="footer">
+            <p>© { time.Now().Year() } Музей Искусств. Все права защищены.</p>
+        </footer>
+    </body>
+    </html>
+}
