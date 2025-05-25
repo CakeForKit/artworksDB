@@ -1,0 +1,148 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+    "fmt"
+)
+
+templ EventsPage(events []jsonreqresp.EventResponse, filter jsonreqresp.EventFilter) {
+    @UsersNavigate("События") {
+        <div class="events-page">
+            @FilterEventsForm(filter)
+            
+            @EventsContent(events)
+        </div>
+    }
+}
+
+templ EventsContent(events []jsonreqresp.EventResponse) {
+    <div class="events-container" id="events-content">
+        <h2>События</h2>
+        @EventsTable(events)
+    </div>
+}
+
+templ EventsTable(events []jsonreqresp.EventResponse) {
+    <table class="events-table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Дата начала</th>
+                <th>Дата окончания</th>
+                <th>Адрес</th>
+                <th>Доступно</th>
+                <th>Билеты</th>
+            </tr>
+        </thead>
+        <tbody>
+            for _, event := range events {
+                <tr class="event-row">
+                    <td class="event-title">
+                        <a href={ "/museum/events/" + templ.URL(event.ID) } class="event-link">
+                            <span class="event-link-content">
+                                { event.Title }
+                                <span class="event-link-icon">→</span>
+                            </span>
+                        </a>
+                    </td>
+                    <td class="event-date">{ event.DateBegin.Format("02.01.2006 15:04") }</td>
+                    <td class="event-date">{ event.DateEnd.Format("02.01.2006 15:04") }</td>
+                    <td class="event-address">{ event.Address }</td>
+                    <td class="event-status">
+                        if event.CanVisit {
+                            <span class="status-available">Доступно</span>
+                        } else {
+                            <span class="status-unavailable">Недоступно</span>
+                        }
+                    </td>
+                    <td class="event-tickets">
+                        { fmt.Sprintf("%d шт.", event.CntTickets) }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+
+templ FilterEventsForm(filter jsonreqresp.EventFilter) {
+    <form action="/museum/events" method="GET" class="filter-form" id="events-filter-form"
+          x-data="{
+                adjustEndDate() {
+                    const startDate = document.getElementById('date_begin');
+                    const endDate = document.getElementById('date_end');
+                    
+                    if (startDate.value && endDate.value) {
+                        const start = new Date(startDate.value);
+                        const end = new Date(endDate.value);
+                        
+                        if (start > end) {
+                            // Устанавливаем дату окончания = дата начала + 1 день
+                            const newEndDate = new Date(start);
+                            newEndDate.setDate(newEndDate.getDate() + 1);
+                            endDate.valueAsDate = newEndDate;
+                        }
+                    }
+                }
+          }"
+          x-init="init()">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="title">Название события</label>
+                <input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    value={ filter.Title }
+                    placeholder="Введите название"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="date_begin">Дата начала</label>
+                <input 
+                    type="date" 
+                    id="date_begin" 
+                    name="date_begin" 
+                    value={ filter.DateBegin.Format("2006-01-02") }
+                    x-on:change="adjustEndDate()"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="date_end">Дата окончания</label>
+                <input 
+                    type="date" 
+                    id="date_end" 
+                    name="date_end" 
+                    value={ filter.DateEnd.Format("2006-01-02") }
+                    x-on:change="adjustEndDate()"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="can_visit">Доступно для посещения</label>
+                <select id="can_visit" name="can_visit">
+                    if filter.CanVisit == "true" {
+                        <option value="">Все</option>
+                        <option value="true" selected>Да</option>
+                        <option value="false">Нет</option>
+                    } else if filter.CanVisit == "false" {
+                        <option value="">Все</option>
+                        <option value="true">Да</option>
+                        <option value="false" selected>Нет</option>
+                    } else {
+                        <option value="" selected>Все</option>
+                        <option value="true">Да</option>
+                        <option value="false">Нет</option>
+                    }
+                </select>
+            </div>
+        </div>
+        
+        <div class="filter-buttons">
+            <button type="submit" class="apply-button">Применить</button>
+            <a href="/museum/events" class="reset-button">Сбросить</a>
+        </div>
+    </form>
+}

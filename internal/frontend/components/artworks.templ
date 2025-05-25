@@ -4,6 +4,19 @@ import (
     "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 )
 
+templ ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+    @UsersNavigate("Произведения искусства") {
+        <div class="artworks-page">
+            @FilterArtworksForm(filter, sortOps)
+            
+            <div class="artworks-container" id="artworks-content">
+                <h2>Произведения искусства</h2>
+                @ArtworksTable(artworks)
+            </div>
+        </div>
+    }
+}
+
 templ ArtworksTable(artworks []jsonreqresp.ArtworkResponse) {
     <table class="artworks-table">
         <thead>
@@ -25,23 +38,6 @@ templ ArtworksTable(artworks []jsonreqresp.ArtworkResponse) {
             }
         </tbody>
     </table>
-}
-
-templ ArtworksContent(artworks []jsonreqresp.ArtworkResponse) {
-    <div class="artworks-container" id="artworks-content">
-        <h2>Произведения искусства</h2>
-        @ArtworksTable(artworks)
-    </div>
-}
-
-templ ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
-    @Base("Произведения искусства") {
-        <div class="artworks-page">
-            @FilterArtworksForm(filter, sortOps)
-            
-            @ArtworksContent(artworks)
-        </div>
-    }
 }
 
 templ FilterArtworksForm(filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {

@@ -112,6 +112,8 @@ func (pg *PgEventRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonreq
 		canVisit, _ := strconv.ParseBool(filterOps.CanVisit)
 		query = query.Where(sq.Eq{"events.canVisit": canVisit})
 	}
+
+	query = query.Where(sq.Eq{"events.Valid": true})
 	return query
 }
 

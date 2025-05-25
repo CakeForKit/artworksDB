@@ -1,0 +1,227 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+)
+
+templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionResponse) {
+    @EmployeesNavigate("Управление коллекциями") {
+        <div class="crud-container" id="collectionsContainer">
+            <!-- Модальное окно для добавления/редактирования -->
+            <div class="modal" id="collectionModal" style="display: none;">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <h3 id="modalTitle">Добавить коллекцию</h3>
+                    
+                    <form id="collectionForm" onsubmit="return handleFormSubmit(event)">
+                        <input type="hidden" id="collectionId">
+                        
+                        <div class="form-group">
+                            <label>Название коллекции</label>
+                            <input 
+                                type="text" 
+                                id="collectionTitle"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" onclick="closeModal()">Отмена</button>
+                            <button type="submit" id="submitButton">Добавить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+ 
+            <!-- Основной интерфейс -->
+            <div class="crud-header">
+                <h2>Коллекции</h2>
+                <button 
+                    class="add-button" 
+                    onclick="resetAndOpenModal()"
+                >+ Добавить коллекцию</button>
+            </div>
+
+            <!-- Таблица коллекций -->
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    for _, collection := range collections {
+                        <tr>
+                            <td>{ collection.Title }</td>
+                            <td class="actions">
+                                <button 
+                                    class="edit-btn" 
+                                    onclick={ templ.JSFuncCall("prepareEditModal", collection.ID, collection.Title) }
+                                >✏️</button>
+                                <button 
+                                    class="delete-btn" 
+                                    onclick={ templ.JSFuncCall("confirmDeleteCollection", collection.ID) }
+                                >🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Скрипты для работы с API -->
+            <script>
+                const ACCESS_TOKEN_KEY = "@tokenKey";
+                // Текущее состояние
+                let isEditing = false;
+                let currentCollection = {
+                    id: '',
+                    title: ''
+                };
+
+                // Элементы DOM
+                const modal = document.getElementById('collectionModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const submitButton = document.getElementById('submitButton');
+                const collectionForm = document.getElementById('collectionForm');
+                const collectionIdInput = document.getElementById('collectionId');
+                const collectionTitleInput = document.getElementById('collectionTitle');
+
+                // Обработчики модального окна
+                function openModal() {
+                    modal.style.display = 'flex';
+                }
+
+                function closeModal() {
+                    modal.style.display = 'none';
+                }
+
+                // Клик вне модального окна
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+
+                function resetAndOpenModal() {
+                    isEditing = false;
+                    currentCollection = { id: '', title: '' };
+                    updateFormFields();
+                    modalTitle.textContent = 'Добавить коллекцию';
+                    submitButton.textContent = 'Добавить';
+                    openModal();
+                }
+
+                function prepareEditModal(id, title) {
+                    isEditing = true;
+                    currentCollection = {
+                        id: id,
+                        title: title
+                    };
+                    updateFormFields();
+                    modalTitle.textContent = 'Редактировать коллекцию';
+                    submitButton.textContent = 'Сохранить';
+                    openModal();
+                }
+
+                function updateFormFields() {
+                    collectionIdInput.value = currentCollection.id;
+                    collectionTitleInput.value = currentCollection.title;
+                }
+
+                async function handleFormSubmit(event) {
+                    event.preventDefault();
+                    
+                    const formData = {
+                        title: collectionTitleInput.value
+                    };
+
+                    if (isEditing) {
+                        formData.id = collectionIdInput.value;
+                        await updateCollection(formData);
+                    } else {
+                        await addCollection(formData);
+                    }
+                }
+
+                async function confirmDeleteCollection(id) {
+                    if (!confirm('Удалить коллекцию? Это действие нельзя отменить.')) return;
+                    await deleteCollection(id);
+                }
+
+                // API функции
+                async function fetchCollections() {
+                    try {
+                        const response = await fetch('/api/v1/employee/collections', {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            }
+                        });
+                        return await response.json();
+                    } catch (error) {
+                        console.error('Ошибка загрузки коллекций:', error);
+                        return [];
+                    }
+                }
+
+                async function addCollection(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/collections', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка добавления:', error);
+                        alert(error.error || 'Ошибка добавления коллекции');
+                    }
+                }
+
+                async function updateCollection(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/collections', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка обновления:', error);
+                        alert(error.error || 'Ошибка обновления коллекции');
+                    }
+                }
+
+                async function deleteCollection(id) {
+                    try {
+                        const response = await fetch('/api/v1/employee/collections', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify({ id })
+                        });
+ 
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert(error.error || 'Не удалось удалить коллекцию');
+                    }
+                }
+            </script>
+        </div>
+    }
+}

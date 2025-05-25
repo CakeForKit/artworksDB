@@ -108,10 +108,7 @@ func (pg *PgArtworkRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonr
 		query = query.Where(sq.ILike{"author.name": "%" + filterOps.AuthorName + "%"}) // Поиск подстроки
 	}
 	if filterOps.Collection != "" {
-		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
-	}
-	if filterOps.Collection != "" {
-		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
+		query = query.Where(sq.ILike{"collection.title": "%" + filterOps.Collection + "%"})
 	}
 	if filterOps.EventID != uuid.Nil {
 		existsSubQuery := sq.Select("1").
@@ -124,7 +121,6 @@ func (pg *PgArtworkRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonr
 }
 
 func (pg *PgArtworkRep) addSortParams(query sq.SelectBuilder, sortOps *jsonreqresp.ArtworkSortOps) sq.SelectBuilder {
-	fmt.Printf("\nPgArtworkRep: field=%s dir=%s\n\n", sortOps.Field, sortOps.Direction)
 	switch sortOps.Field {
 	case jsonreqresp.TitleSortFieldArtwork:
 		query = query.OrderBy("artworks.title " + sortOps.Direction)

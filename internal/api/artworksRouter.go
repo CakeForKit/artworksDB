@@ -42,7 +42,7 @@ func NewArtworksRouter(router *gin.RouterGroup, artworksServ artworkserv.Artwork
 // @Router /employee/artworks [get]
 func (r *ArtworksRouter) GetAllArtworks(c *gin.Context) {
 	ctx := c.Request.Context()
-	artworks, err := r.artworksServ.GetAllArtworks(ctx)
+	artworks, err := r.artworksServ.GetAll(ctx)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

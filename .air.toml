@@ -1,5 +1,6 @@
 [build]
-cmd = "swag init -g ./cmd/app/main.go --output ./docs && go build -o ./tmp/main ./cmd/app/main.go"
+cmd = "templ generate && swag init -g ./cmd/app/main.go --output ./docs && go build -o ./tmp/main ./cmd/app/main.go"
 bin = "tmp/main"
-include_ext = ["go", "yaml", "yml", "env"]
+include_ext = ["go", "yaml", "yml", "env", "tpl", "tmpl", "templ", "html", "css"]
 exclude_dir = ["vendor", "tmp", "docs"]
+exclude_regex = [".*_templ.go"]

@@ -105,7 +105,7 @@ func TestArtworkService_GetAllArtworks(t *testing.T) {
 			tt.setupMocks(artMock)
 
 			service := artworkserv.NewArtworkService(artMock, authMock, colMock)
-			result, err := service.GetAllArtworks(ctx)
+			result, err := service.GetAll(ctx)
 
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)

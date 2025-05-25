@@ -21,10 +21,10 @@ func NewAuthorRouter(router *gin.RouterGroup, authorServ authorserv.AuthorServ) 
 		authorServ: authorServ,
 	}
 	gr := router.Group("authors")
-	gr.GET("/", r.GetAllAuthors)
-	gr.POST("/", r.AddAuthor)
-	gr.PUT("/", r.UpdateAuthor)
-	gr.DELETE("/", r.DeleteAuthor)
+	gr.GET("", r.GetAllAuthors)
+	gr.POST("", r.AddAuthor)
+	gr.PUT("", r.UpdateAuthor)
+	gr.DELETE("", r.DeleteAuthor)
 	return r
 }
 

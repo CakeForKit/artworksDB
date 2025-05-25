@@ -14,7 +14,7 @@ import (
 )
 
 type ArtworkService interface {
-	GetAllArtworks(ctx context.Context) ([]*models.Artwork, error)
+	GetAll(ctx context.Context) ([]*models.Artwork, error)
 	Add(ctx context.Context, artworkReq jsonreqresp.AddArtworkRequest) error
 	Delete(ctx context.Context, idArt uuid.UUID) error
 	Update(ctx context.Context, idArt uuid.UUID, updateFields jsonreqresp.ArtworkUpdate) error
@@ -39,7 +39,7 @@ func NewArtworkService(artRep artworkrep.ArtworkRep, authorRep authorrep.AuthorR
 	}
 }
 
-func (a *artworkService) GetAllArtworks(ctx context.Context) ([]*models.Artwork, error) {
+func (a *artworkService) GetAll(ctx context.Context) ([]*models.Artwork, error) {
 	return a.artworkRep.GetAllArtworks(ctx, &jsonreqresp.ArtworkFilter{}, &jsonreqresp.ArtworkSortOps{})
 }
 

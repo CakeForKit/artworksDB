@@ -8,6 +8,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api"
@@ -41,6 +42,12 @@ import (
 func main() {
 	ctx := context.Background()
 	engine := gin.New()
+	engine.Handle("OPTIONS", "/api/*path", func(c *gin.Context) {
+		c.Header("Access-Control-Allow-Origin", "*")
+		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+		c.Header("Access-Control-Allow-Headers", "Content-Type")
+		c.Status(200)
+	})
 	apiGroup := engine.Group("/api/v1")
 
 	// logCnfg, err := cnfg.GetLogConfig()
@@ -190,9 +197,15 @@ func main() {
 	// -------------------
 
 	// ------ Cite -----
-	citeGroup := engine.Group("/")
-	citeRouter := frontend.NewCiteRouter(citeGroup, searcherServ)
+	engine.StaticFS("/static", http.Dir("./internal/frontend/static/"))
+	citeGroup := engine.Group("museum")
+	citeRouter := frontend.NewCiteRouter(citeGroup, searcherServ, authroServ)
 	_ = citeRouter
+	emplCiteGroup := citeGroup.Group("employee")
+	emplCiteGroup.Use(middleware.AuthMiddleware(authEmployeeServ, authZ, true))
+	employeesCiteRouter := frontend.NewEmployeeCiteRouter(
+		emplCiteGroup, authroServ, collectionServ, artworkServ)
+	_ = employeesCiteRouter
 
 	// // Статические файлы
 	// citeGroup.Static("/static", filepath.Join("internal", "frontend", "static"))

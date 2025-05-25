@@ -22,32 +22,34 @@ type TokenVerifier interface {
 
 func AuthMiddleware(authServ TokenVerifier, authZ auth.AuthZ, mandatory bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		authorizationHeader := c.GetHeader(authorizationHeaderKey)
-		if len(authorizationHeader) == 0 {
-			if !mandatory {
-				c.Next()
+		accessToken, err := c.Cookie("access_token")
+		if err != nil {
+			authorizationHeader := c.GetHeader(authorizationHeaderKey)
+			if len(authorizationHeader) == 0 {
+				if !mandatory {
+					c.Next()
+					return
+				}
+				err := errors.New("authorization header is not provided")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 				return
 			}
-			err := errors.New("authorization header is not provided")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
 
-		fields := strings.Fields(authorizationHeader)
-		if len(fields) < 2 {
-			err := errors.New("invalid authorization header format")
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
-		}
+			fields := strings.Fields(authorizationHeader)
+			if len(fields) < 2 {
+				err := errors.New("invalid authorization header format")
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
 
-		authorizationType := strings.ToLower(fields[0])
-		if authorizationType != authorizationTypeBearer {
-			err := fmt.Errorf("unsupported authorization type %s", authorizationType)
-			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
-			return
+			authorizationType := strings.ToLower(fields[0])
+			if authorizationType != authorizationTypeBearer {
+				err := fmt.Errorf("unsupported authorization type %s", authorizationType)
+				c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
+				return
+			}
+			accessToken = fields[1]
 		}
-
-		accessToken := fields[1]
 		payload, err := authServ.VerifyByToken(accessToken)
 		if err != nil {
 			c.AbortWithStatusJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
@@ -58,14 +60,14 @@ func AuthMiddleware(authServ TokenVerifier, authZ auth.AuthZ, mandatory bool) gi
 		ctx = authZ.Authorize(ctx, *payload)
 		c.Request = c.Request.WithContext(ctx)
 
-		projLogger := ctx.Value(LoggerKey)
-		projLogger.(MiddlewareLogger).Infow("Auth",
-			"method", c.Request.Method,
-			"path", c.Request.URL.Path,
-			"ip", c.ClientIP(),
-			"payload", payload,
-			// "user-agent", c.Request.UserAgent(),
-		)
+		// projLogger := ctx.Value(LoggerKey)
+		// projLogger.(MiddlewareLogger).Infow("Auth",
+		// 	"method", c.Request.Method,
+		// 	"path", c.Request.URL.Path,
+		// 	"ip", c.ClientIP(),
+		// 	"payload", payload,
+		// 	// "user-agent", c.Request.UserAgent(),
+		// )
 
 		c.Next()
 	}

@@ -9,7 +9,11 @@ prod_up:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) up app
 
 dev:
-	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up --build app
+	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) build --no-cache app
+	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up app
 
 dev_up:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up app
+
+clear_templ:
+	rm -f ./internal/frontend/components/*_templ.go

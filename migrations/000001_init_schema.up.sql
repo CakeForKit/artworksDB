@@ -180,3 +180,76 @@ RETURNS TABLE (
       AND e.dateEnd >= dateBeginSee;
 
 $$ LANGUAGE sql;
+
+CREATE OR REPLACE FUNCTION validate_artwork_creation_year()
+RETURNS TRIGGER AS $$
+DECLARE
+    author_birth INT;
+    author_death INT;
+BEGIN
+    -- Получаем годы жизни автора
+    SELECT birthYear, deathYear INTO author_birth, author_death
+    FROM Author
+    WHERE id = NEW.authorID;
+    
+    -- Проверяем, что год создания artwork находится после года рождения автора
+    IF NEW.creationYear < author_birth THEN
+        RAISE EXCEPTION 'Год создания произведения (%) не может быть раньше года рождения автора (%)', 
+                        NEW.creationYear, author_birth;
+    END IF;
+    
+    -- Если год смерти автора указан, проверяем что год создания не позже
+    IF author_death IS NOT NULL AND NEW.creationYear > author_death THEN
+        RAISE EXCEPTION 'Год создания произведения (%) не может быть позже года смерти автора (%)', 
+                        NEW.creationYear, author_death;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Триггер для вставки
+CREATE TRIGGER check_artwork_year_on_insert
+BEFORE INSERT ON Artworks
+FOR EACH ROW
+EXECUTE FUNCTION validate_artwork_creation_year();
+
+-- Триггер для обновления
+CREATE TRIGGER check_artwork_year_on_update
+BEFORE UPDATE ON Artworks
+FOR EACH ROW
+WHEN (NEW.creationYear IS DISTINCT FROM OLD.creationYear OR NEW.authorID IS DISTINCT FROM OLD.authorID)
+EXECUTE FUNCTION validate_artwork_creation_year();
+
+CREATE OR REPLACE FUNCTION validate_existing_artworks_on_author_update()
+RETURNS TRIGGER AS $$
+DECLARE
+    invalid_artwork RECORD;
+BEGIN
+    -- Проверяем все произведения этого автора при изменении дат жизни
+    IF (NEW.birthYear IS DISTINCT FROM OLD.birthYear) OR 
+       (NEW.deathYear IS DISTINCT FROM OLD.deathYear) THEN
+        
+        -- Ищем произведения, которые выходят за новые границы жизни автора
+        FOR invalid_artwork IN 
+            SELECT a.id, a.title, a.creationYear
+            FROM Artworks a
+            WHERE a.authorID = NEW.id
+              AND (a.creationYear < NEW.birthYear OR 
+                  (NEW.deathYear IS NOT NULL AND a.creationYear > NEW.deathYear))
+        LOOP
+            RAISE EXCEPTION 
+                'Произведение "%" (год создания: %) не соответствует новым датам жизни автора (рождение: %, смерть: %)',
+                invalid_artwork.title, invalid_artwork.creationYear, NEW.birthYear, NEW.deathYear;
+        END LOOP;
+    END IF;
+    
+    RETURN NEW;
+END;
+$$ LANGUAGE plpgsql;
+
+-- Триггер для обновления автора
+CREATE TRIGGER check_artworks_on_author_update
+BEFORE UPDATE ON Author
+FOR EACH ROW
+EXECUTE FUNCTION validate_existing_artworks_on_author_update();

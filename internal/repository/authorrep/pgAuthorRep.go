@@ -199,11 +199,17 @@ func (pg *PgAuthorRep) Update(
 	if err != nil {
 		return fmt.Errorf("PgAuthorRep.Update: %w", ErrUpdateAuthor)
 	}
+
 	query := psql.Update("Author").
 		Set("name", updatedAuthor.GetName()).
-		Set("birthYear", updatedAuthor.GetBirthYear()).
-		Set("deathYear", updatedAuthor.GetDeathYear()).
-		Where(sq.Eq{"id": idAuthor})
+		Set("birthYear", updatedAuthor.GetBirthYear())
+		// Устанавливаем deathYear в NULL если значение равно 0
+	if updatedAuthor.GetDeathYear() == 0 {
+		query = query.Set("deathYear", nil)
+	} else {
+		query = query.Set("deathYear", updatedAuthor.GetDeathYear())
+	}
+	query = query.Where(sq.Eq{"id": idAuthor})
 	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
 		return fmt.Errorf("PgAuthorRep.Update: %w", err)

@@ -1,0 +1,363 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+    "time"
+)
+
+templ ArtworksCRUDPage(tokenKey string, artworks []jsonreqresp.ArtworkResponse, authors []jsonreqresp.AuthorResponse, collections []jsonreqresp.CollectionResponse) {
+    @EmployeesNavigate("Управление произведениями") {
+        <div class="crud-container" id="artworksContainer">
+            <!-- Модальное окно для добавления/редактирования -->
+            <div class="modal" id="artworkModal" style="display: none;">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <h3 id="modalTitle">Добавить произведение</h3>
+                    
+                    <form id="artworkForm" onsubmit="return handleFormSubmit(event)">
+                        <input type="hidden" id="artworkId">
+                        
+                        <div class="form-group">
+                            <label>Название произведения</label>
+                            <input 
+                                type="text" 
+                                id="artworkTitle"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Год создания</label>
+                            <input 
+                                type="number" 
+                                id="creationYear"
+                                required
+                                min="1000"
+                                max={ time.Now().String() }
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Техника</label>
+                            <input 
+                                type="text" 
+                                id="technic"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Материал</label>
+                            <input 
+                                type="text" 
+                                id="material"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Размер</label>
+                            <input 
+                                type="text" 
+                                id="size"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Автор</label>
+                            <select id="authorId" required>
+                                <option value="">Выберите автора</option>
+                                for _, author := range authors {
+                                    <option value={ author.ID }>{ author.Name }</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Коллекция</label>
+                            <select id="collectionId" required>
+                                <option value="">Выберите коллекцию</option>
+                                for _, collection := range collections {
+                                    <option value={ collection.ID }>{ collection.Title }</option>
+                                }
+                            </select>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" onclick="closeModal()">Отмена</button>
+                            <button type="submit" id="submitButton">Добавить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+ 
+            <!-- Основной интерфейс -->
+            <div class="crud-header">
+                <h2>Произведения искусства</h2>
+                <button 
+                    class="add-button" 
+                    onclick="resetAndOpenModal()"
+                >+ Добавить произведение</button>
+            </div>
+
+            <!-- Таблица произведений -->
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Год</th>
+                        <th>Техника</th>
+                        <th>Материал</th>
+                        <th>Размер</th>
+                        <th>Автор</th>
+                        <th>Коллекция</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    for _, artwork := range artworks {
+                        <tr>
+                            <td>{ artwork.Title }</td>
+                            <td>{ artwork.CreationYear }</td>
+                            <td>{ artwork.Technic }</td>
+                            <td>{ artwork.Material }</td>
+                            <td>{ artwork.Size }</td>
+                            <td>{ artwork.Author.Name }</td>
+                            <td>{ artwork.Collection.Title }</td>
+                            <td class="actions">
+                                <button 
+                                    class="edit-btn" 
+                                    onclick={ templ.JSFuncCall("prepareEditModal", 
+                                        artwork.ID, 
+                                        artwork.Title, 
+                                        artwork.CreationYear, 
+                                        artwork.Technic, 
+                                        artwork.Material, 
+                                        artwork.Size, 
+                                        artwork.Author.ID, 
+                                        artwork.Collection.ID) }
+                                >✏️</button>
+                                <button 
+                                    class="delete-btn" 
+                                    onclick={ templ.JSFuncCall("confirmDeleteArtwork", artwork.ID) }
+                                >🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Скрипты для работы с API -->
+            <script>
+                const ACCESS_TOKEN_KEY = "@tokenKey";
+                
+                // Текущее состояние
+                let isEditing = false;
+                let currentArtwork = {
+                    id: '',
+                    title: '',
+                    creationYear: 0,
+                    technic: '',
+                    material: '',
+                    size: '',
+                    authorId: '',
+                    collectionId: ''
+                };
+
+                // Элементы DOM
+                const modal = document.getElementById('artworkModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const submitButton = document.getElementById('submitButton');
+                const artworkForm = document.getElementById('artworkForm');
+                const artworkIdInput = document.getElementById('artworkId');
+                const artworkTitleInput = document.getElementById('artworkTitle');
+                const creationYearInput = document.getElementById('creationYear');
+                const technicInput = document.getElementById('technic');
+                const materialInput = document.getElementById('material');
+                const sizeInput = document.getElementById('size');
+                const authorIdInput = document.getElementById('authorId');
+                const collectionIdInput = document.getElementById('collectionId');
+
+                // Обработчики модального окна
+                function openModal() {
+                    modal.style.display = 'flex';
+                }
+
+                function closeModal() {
+                    modal.style.display = 'none';
+                }
+
+                // Клик вне модального окна
+                modal.addEventListener('click', function(e) {
+                    if (e.target === modal) {
+                        closeModal();
+                    }
+                });
+
+                function resetAndOpenModal() {
+                    isEditing = false;
+                    currentArtwork = { 
+                        id: '', 
+                        title: '', 
+                        creationYear: new Date().getFullYear(), 
+                        technic: '', 
+                        material: '', 
+                        size: '', 
+                        authorId: '', 
+                        collectionId: '' 
+                    };
+                    updateFormFields();
+                    modalTitle.textContent = 'Добавить произведение';
+                    submitButton.textContent = 'Добавить';
+                    openModal();
+                }
+
+                function prepareEditModal(id, title, creationYear, technic, material, size, authorId, collectionId) {
+                    isEditing = true;
+                    currentArtwork = {
+                        id: id,
+                        title: title,
+                        creationYear: creationYear,
+                        technic: technic,
+                        material: material,
+                        size: size,
+                        authorId: authorId,
+                        collectionId: collectionId
+                    };
+                    updateFormFields();
+                    modalTitle.textContent = 'Редактировать произведение';
+                    submitButton.textContent = 'Сохранить';
+                    openModal();
+                }
+
+                function updateFormFields() {
+                    artworkIdInput.value = currentArtwork.id;
+                    artworkTitleInput.value = currentArtwork.title;
+                    creationYearInput.value = currentArtwork.creationYear;
+                    technicInput.value = currentArtwork.technic;
+                    materialInput.value = currentArtwork.material;
+                    sizeInput.value = currentArtwork.size;
+                    authorIdInput.value = currentArtwork.authorId;
+                    collectionIdInput.value = currentArtwork.collectionId;
+                }
+
+                async function handleFormSubmit(event) {
+                    event.preventDefault();
+                    
+                    const formData = {
+                        title: artworkTitleInput.value,
+                        creationYear: parseInt(creationYearInput.value),
+                        technic: technicInput.value,
+                        material: materialInput.value,
+                        size: sizeInput.value,
+                        authorID: authorIdInput.value,
+                        collectionID: collectionIdInput.value
+                    };
+
+                    if (isEditing) {
+                        formData.id = artworkIdInput.value;
+                        await updateArtwork(formData);
+                    } else {
+                        await addArtwork(formData);
+                    }
+                }
+
+                async function confirmDeleteArtwork(id) {
+                    if (!confirm('Удалить произведение? Это действие нельзя отменить.')) return;
+                    await deleteArtwork(id);
+                }
+
+                // API функции
+                async function fetchArtworks() {
+                    try {
+                        const response = await fetch('/api/v1/employee/artworks', {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            }
+                        });
+                        return await response.json();
+                    } catch (error) {
+                        console.error('Ошибка загрузки произведений:', error);
+                        return [];
+                    }
+                }
+
+                async function addArtwork(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/artworks', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка добавления:', error);
+                        alert(error.error || 'Ошибка добавления произведения');
+                    }
+                }
+
+                async function updateArtwork(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/artworks', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка обновления:', error);
+                        alert(error.error || 'Ошибка обновления произведения');
+                    }
+                }
+
+                async function deleteArtwork(id) {
+                    try {
+                        const response = await fetch('/api/v1/employee/artworks', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify({ id })
+                        });
+ 
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert(error.error || 'Не удалось удалить произведение');
+                    }
+                }
+
+                // Вспомогательные функции
+                function currentYear() {
+                    return new Date().getFullYear();
+                }
+
+                // Инициализация при загрузке
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Установка максимального года создания
+                    creationYearInput.max = currentYear();
+                });
+            </script>
+        </div>
+    }
+}
