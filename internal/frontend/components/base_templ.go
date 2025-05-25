@@ -33,14 +33,14 @@ func Base(title string) templ.Component {
 			templ_7745c5c3_Var1 = templ.NopComponent
 		}
 		ctx = templ.ClearChildren(ctx)
-		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"ru\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/static/css/style.css\"><link rel=\"stylesheet\" href=\"/static/css/crud.css\"><title>")
+		templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 1, "<!doctype html><html lang=\"ru\"><head><meta charset=\"UTF-8\"><meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\"><link rel=\"stylesheet\" href=\"/static/css/event_details.css\"><link rel=\"stylesheet\" href=\"/static/css/style.css\"><link rel=\"stylesheet\" href=\"/static/css/crud.css\"><link rel=\"stylesheet\" href=\"/static/css/events.css\"><title>")
 		if templ_7745c5c3_Err != nil {
 			return templ_7745c5c3_Err
 		}
 		var templ_7745c5c3_Var2 string
 		templ_7745c5c3_Var2, templ_7745c5c3_Err = templ.JoinStringErrs(title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/base.templ`, Line: 15, Col: 22}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/base.templ`, Line: 17, Col: 22}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var2))
 		if templ_7745c5c3_Err != nil {
@@ -61,7 +61,7 @@ func Base(title string) templ.Component {
 		var templ_7745c5c3_Var3 string
 		templ_7745c5c3_Var3, templ_7745c5c3_Err = templ.JoinStringErrs(time.Now().Year())
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/base.templ`, Line: 23, Col: 37}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/base.templ`, Line: 25, Col: 37}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var3))
 		if templ_7745c5c3_Err != nil {
@@ -163,7 +163,7 @@ func EmployeesNavigate(title string) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<!-- Главный заголовок --> <header class=\"header-container\"><div class=\"header-content\"><h1 class=\"museum-title\">Музей Искусств</h1><p class=\"museum-subtitle\">Коллекция шедевров мирового значения</p></div><!-- Навигация --><nav class=\"nav-container\"><a href=\"/museum/artworks\" class=\"nav-button\"><span class=\"button-text\">Экспонаты</span></a> <a href=\"/museum/events\" class=\"nav-button\"><span class=\"button-text\">Мероприятия</span></a> <a href=\"/museum/employee/artworks\" class=\"nav-button\"><span class=\"button-text\">Экспонаты</span></a> <a href=\"/museum/employee/authors\" class=\"nav-button\"><span class=\"button-text\">Авторы</span></a> <a href=\"/museum/employee/collections\" class=\"nav-button\"><span class=\"button-text\">Коллекции</span></a></nav></header><main class=\"main-content\">")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 7, "<!-- Главный заголовок --> <header class=\"header-container\"><div class=\"header-content\"><h1 class=\"museum-title\">Музей Искусств</h1><p class=\"museum-subtitle\">Коллекция шедевров мирового значения</p></div><!-- Навигация --><nav class=\"nav-container\"><a href=\"/museum/employee/artworks\" class=\"nav-button\"><span class=\"button-text\">Экспонаты</span></a> <a href=\"/museum/employee/authors\" class=\"nav-button\"><span class=\"button-text\">Авторы</span></a> <a href=\"/museum/employee/collections\" class=\"nav-button\"><span class=\"button-text\">Коллекции</span></a> <a href=\"/museum/employee/events\" class=\"nav-button\"><span class=\"button-text\">Мероприятия</span></a> <a href=\"/museum/artworks\" class=\"nav-button\" onclick=\"logout(event)\"><span class=\"button-text\">Выйти</span></a></nav></header><main class=\"main-content\">")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -171,7 +171,7 @@ func EmployeesNavigate(title string) templ.Component {
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</main>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</main><script>\n            function logout(event) {\n                event.preventDefault();\n                \n                // Удаляем токен из localStorage\n                localStorage.removeItem('access_token');\n                \n                // Удаляем токен из куков\n                document.cookie = 'access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';\n                \n                // Перенаправляем на главную страницу\n                window.location.href = '/museum/artworks';\n            }\n        </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

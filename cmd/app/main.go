@@ -9,6 +9,7 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"time"
 
 	_ "git.iu7.bmstu.ru/ped22u691/PPO.git/docs"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api"
@@ -34,6 +35,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/mailing"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/searcher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -42,11 +44,23 @@ import (
 func main() {
 	ctx := context.Background()
 	engine := gin.New()
-	engine.Handle("OPTIONS", "/api/*path", func(c *gin.Context) {
-		c.Header("Access-Control-Allow-Origin", "*")
-		c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-		c.Header("Access-Control-Allow-Headers", "Content-Type")
-		c.Status(200)
+	// engine.Handle("OPTIONS", "/api/*path", func(c *gin.Context) {
+	// 	c.Header("Access-Control-Allow-Origin", "*")
+	// 	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
+	// 	c.Header("Access-Control-Allow-Headers", "Content-Type")
+	// 	c.Status(200)
+	// })
+	// Настройка CORS
+	engine.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"*"}, // Можно указать конкретные домены вместо "*"
+		AllowMethods:     []string{"GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"},
+		AllowHeaders:     []string{"Origin", "Content-Type", "Accept", "Authorization", "X-Requested-With"},
+		ExposeHeaders:    []string{"Content-Length", "Content-Type"},
+		AllowCredentials: true,
+		MaxAge:           12 * time.Hour,
+	}))
+	engine.OPTIONS("/*any", func(c *gin.Context) {
+		c.AbortWithStatus(http.StatusNoContent)
 	})
 	apiGroup := engine.Group("/api/v1")
 
@@ -151,7 +165,7 @@ func main() {
 	collectionServ := collectionserv.NewCollectionServ(collectionRep)
 	authroServ := authorserv.NewAuthorServ(authorRep)
 	artworkServ := artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
-	eventServ := eventserv.NewEventService(eventRep)
+	eventServ := eventserv.NewEventService(eventRep, artworkRep)
 	searcherServ := searcher.NewSearcher(artworkRep, eventRep)
 	mailingServ := mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
 	// --------------------
@@ -186,7 +200,7 @@ func main() {
 	_ = authorRouter
 	artworkRouter := api.NewArtworksRouter(employeeGroup, artworkServ)
 	_ = artworkRouter
-	eventRouter := api.NewEventRouter(employeeGroup, eventServ)
+	eventRouter := api.NewEventRouter(employeeGroup, eventServ, authZ)
 	_ = eventRouter
 	mailingRouter := api.NewMailingRouter(employeeGroup, mailingServ, eventServ)
 	_ = mailingRouter
@@ -204,7 +218,7 @@ func main() {
 	emplCiteGroup := citeGroup.Group("employee")
 	emplCiteGroup.Use(middleware.AuthMiddleware(authEmployeeServ, authZ, true))
 	employeesCiteRouter := frontend.NewEmployeeCiteRouter(
-		emplCiteGroup, authroServ, collectionServ, artworkServ)
+		emplCiteGroup, authroServ, collectionServ, artworkServ, eventServ)
 	_ = employeesCiteRouter
 
 	// // Статические файлы

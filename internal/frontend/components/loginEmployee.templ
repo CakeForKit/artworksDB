@@ -7,11 +7,10 @@ templ LoginPage(tokenKey string, errorMsg string) {
             <div class="login-card">
                 <h2 class="login-title">Вход для сотрудников</h2>
                 
-                if errorMsg != "" {
-                    <div class="login-error">
-                        { errorMsg }
-                    </div>
-                }
+                <!-- Блок для отображения ошибок (изначально скрыт) -->
+                <div id="error-message" class="login-error" style="display: none;">
+                    { errorMsg }
+                </div>
                 
                 <form id="login-form" class="login-form">
                     <div class="form-group">
@@ -53,7 +52,12 @@ templ LoginPage(tokenKey string, errorMsg string) {
                 const btn = this;
                 const login = document.getElementById('login').value;
                 const password = document.getElementById('password').value;
+                const errorElement = document.getElementById('error-message');
                 
+                // Скрываем предыдущие ошибки
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+
                 btn.disabled = true;
                 btn.textContent = 'Авторизация...';
                 
@@ -88,12 +92,45 @@ templ LoginPage(tokenKey string, errorMsg string) {
                     window.location.href = '/museum/employee/authors';
                     // navigateToAuthors();
                 } catch (error) {
-                    window.location.href = '/login?error=' + encodeURIComponent(error.message);
+                    // Показываем ошибку без перезагрузки страницы
+                    errorElement.textContent = 'Неверный логин или пароль';
+                    errorElement.style.display = 'block';
+                    
+                    // Анимация для привлечения внимания
+                    errorElement.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        errorElement.style.animation = '';
+                    }, 500);
                 } finally {
                     btn.disabled = false;
                     btn.textContent = 'Войти';
                 }
             }); 
+            // Обработка нажатия Enter в полях формы
+            document.getElementById('login-form').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('login-btn').click();
+                }
+            });
         </script>
+
+        <style>
+            /* Анимация для ошибки */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            
+            .login-error {
+                background-color: #ffebee;
+                color: #c62828;
+                padding: 12px;
+                border-radius: 4px;
+                margin-bottom: 16px;
+                border: 1px solid #ef9a9a;
+            }
+        </style>
     }
 }

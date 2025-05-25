@@ -997,6 +997,9 @@ const docTemplate = `{
                     "400": {
                         "description": "Bad Request - Validation error"
                     },
+                    "401": {
+                        "description": "unaithorized"
+                    },
                     "404": {
                         "description": "Not Found - Employee not found"
                     }
@@ -1077,6 +1080,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "Artwork to event connection data",
                         "name": "request",
                         "in": "body",
@@ -1124,6 +1134,13 @@ const docTemplate = `{
                         "required": true
                     },
                     {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "description": "Artwork to event connection data",
                         "name": "request",
                         "in": "body",
@@ -1136,6 +1153,59 @@ const docTemplate = `{
                 "responses": {
                     "200": {
                         "description": "Artwork removed from event successfully"
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
+                    }
+                }
+            }
+        },
+        "/employee/events/{id}/artworks": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Retrieves a list of all artworks from this event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Events"
+                ],
+                "summary": "Get all artworks from this event by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.ArtworkResponse"
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request - Validation error"
@@ -1520,6 +1590,85 @@ const docTemplate = `{
                 }
             }
         },
+        "/museum/events/{id}": {
+            "get": {
+                "description": "Retrieves a single event by its ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Searcher"
+                ],
+                "summary": "Get event by ID",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.EventResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid ID format"
+                    },
+                    "404": {
+                        "description": "Event not found"
+                    }
+                }
+            }
+        },
+        "/museum/events/{id}/artworks": {
+            "get": {
+                "description": "Retrieves a list of all artworks from this event",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Searcher"
+                ],
+                "summary": "Get all artworks from this event by employee",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Event ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.ArtworkResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request - Validation error"
+                    },
+                    "404": {
+                        "description": "Not Found - Event or artwork not found"
+                    }
+                }
+            }
+        },
         "/user/self": {
             "get": {
                 "security": [
@@ -1820,7 +1969,6 @@ const docTemplate = `{
                 "cntTickets",
                 "dateBegin",
                 "dateEnd",
-                "employeeID",
                 "title"
             ],
             "properties": {
@@ -1851,10 +1999,6 @@ const docTemplate = `{
                 "dateEnd": {
                     "type": "string",
                     "example": "2023-09-20T18:00:00Z"
-                },
-                "employeeID": {
-                    "type": "string",
-                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
                 "title": {
                     "type": "string",
@@ -1972,14 +2116,10 @@ const docTemplate = `{
         "jsonreqresp.ConArtworkEventRequest": {
             "type": "object",
             "required": [
-                "artworkID",
-                "eventID"
+                "artworkID"
             ],
             "properties": {
                 "artworkID": {
-                    "type": "string"
-                },
-                "eventID": {
                     "type": "string"
                 }
             }
@@ -2315,10 +2455,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Ночная выставка"
-                },
-                "valid": {
-                    "type": "boolean",
-                    "example": true
                 }
             }
         },

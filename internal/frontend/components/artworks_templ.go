@@ -75,6 +75,18 @@ func ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.Art
 	})
 }
 
+// templ EmplArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+//     @EmployeesNavigate("Произведения искусства") {
+//         <div class="artworks-page">
+//             @FilterArtworksForm(filter, sortOps)
+
+//	            <div class="artworks-container" id="artworks-content">
+//	                <h2>Произведения искусства</h2>
+//	                @ArtworksTable(artworks)
+//	            </div>
+//	        </div>
+//	    }
+//	}
 func ArtworksTable(artworks []jsonreqresp.ArtworkResponse) templ.Component {
 	return templruntime.GeneratedTemplate(func(templ_7745c5c3_Input templruntime.GeneratedComponentInput) (templ_7745c5c3_Err error) {
 		templ_7745c5c3_W, ctx := templ_7745c5c3_Input.Writer, templ_7745c5c3_Input.Context
@@ -108,7 +120,7 @@ func ArtworksTable(artworks []jsonreqresp.ArtworkResponse) templ.Component {
 			var templ_7745c5c3_Var4 string
 			templ_7745c5c3_Var4, templ_7745c5c3_Err = templ.JoinStringErrs(artwork.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 33, Col: 61}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 46, Col: 61}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var4))
 			if templ_7745c5c3_Err != nil {
@@ -121,7 +133,7 @@ func ArtworksTable(artworks []jsonreqresp.ArtworkResponse) templ.Component {
 			var templ_7745c5c3_Var5 string
 			templ_7745c5c3_Var5, templ_7745c5c3_Err = templ.JoinStringErrs(artwork.Author.Name)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 34, Col: 68}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 47, Col: 68}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var5))
 			if templ_7745c5c3_Err != nil {
@@ -134,7 +146,7 @@ func ArtworksTable(artworks []jsonreqresp.ArtworkResponse) templ.Component {
 			var templ_7745c5c3_Var6 string
 			templ_7745c5c3_Var6, templ_7745c5c3_Err = templ.JoinStringErrs(artwork.CreationYear)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 35, Col: 67}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 48, Col: 67}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var6))
 			if templ_7745c5c3_Err != nil {
@@ -147,7 +159,7 @@ func ArtworksTable(artworks []jsonreqresp.ArtworkResponse) templ.Component {
 			var templ_7745c5c3_Var7 string
 			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(artwork.Collection.Title)
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 36, Col: 77}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 49, Col: 77}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
 			if templ_7745c5c3_Err != nil {
@@ -194,7 +206,7 @@ func FilterArtworksForm(filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.Ar
 		var templ_7745c5c3_Var9 string
 		templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Title)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 52, Col: 40}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 65, Col: 40}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
 		if templ_7745c5c3_Err != nil {
@@ -207,7 +219,7 @@ func FilterArtworksForm(filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.Ar
 		var templ_7745c5c3_Var10 string
 		templ_7745c5c3_Var10, templ_7745c5c3_Err = templ.JoinStringErrs(filter.AuthorName)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 63, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 76, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var10))
 		if templ_7745c5c3_Err != nil {
@@ -220,7 +232,7 @@ func FilterArtworksForm(filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.Ar
 		var templ_7745c5c3_Var11 string
 		templ_7745c5c3_Var11, templ_7745c5c3_Err = templ.JoinStringErrs(filter.Collection)
 		if templ_7745c5c3_Err != nil {
-			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 74, Col: 45}
+			return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/artworks.templ`, Line: 87, Col: 45}
 		}
 		_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var11))
 		if templ_7745c5c3_Err != nil {

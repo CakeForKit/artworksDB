@@ -186,7 +186,7 @@ func (e *Event) Update(updateReq *jsonreqresp.EventUpdate) error {
 	copyE.address = updateReq.Address
 	copyE.canVisit = updateReq.CanVisit
 	copyE.cntTickets = updateReq.CntTickets
-	copyE.valid = updateReq.Valid
+	// copyE.valid = updateReq.Valid
 
 	if err := copyE.validate(); err != nil {
 		return err

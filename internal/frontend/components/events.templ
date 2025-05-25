@@ -15,6 +15,16 @@ templ EventsPage(events []jsonreqresp.EventResponse, filter jsonreqresp.EventFil
     }
 }
 
+// templ EmplEventsPage(events []jsonreqresp.EventResponse, filter jsonreqresp.EventFilter) {
+//     @EmployeesNavigate("События") {
+//         <div class="events-page">
+//             @FilterEventsForm(filter)
+            
+//             @EventsContent(events)
+//         </div>
+//     }
+// }
+
 templ EventsContent(events []jsonreqresp.EventResponse) {
     <div class="events-container" id="events-content">
         <h2>События</h2>

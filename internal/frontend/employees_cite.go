@@ -9,6 +9,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
 	"github.com/gin-gonic/gin"
 )
 
@@ -16,20 +17,23 @@ type EmployeeCiteRouter struct {
 	authorServ     authorserv.AuthorServ
 	collectionServ collectionserv.CollectionServ
 	artworkServ    artworkserv.ArtworkService
+	eventServ      eventserv.EventService
 }
 
 func NewEmployeeCiteRouter(gr *gin.RouterGroup,
 	authorServ authorserv.AuthorServ, collectionServ collectionserv.CollectionServ,
-	artworkServ artworkserv.ArtworkService,
+	artworkServ artworkserv.ArtworkService, eventServ eventserv.EventService,
 ) EmployeeCiteRouter {
 	r := EmployeeCiteRouter{
 		authorServ:     authorServ,
 		collectionServ: collectionServ,
 		artworkServ:    artworkServ,
+		eventServ:      eventServ,
 	}
 	gr.GET("/authors", r.AuthorsCRUDPage)
 	gr.GET("/collections", r.CollectionsCRUDPage)
 	gr.GET("/artworks", r.ArtworksCRUDPage)
+	gr.GET("/events", r.EventsCRUDPage)
 
 	return r
 }
@@ -37,13 +41,13 @@ func NewEmployeeCiteRouter(gr *gin.RouterGroup,
 func (r *EmployeeCiteRouter) AuthorsCRUDPage(c *gin.Context) {
 	authorsResp := r.allAuthorsResp(c)
 
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.AuthorsPage(token_localstorage, authorsResp))
+	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.AuthorsPage(TokenLocalstorage, authorsResp))
 	c.Render(http.StatusOK, rend)
 }
 
 func (r *EmployeeCiteRouter) CollectionsCRUDPage(c *gin.Context) {
 	colsResp := r.allCollectionsResp(c)
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.CollectionsPage(token_localstorage, colsResp))
+	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.CollectionsPage(TokenLocalstorage, colsResp))
 	c.Render(http.StatusOK, rend)
 }
 
@@ -55,7 +59,7 @@ func (r *EmployeeCiteRouter) ArtworksCRUDPage(c *gin.Context) {
 	rend := gintemplrenderer.New(
 		c.Request.Context(),
 		http.StatusOK,
-		components.ArtworksCRUDPage(token_localstorage, artsResp, authorsResp, colsResp))
+		components.ArtworksCRUDPage(TokenLocalstorage, artsResp, authorsResp, colsResp))
 	c.Render(http.StatusOK, rend)
 }
 
@@ -84,4 +88,24 @@ func (r *EmployeeCiteRouter) allArtworksResp(c *gin.Context) []jsonreqresp.Artwo
 		artsResp = append(artsResp, a.ToArtworkResponse())
 	}
 	return artsResp
+}
+
+func (r *EmployeeCiteRouter) allEventsResp(c *gin.Context) []jsonreqresp.EventResponse {
+	events, _ := r.eventServ.GetAll(c.Request.Context())
+	var eventsResp []jsonreqresp.EventResponse
+	for _, a := range events {
+		eventsResp = append(eventsResp, a.ToEventResponse())
+	}
+	return eventsResp
+}
+
+func (r *EmployeeCiteRouter) EventsCRUDPage(c *gin.Context) {
+	artsResp := r.allArtworksResp(c)
+	eventsResp := r.allEventsResp(c)
+
+	rend := gintemplrenderer.New(
+		c.Request.Context(),
+		http.StatusOK,
+		components.EventsCRUDPage(TokenLocalstorage, eventsResp, artsResp))
+	c.Render(http.StatusOK, rend)
 }

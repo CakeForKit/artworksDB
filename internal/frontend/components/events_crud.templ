@@ -1,0 +1,537 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+    "time"
+)
+
+
+templ EventsCRUDPage(tokenKey string, events []jsonreqresp.EventResponse, artworks []jsonreqresp.ArtworkResponse) {
+    // artworksJSON, _ := json.Marshal(artworks)   // Преобразуем artworks в JSON строку
+    @templ.JSONScript("artworksJSON", artworks)
+    @EmployeesNavigate("Управление мероприятиями") {
+        <div class="crud-container" id="eventsContainer">
+            <!-- Основное модальное окно для мероприятий -->
+            <div class="modal" id="eventModal" style="display: none;">
+                <div class="modal-content" onclick="event.stopPropagation()">
+                    <h3 id="modalTitle">Добавить мероприятие</h3>
+                    
+                    <form id="eventForm" onsubmit="return handleEventFormSubmit(event)">
+                        <input type="hidden" id="eventId">
+                        
+                        <div class="form-group">
+                            <label>Название мероприятия</label>
+                            <input 
+                                type="text" 
+                                id="eventTitle"
+                                required
+                                minlength="2"
+                                maxlength="100"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Дата начала</label>
+                            <input 
+                                type="datetime-local" 
+                                id="dateBegin"
+                                required
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Дата окончания</label>
+                            <input 
+                                type="datetime-local" 
+                                id="dateEnd"
+                                required
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Адрес</label>
+                            <input 
+                                type="text" 
+                                id="address"
+                                required
+                                minlength="2"
+                                maxlength="200"
+                            >
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Доступно для посещения</label>
+                            <select id="canVisit" required>
+                                <option value="true">Да</option>
+                                <option value="false">Нет</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Количество билетов</label>
+                            <input 
+                                type="number" 
+                                id="cntTickets"
+                                required
+                                min="0"
+                            >
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="button" onclick="closeModal()">Отмена</button>
+                            <button type="submit" id="submitButton">Добавить</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            
+            <!-- Модальное окно для управления произведениями на мероприятии -->
+            <div class="modal" id="artworksModal" style="display: none;">
+                <div class="modal-content wide-modal" onclick="event.stopPropagation()">
+                    <h3 id="artworksModalTitle">Произведения на мероприятии</h3>
+                    <input type="hidden" id="currentEventId">
+                    
+                    <div class="artworks-management">
+                        <div class="available-artworks">
+                            <h4>Доступные произведения</h4>
+                            <div class="artworks-list" id="availableArtworks">
+                                <!-- Список будет заполнен через JS -->
+                            </div>
+                        </div>
+                        
+                        <div class="artworks-actions">
+                            <button onclick="addSelectedArtworks()">Добавить →</button>
+                            <button onclick="removeSelectedArtworks()">← Удалить</button>
+                        </div>
+                        
+                        <div class="event-artworks">
+                            <h4>Произведения на мероприятии</h4>
+                            <div class="artworks-list" id="eventArtworks">
+                                <!-- Список будет заполнен через JS -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" onclick="closeArtworksModal()">Закрыть</button>
+                    </div>
+                </div>
+            </div>
+ 
+            <!-- Основной интерфейс -->
+            <div class="crud-header">
+                <h2>Мероприятия</h2>
+                <button 
+                    class="add-button" 
+                    onclick="resetAndOpenModal()"
+                >+ Добавить мероприятие</button>
+            </div>
+
+            <!-- Таблица мероприятий -->
+            <table class="crud-table">
+                <thead>
+                    <tr>
+                        <th>Название</th>
+                        <th>Даты проведения</th>
+                        <th>Адрес</th>
+                        <th>Доступно</th>
+                        <th>Билеты</th>
+                        <th>Произведения</th>
+                        <th>Действия</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    for _, event := range events {
+                        <tr>
+                            <td>{ event.Title }</td>
+                            <td>
+                                { event.DateBegin.Format("02.01.2006 15:04") } -<br>
+                                { event.DateEnd.Format("02.01.2006 15:04") }
+                            </td>
+                            <td>{ event.Address }</td>
+                            <td>
+                                if event.CanVisit {
+                                    <span class="status-active">Да</span>
+                                } else {
+                                    <span class="status-inactive">Нет</span>
+                                }
+                            </td>
+                            <td>{ event.CntTickets }</td>
+                            <td>
+                                <button 
+                                    class="manage-artworks-btn"
+                                    onclick={ templ.JSFuncCall("openArtworksManagement", event.ID, event.Title) }
+                                >Управлять ({ len(event.ArtworkIDs) })</button>
+                            </td>
+                            <td class="actions">
+                                <button 
+                                    class="edit-btn" 
+                                    onclick={ templ.JSFuncCall("prepareEditModal", 
+                                        event.ID, 
+                                        event.Title, 
+                                        event.DateBegin.Format(time.RFC3339), 
+                                        event.DateEnd.Format(time.RFC3339), 
+                                        event.Address, 
+                                        event.CanVisit, 
+                                        event.CntTickets) }
+                                >✏️</button>
+                                <button 
+                                    class="delete-btn" 
+                                    onclick={ templ.JSFuncCall("confirmDeleteEvent", event.ID) }
+                                >🗑️</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+            <!-- Скрипты для работы с API -->
+            <script>
+                const ACCESS_TOKEN_KEY = "@tokenKey";
+                const ALL_ARTWORKS = JSON.parse(document.getElementById('artworksJSON').textContent);
+                
+                // Текущее состояние
+                let isEditing = false;
+                let currentEvent = {
+                    id: '',
+                    title: '',
+                    dateBegin: '',
+                    dateEnd: '',
+                    address: '',
+                    canVisit: true,
+                    cntTickets: 0
+                };
+
+                // Элементы DOM
+                const eventModal = document.getElementById('eventModal');
+                const artworksModal = document.getElementById('artworksModal');
+                const modalTitle = document.getElementById('modalTitle');
+                const artworksModalTitle = document.getElementById('artworksModalTitle');
+                const submitButton = document.getElementById('submitButton');
+                const eventForm = document.getElementById('eventForm');
+                const eventIdInput = document.getElementById('eventId');
+                const eventTitleInput = document.getElementById('eventTitle');
+                const dateBeginInput = document.getElementById('dateBegin');
+                const dateEndInput = document.getElementById('dateEnd');
+                const addressInput = document.getElementById('address');
+                const canVisitInput = document.getElementById('canVisit');
+                const cntTicketsInput = document.getElementById('cntTickets');
+                const currentEventIdInput = document.getElementById('currentEventId');
+                const availableArtworksList = document.getElementById('availableArtworks');
+                const eventArtworksList = document.getElementById('eventArtworks');
+
+                // Обработчики модальных окон
+                function openModal() {
+                    eventModal.style.display = 'flex';
+                }
+
+                function closeModal() {
+                    eventModal.style.display = 'none';
+                    window.location.reload();
+                }
+
+                function openArtworksModal() {
+                    artworksModal.style.display = 'flex';
+                }
+
+                function closeArtworksModal() {
+                    artworksModal.style.display = 'none';
+                    window.location.reload();
+                }
+
+                // Клик вне модального окна
+                eventModal.addEventListener('click', function(e) {
+                    if (e.target === eventModal) {
+                        closeModal();
+                    }
+                });
+
+                artworksModal.addEventListener('click', function(e) {
+                    if (e.target === artworksModal) {
+                        closeArtworksModal();
+                    }
+                });
+
+                function resetAndOpenModal() {
+                    console.log('Токен:', localStorage.getItem(ACCESS_TOKEN_KEY));
+                    isEditing = false;
+                    currentEvent = { 
+                        id: '', 
+                        title: '', 
+                        dateBegin: new Date().toISOString().slice(0, 16),
+                        dateEnd: new Date(Date.now() + 3600000).toISOString().slice(0, 16),
+                        address: '',
+                        canVisit: true,
+                        cntTickets: 0
+                    };
+                    updateFormFields();
+                    modalTitle.textContent = 'Добавить мероприятие';
+                    submitButton.textContent = 'Добавить';
+                    openModal();
+                }
+
+                function prepareEditModal(id, title, dateBegin, dateEnd, address, canVisit, cntTickets) {
+                    isEditing = true;
+                    currentEvent = {
+                        id: id,
+                        title: title,
+                        dateBegin: dateBegin,
+                        dateEnd: dateEnd,
+                        address: address,
+                        canVisit: canVisit,
+                        cntTickets: cntTickets
+                    };
+                    // Преобразуем даты ISO в формат datetime-local
+                    const formatForInput = (isoString) => {
+                        const dt = new Date(isoString);
+                        return dt.toISOString().slice(0, 16);
+                    };
+                    
+                    updateFormFields();
+                    modalTitle.textContent = 'Редактировать мероприятие';
+                    submitButton.textContent = 'Сохранить';
+                    openModal();
+                }
+
+                function updateFormFields() {
+                    eventIdInput.value = currentEvent.id;
+                    eventTitleInput.value = currentEvent.title;
+                    dateBeginInput.value = currentEvent.dateBegin.slice(0, 16);
+                    dateEndInput.value = currentEvent.dateEnd.slice(0, 16);
+                    addressInput.value = currentEvent.address;
+                    canVisitInput.value = currentEvent.canVisit;
+                    cntTicketsInput.value = currentEvent.cntTickets;
+                }
+
+                async function openArtworksManagement(eventId, eventTitle) {
+                    currentEventIdInput.value = eventId;
+                    await loadArtworksForEvent(eventId);
+                    artworksModalTitle.textContent = `Управление произведениями (${eventTitle})`;
+                    openArtworksModal();
+                }
+
+                async function loadArtworksForEvent(eventId) {
+                    try {
+                        // Загружаем произведения на мероприятии
+                        const response = await fetch(`/api/v1/employee/events/${eventId}/artworks`, {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            }
+                        });
+                        
+                        if (!response.ok) throw await response.json();
+                        
+                        const eventArtworks = await response.json();
+                        renderArtworksLists(eventArtworks);
+                    } catch (error) {
+                        console.error('Ошибка загрузки произведений:', error);
+                        alert('Не удалось загрузить произведения');
+                    }
+                }
+
+                function renderArtworksLists(eventArtworks) {
+                    // Очищаем списки
+                    availableArtworksList.innerHTML = '';
+                    eventArtworksList.innerHTML = '';
+                    
+                    // Собираем ID произведений на мероприятии
+                    const eventArtworkIds = new Set(eventArtworks.map(aw => aw.id));
+                    
+                    // Разделяем все произведения на доступные и уже добавленные
+                    ALL_ARTWORKS.forEach(artwork => {
+                        const artworkElement = `
+                            <div class="artwork-item">
+                                <input type="checkbox" id="artwork-${artwork.id}" value="${artwork.id}">
+                                <label for="artwork-${artwork.id}">${artwork.title} (${artwork.author.name})</label>
+                            </div>
+                        `;
+                        
+                        if (eventArtworkIds.has(artwork.id)) {
+                            eventArtworksList.innerHTML += artworkElement;
+                        } else {
+                            availableArtworksList.innerHTML += artworkElement;
+                        }
+                    });
+                }
+
+                async function addSelectedArtworks() {
+                    const eventId = currentEventIdInput.value;
+                    const checkboxes = availableArtworksList.querySelectorAll('input[type="checkbox"]:checked');
+                    
+                    if (checkboxes.length === 0) {
+                        alert('Выберите произведения для добавления');
+                        return;
+                    }
+                    
+                    try {
+                        // Добавляем каждое произведение по одному
+                        for (const checkbox of checkboxes) {
+                            const response = await fetch(`/api/v1/employee/events/${eventId}`, {
+                                method: 'PUT',
+                                headers: { 
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                                },
+                                body: JSON.stringify({
+                                    artworkID: checkbox.value
+                                })
+                            });
+                            
+                            if (!response.ok) throw await response.json();
+                        }
+                        
+                        await loadArtworksForEvent(eventId);
+                    } catch (error) {
+                        console.error('Ошибка добавления произведений:', error);
+                        alert(error.error || 'Не удалось добавить произведения');
+                    }
+                }
+
+                async function removeSelectedArtworks() {
+                    const eventId = currentEventIdInput.value;
+                    const checkboxes = eventArtworksList.querySelectorAll('input[type="checkbox"]:checked');
+                    
+                    if (checkboxes.length === 0) {
+                        alert('Выберите произведения для удаления');
+                        return;
+                    }
+                    
+                    try {
+                        // Удаляем каждое произведение по одному
+                        for (const checkbox of checkboxes) {
+                            const response = await fetch(`/api/v1/employee/events/${eventId}`, {
+                                method: 'DELETE',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                                },
+                                body: JSON.stringify({
+                                    artworkID: checkbox.value // Отправляем один artworkID
+                                })
+                            });
+                            
+                            if (!response.ok) {
+                                const error = await response.json();
+                                throw error;
+                            }
+                        }
+                        
+                        // Обновляем список после всех удалений
+                        await loadArtworksForEvent(eventId);
+                    } catch (error) {
+                        console.error('Ошибка удаления произведений:', error);
+                        alert(error.error || 'Не удалось удалить произведения');
+                    }
+                }
+
+                async function handleEventFormSubmit(event) {
+                    event.preventDefault();
+                    // Преобразуем даты в формат ISO 8601
+                    const dateBegin = new Date(dateBeginInput.value).toISOString();
+                    const dateEnd = new Date(dateEndInput.value).toISOString();
+
+                    const formData = {
+                        title: eventTitleInput.value,
+                        dateBegin: dateBegin,
+                        dateEnd: dateEnd,
+                        address: addressInput.value,
+                        canVisit: canVisitInput.value === 'true',
+                        cntTickets: parseInt(cntTicketsInput.value)
+                    };
+                    console.log('formData:', formData);
+                    if (isEditing) {
+                        formData.id = eventIdInput.value;
+                        await updateEvent(formData);
+                    } else {
+                        await addEvent(formData);
+                    }
+                }
+
+                async function confirmDeleteEvent(id) {
+                    if (!confirm('Удалить мероприятие? Это действие нельзя отменить.')) return;
+                    await deleteEvent(id);
+                }
+
+                // API функции для мероприятий
+                async function fetchEvents() {
+                    try {
+                        const response = await fetch('/api/v1/employee/events', {
+                            headers: {
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            }
+                        });
+                        return await response.json();
+                    } catch (error) {
+                        console.error('Ошибка загрузки мероприятий:', error);
+                        return [];
+                    }
+                }
+
+                async function addEvent(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/events', {
+                            method: 'POST',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка добавления:', error);
+                        alert(error.error || 'Ошибка добавления мероприятия');
+                    }
+                }
+
+                async function updateEvent(data) {
+                    try {
+                        const response = await fetch('/api/v1/employee/events', {
+                            method: 'PUT',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify(data)
+                        });
+
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка обновления:', error);
+                        alert(error.error || 'Ошибка обновления мероприятия');
+                    }
+                }
+
+                async function deleteEvent(id) {
+                    try {
+                        const response = await fetch('/api/v1/employee/events', {
+                            method: 'DELETE',
+                            headers: {
+                                'Content-Type': 'application/json',
+                                'Authorization': `Bearer ${localStorage.getItem(ACCESS_TOKEN_KEY)}`
+                            },
+                            body: JSON.stringify({ id })
+                        });
+ 
+                        if (!response.ok) throw await response.json();
+                        window.location.reload();
+                    } catch (error) {
+                        console.error('Ошибка удаления:', error);
+                        alert(error.error || 'Не удалось удалить мероприятие');
+                    }
+                }
+
+                // Инициализация при загрузке
+                document.addEventListener('DOMContentLoaded', function() {
+                    // Установка минимальной даты окончания при изменении даты начала
+                    dateBeginInput.addEventListener('change', function() {
+                        dateEndInput.min = this.value;
+                    });
+                });
+            </script>
+        </div>
+    }
+}

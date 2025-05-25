@@ -1,5 +1,5 @@
 package frontend
 
 const (
-	token_localstorage = "access_token"
+	TokenLocalstorage = "access_token"
 )

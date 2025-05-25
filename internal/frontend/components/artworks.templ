@@ -17,6 +17,19 @@ templ ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.Ar
     }
 }
 
+// templ EmplArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+//     @EmployeesNavigate("Произведения искусства") {
+//         <div class="artworks-page">
+//             @FilterArtworksForm(filter, sortOps)
+            
+//             <div class="artworks-container" id="artworks-content">
+//                 <h2>Произведения искусства</h2>
+//                 @ArtworksTable(artworks)
+//             </div>
+//         </div>
+//     }
+// }
+
 templ ArtworksTable(artworks []jsonreqresp.ArtworkResponse) {
     <table class="artworks-table">
         <thead>

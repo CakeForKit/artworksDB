@@ -245,6 +245,7 @@ body {
     border-radius: 8px;
     overflow: hidden;
     font-size: 0.9rem;
+    table-layout: fixed;
 }
 
 .events-table th {
@@ -258,7 +259,7 @@ body {
 .events-table td {
     padding: 0.8rem;
     border-bottom: 1px solid var(--light-beige);
-    vertical-align: middle;
+    vertical-align: top;
 }
 
 .event-row:hover {
@@ -323,7 +324,7 @@ body {
 
 @media (max-width: 1200px) {
     .events-table {
-        display: block;
+        /* display: block; */
         overflow-x: auto;
     }
     

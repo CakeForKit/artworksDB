@@ -7,13 +7,15 @@ import (
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"github.com/google/uuid"
 )
 
 type EventService interface {
 	GetAll(ctx context.Context) ([]*models.Event, error)
-	Add(ctx context.Context, eventReq *jsonreqresp.AddEventRequest) error
+	GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error)
+	Add(ctx context.Context, eventReq *jsonreqresp.EventAdd) error
 	Delete(ctx context.Context, eventID uuid.UUID) error
 	Update(ctx context.Context, eventID uuid.UUID, updateFields *jsonreqresp.EventUpdate) error
 	AddArtworksToEvent(ctx context.Context, eventID uuid.UUID, artworkIDs uuid.UUIDs) error
@@ -25,12 +27,14 @@ var (
 )
 
 type eventService struct {
-	eventRep eventrep.EventRep
+	eventRep   eventrep.EventRep
+	artworkRep artworkrep.ArtworkRep
 }
 
-func NewEventService(eventRep eventrep.EventRep) EventService {
+func NewEventService(eventRep eventrep.EventRep, artworkRep artworkrep.ArtworkRep) EventService {
 	return &eventService{
-		eventRep: eventRep,
+		eventRep:   eventRep,
+		artworkRep: artworkRep,
 	}
 }
 
@@ -38,9 +42,24 @@ func (e *eventService) GetAll(ctx context.Context) ([]*models.Event, error) {
 	return e.eventRep.GetAll(ctx, &jsonreqresp.EventFilter{})
 }
 
-func (e *eventService) Add(ctx context.Context, eventReq *jsonreqresp.AddEventRequest) error {
-	employeeID := uuid.MustParse(eventReq.EmployeeID)
-	employeeExist, err := e.eventRep.CheckEmployeeByID(ctx, employeeID)
+func (e *eventService) GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error) {
+	artworkIDs, err := e.eventRep.GetArtworkIDs(ctx, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("eventService.GetArtworkFromEvent: %w", err)
+	}
+	artworks := make([]*models.Artwork, len(artworkIDs))
+	for i, aID := range artworkIDs {
+		art, err := e.artworkRep.GetByID(ctx, aID)
+		if err != nil {
+			return nil, fmt.Errorf("eventService.GetArtworkFromEvent: %w", err)
+		}
+		artworks[i] = art
+	}
+	return artworks, nil
+}
+
+func (e *eventService) Add(ctx context.Context, eventReq *jsonreqresp.EventAdd) error {
+	employeeExist, err := e.eventRep.CheckEmployeeByID(ctx, eventReq.EmployeeID)
 	if err != nil {
 		return fmt.Errorf("eventService.Add check employee: %v", err)
 	} else if !employeeExist {
@@ -58,7 +77,7 @@ func (e *eventService) Add(ctx context.Context, eventReq *jsonreqresp.AddEventRe
 		eventReq.DateEnd,
 		eventReq.Address,
 		eventReq.CanVisit,
-		employeeID,
+		eventReq.EmployeeID,
 		eventReq.CntTickets,
 		true,
 		artworkIDs,

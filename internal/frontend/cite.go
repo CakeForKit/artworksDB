@@ -9,6 +9,8 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend/components"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend/gintemplrenderer"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/searcher"
 	"github.com/gin-gonic/gin"
@@ -30,32 +32,20 @@ func NewCiteRouter(router *gin.RouterGroup, searcherServ searcher.Searcher, auth
 	gr.GET("/artworks", r.GetAllArtworks)
 	gr.GET("/events", r.GetAllEvents)
 	gr.GET("/login", r.ShowEmployeeLoginPage)
-	// gr.GET("/employee/authors", r.AuthorsCRUDPage)
+	gr.GET("/events/:id", r.GetEvent)
 
 	return r
 }
 
 func (r *CiteRouter) ShowEmployeeLoginPage(c *gin.Context) {
 	errorMsg := c.Query("error")
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.LoginPage(token_localstorage, errorMsg))
+	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.LoginPage(TokenLocalstorage, errorMsg))
 	c.Render(http.StatusOK, rend)
 }
 
-// func (r *CiteRouter) AuthorsCRUDPage(c *gin.Context) {
-// 	// Получите список авторов из вашего сервиса
-// 	authors, _ := r.authorServ.GetAll(c.Request.Context())
-
-// 	// Преобразуйте в AuthorResponse
-// 	var authorsResp []jsonreqresp.AuthorResponse
-// 	for _, a := range authors {
-// 		authorsResp = append(authorsResp, a.ToAuthorResponse())
-// 	}
-
-// 	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.AuthorsPage(token_localstorage, authorsResp))
-// 	c.Render(http.StatusOK, rend)
-// }
-
-func (r *CiteRouter) GetAllArtworks(c *gin.Context) {
+func (r *CiteRouter) allArtworksResp(c *gin.Context) (
+	[]jsonreqresp.ArtworkResponse, jsonreqresp.ArtworkFilter, jsonreqresp.ArtworkSortOps,
+) {
 	ctx := c.Request.Context()
 
 	// Читаем параметры из URL
@@ -80,18 +70,34 @@ func (r *CiteRouter) GetAllArtworks(c *gin.Context) {
 	artworks, err := r.searcherServ.GetAllArtworks(ctx, &filterOps, &sortOps)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		return
+		return nil, jsonreqresp.ArtworkFilter{}, jsonreqresp.ArtworkSortOps{}
 	}
 	artworksResp := make([]jsonreqresp.ArtworkResponse, len(artworks))
 	for i, a := range artworks {
 		artworksResp[i] = a.ToArtworkResponse()
 	}
-
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.ArtworksPage(artworksResp, filterOps, sortOps))
-	c.Render(http.StatusOK, rend)
+	return artworksResp, filterOps, sortOps
 }
 
-func (r *CiteRouter) GetAllEvents(c *gin.Context) {
+func (r *CiteRouter) GetAllArtworks(c *gin.Context) {
+	artworksResp, filterOps, sortOps := r.allArtworksResp(c)
+	if artworksResp != nil {
+		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.ArtworksPage(artworksResp, filterOps, sortOps))
+		c.Render(http.StatusOK, rend)
+	}
+}
+
+// func (r *CiteRouter) GetAllArtworksEmpl(c *gin.Context) {
+// 	artworksResp, filterOps, sortOps := r.allArtworksResp(c)
+// 	if artworksResp != nil {
+// 		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EmplArtworksPage(artworksResp, filterOps, sortOps))
+// 		c.Render(http.StatusOK, rend)
+// 	}
+// }
+
+func (r *CiteRouter) allEventsResp(c *gin.Context) (
+	[]jsonreqresp.EventResponse, jsonreqresp.EventFilter,
+) {
 	ctx := c.Request.Context()
 
 	parseDate := func(dateStr string) (time.Time, error) {
@@ -104,7 +110,7 @@ func (r *CiteRouter) GetAllEvents(c *gin.Context) {
 		dateBegin, err := parseDate(dateBeginStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date_begin format. Use DD-MM-YYYY"})
-			return
+			return nil, jsonreqresp.EventFilter{}
 		}
 		filterOps.DateBegin = dateBegin
 	}
@@ -112,7 +118,7 @@ func (r *CiteRouter) GetAllEvents(c *gin.Context) {
 		dateEnd, err := parseDate(dateEndStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid date_begin format. Use DD-MM-YYYY"})
-			return
+			return nil, jsonreqresp.EventFilter{}
 		}
 		filterOps.DateEnd = dateEnd
 	}
@@ -120,7 +126,7 @@ func (r *CiteRouter) GetAllEvents(c *gin.Context) {
 		_, err := strconv.ParseBool(canVisitStr)
 		if err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid can_visit value (use true/false)"})
-			return
+			return nil, jsonreqresp.EventFilter{}
 		}
 		filterOps.CanVisit = canVisitStr
 	}
@@ -132,14 +138,73 @@ func (r *CiteRouter) GetAllEvents(c *gin.Context) {
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
-		return
+		return nil, jsonreqresp.EventFilter{}
 	}
 	eventsResp := make([]jsonreqresp.EventResponse, len(events))
 	for i, a := range events {
 		eventsResp[i] = a.ToEventResponse()
 	}
+	return eventsResp, filterOps
+}
 
-	// fmt.Printf("\nfilterOps: %+v\n\n", filterOps)
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EventsPage(eventsResp, filterOps))
+func (r *CiteRouter) GetAllEvents(c *gin.Context) {
+	eventsResp, filterOps := r.allEventsResp(c)
+	if eventsResp != nil {
+		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EventsPage(eventsResp, filterOps))
+		c.Render(http.StatusOK, rend)
+	}
+}
+
+func (r *CiteRouter) GetEvent(c *gin.Context) {
+	ctx := c.Request.Context()
+	// Получаем eventID из параметра пути
+	eventID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid event ID format"})
+		return
+	}
+
+	event, err := r.searcherServ.GetEvent(ctx, eventID)
+	if err != nil {
+		if errors.Is(err, eventrep.ErrEventNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	artworks, err := r.searcherServ.GetArtworksFromEvent(ctx, eventID)
+	if err != nil {
+		if errors.Is(err, eventrep.ErrEventNotFound) ||
+			errors.Is(err, artworkrep.ErrArtworkNotFound) ||
+			errors.Is(err, eventrep.ErrEventArtowrkNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	artworksResp := make([]jsonreqresp.ArtworkResponse, len(artworks))
+	for i, a := range artworks {
+		artworksResp[i] = a.ToArtworkResponse()
+	}
+
+	rend := gintemplrenderer.New(
+		c.Request.Context(),
+		http.StatusOK,
+		components.EventDetailsPage(
+			TokenLocalstorage, event.GetTitle(),
+			event.ToEventResponse(), artworksResp,
+		),
+	)
 	c.Render(http.StatusOK, rend)
 }
+
+// func (r *CiteRouter) GetAllEventsEmpl(c *gin.Context) {
+// 	eventsResp, filterOps := r.allEventsResp(c)
+// 	if eventsResp != nil {
+// 		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EmplEventsPage(eventsResp, filterOps))
+// 		c.Render(http.StatusOK, rend)
+// 	}
+// }

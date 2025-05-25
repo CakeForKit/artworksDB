@@ -354,6 +354,7 @@ func (pg *PgEventRep) Update(ctx context.Context,
 	if err != nil {
 		return fmt.Errorf("PgEventRep.Update: %w", ErrUpdateEvent)
 	}
+
 	query := psql.Update("Events").
 		Set("title", updatedEvent.GetTitle()).
 		Set("dateBegin", updatedEvent.GetDateBegin()).
@@ -361,7 +362,7 @@ func (pg *PgEventRep) Update(ctx context.Context,
 		Set("adress", updatedEvent.GetAddress()).
 		Set("cntTickets", updatedEvent.GetTicketCount()).
 		Set("creatorID", updatedEvent.GetEmployeeID()).
-		Set("valid", updatedEvent.IsValid()).
+		// Set("valid", updatedEvent.IsValid()).
 		Where(sq.Eq{"id": id})
 	err = pg.execChangeQuery(ctx, query)
 	if err != nil {
@@ -379,7 +380,7 @@ func (pg *PgEventRep) AddArtworksToEvent(ctx context.Context, eventID uuid.UUID,
 			Values(eventID, artworkID)
 		err := pg.execChangeQuery(ctx, query)
 		if err != nil {
-			return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", err)
+			return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", ErrEventArtowrkNotFound)
 		}
 	}
 	return nil
@@ -394,7 +395,7 @@ func (pg *PgEventRep) DeleteArtworkFromEvent(ctx context.Context, eventID uuid.U
 		})
 	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", err)
+		return fmt.Errorf("PgEventRep.DeleteArtworkFromEvent %w", ErrEventArtowrkNotFound)
 	}
 	return nil
 }

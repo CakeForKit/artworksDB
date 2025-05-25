@@ -8,12 +8,14 @@ import (
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
+	"github.com/google/uuid"
 )
 
 type Searcher interface {
 	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
 	GetAllEvents(ctx context.Context, filterOps *jsonreqresp.EventFilter) ([]*models.Event, error)
-	// GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
+	GetEvent(ctx context.Context, eventID uuid.UUID) (*models.Event, error)
+	GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error)
 }
 
 type searcher struct {
@@ -39,6 +41,22 @@ func (s *searcher) GetAllEvents(ctx context.Context, filterOps *jsonreqresp.Even
 	return s.eventRep.GetAll(ctx, filterOps)
 }
 
-// func (s *searcher) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
-// 	return s.eventRep.GetEventsOfArtworkOnDate(ctx, artworkID, dateBeg, dateEnd)
-// }
+func (s *searcher) GetEvent(ctx context.Context, eventID uuid.UUID) (*models.Event, error) {
+	return s.eventRep.GetByID(ctx, eventID)
+}
+
+func (s *searcher) GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error) {
+	artworkIDs, err := s.eventRep.GetArtworkIDs(ctx, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("searcher.GetArtworkFromEvent: %w", err)
+	}
+	artworks := make([]*models.Artwork, len(artworkIDs))
+	for i, aID := range artworkIDs {
+		art, err := s.artworkRep.GetByID(ctx, aID)
+		if err != nil {
+			return nil, fmt.Errorf("searcher.GetArtworkFromEvent: %w", err)
+		}
+		artworks[i] = art
+	}
+	return artworks, nil
+}
