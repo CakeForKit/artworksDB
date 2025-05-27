@@ -22,7 +22,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a list of all employees",
+                "description": "Возвращает список всех сотрудников",
                 "consumes": [
                     "application/json"
                 ],
@@ -30,9 +30,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "admin"
+                    "Администратор"
                 ],
-                "summary": "Get all employees by admin",
+                "summary": "Получить всех сотрудников",
                 "parameters": [
                     {
                         "type": "string",
@@ -53,7 +53,7 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Не авторизован"
                     }
                 }
             }
@@ -65,14 +65,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Change employee valid field",
+                "description": "Изменяет поле valid сотрудника",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "admin"
+                    "Администратор"
                 ],
-                "summary": "Change employee rights",
+                "summary": "Изменить права сотрудника",
                 "parameters": [
                     {
                         "type": "string",
@@ -82,7 +82,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "update data",
+                        "description": "Данные для обновления",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -93,10 +93,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Success update"
+                        "description": "Успешное обновление"
                     },
                     "404": {
-                        "description": "Employee not found"
+                        "description": "Сотрудник не найден"
                     }
                 }
             }
@@ -108,14 +108,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Register a new employee",
+                "description": "Регистрирует нового сотрудника",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "admin"
+                    "Администратор"
                 ],
-                "summary": "Register employee",
+                "summary": "Регистрация сотрудника",
                 "parameters": [
                     {
                         "type": "string",
@@ -125,7 +125,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Register credentials",
+                        "description": "Данные для регистрации",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -136,16 +136,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "The employee registered"
+                        "description": "Сотрудник зарегистрирован"
                     },
                     "400": {
-                        "description": "Wrong input parameters"
+                        "description": "Неверные входные параметры"
                     },
                     "401": {
-                        "description": "Auth error"
+                        "description": "Ошибка авторизации"
                     },
                     "409": {
-                        "description": "Attempt to re-register"
+                        "description": "Попытка повторной регистрации"
                     }
                 }
             }
@@ -157,7 +157,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a list of all users",
+                "description": "Возвращает список всех пользователей",
                 "consumes": [
                     "application/json"
                 ],
@@ -165,9 +165,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "admin"
+                    "Администратор"
                 ],
-                "summary": "Get all users by admin",
+                "summary": "Получить всех пользователей",
                 "parameters": [
                     {
                         "type": "string",
@@ -188,24 +188,24 @@ const docTemplate = `{
                         }
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Не авторизован"
                     }
                 }
             }
         },
         "/auth-admin/login": {
             "post": {
-                "description": "Authenticates a admin and return access token",
+                "description": "Аутентифицирует администратора и возвращает токен доступа",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Аутентификация"
                 ],
-                "summary": "Login admin",
+                "summary": "Вход администратора",
                 "parameters": [
                     {
-                        "description": "Login credentials",
+                        "description": "Учетные данные для входа",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -216,33 +216,33 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "The admin has been authenticated"
+                        "description": "Администратор успешно аутентифицирован"
                     },
                     "400": {
-                        "description": "Wrong input parameters"
+                        "description": "Неверные входные параметры"
                     },
                     "401": {
-                        "description": "Auth error"
+                        "description": "Ошибка аутентификации"
                     },
                     "403": {
-                        "description": "Has no rights"
+                        "description": "Нет прав доступа"
                     }
                 }
             }
         },
         "/auth-employee/login": {
             "post": {
-                "description": "Authenticates a employee and return access token",
+                "description": "Аутентифицирует сотрудника и возвращает токен доступа",
                 "consumes": [
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Аутентификация"
                 ],
-                "summary": "Login employee",
+                "summary": "Вход сотрудника",
                 "parameters": [
                     {
-                        "description": "Login credentials",
+                        "description": "Учетные данные для входа",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -253,87 +253,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "The employee has been authenticated"
+                        "description": "Сотрудник успешно аутентифицирован"
                     },
                     "400": {
-                        "description": "Wrong input parameters"
+                        "description": "Неверные входные параметры"
                     },
                     "401": {
-                        "description": "Auth error"
+                        "description": "Ошибка аутентификации"
                     },
                     "403": {
-                        "description": "Has no rights"
-                    }
-                }
-            }
-        },
-        "/auth-user/login": {
-            "post": {
-                "description": "Authenticates a user and return access token",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Login user",
-                "parameters": [
-                    {
-                        "description": "Login credentials",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.LoginUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The user has been authenticated"
-                    },
-                    "400": {
-                        "description": "Wrong input parameters"
-                    },
-                    "401": {
-                        "description": "Auth error"
-                    }
-                }
-            }
-        },
-        "/auth-user/register": {
-            "post": {
-                "description": "Register a new user",
-                "consumes": [
-                    "application/json"
-                ],
-                "tags": [
-                    "auth"
-                ],
-                "summary": "Register user",
-                "parameters": [
-                    {
-                        "description": "Register credentials",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/auth.RegisterUserRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "The user registered"
-                    },
-                    "400": {
-                        "description": "Wrong input parameters"
-                    },
-                    "401": {
-                        "description": "Auth error"
-                    },
-                    "409": {
-                        "description": "Attempt to re-register"
+                        "description": "Нет прав доступа"
                     }
                 }
             }
@@ -345,7 +274,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a list of all artworks",
+                "description": "Возвращает список всех произведений искусства",
                 "consumes": [
                     "application/json"
                 ],
@@ -353,9 +282,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artworks"
+                    "Экспонаты"
                 ],
-                "summary": "Get all artworks by employee",
+                "summary": "Получить все произведения (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -383,7 +312,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Update artwork with already created author and collection.",
+                "description": "Обновляет произведение с новыми/существующими автором и коллекцией",
                 "consumes": [
                     "application/json"
                 ],
@@ -391,9 +320,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artworks"
+                    "Экспонаты"
                 ],
-                "summary": "Update artwork by employee",
+                "summary": "Обновить произведение (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -403,7 +332,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Updating Artwork with [new] author and [new] collection",
+                        "description": "Обновляемые данные произведения с автором и коллекцией",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -414,13 +343,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Artwork updated"
+                        "description": "Произведение обновлено"
                     },
                     "400": {
-                        "description": "Wrong input parameters"
+                        "description": "Неверные входные параметры"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Не найдено"
                     }
                 }
             },
@@ -430,7 +359,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Add artwork with already created author and collection.",
+                "description": "Добавляет произведение с уже созданными автором и коллекцией",
                 "consumes": [
                     "application/json"
                 ],
@@ -438,9 +367,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artworks"
+                    "Экспонаты"
                 ],
-                "summary": "Add artwork by employee",
+                "summary": "Добавить произведение (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -450,7 +379,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "New Artwork with already created author and collection.",
+                        "description": "Новое произведение с существующими автором и коллекцией",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -461,13 +390,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Artworks added"
+                        "description": "Произведение добавлено"
                     },
                     "400": {
-                        "description": "Wrong input parameters"
+                        "description": "Неверные входные параметры"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Не найдено"
                     }
                 }
             },
@@ -477,7 +406,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Deletes an existing artwork",
+                "description": "Удаляет существующее произведение искусства",
                 "consumes": [
                     "application/json"
                 ],
@@ -485,9 +414,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Artworks"
+                    "Экспонаты"
                 ],
-                "summary": "Delete an artwork",
+                "summary": "Удалить произведение (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -497,7 +426,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Artwork delete data",
+                        "description": "Данные для удаления произведения",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -508,13 +437,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Успешно удалено"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Не найдено"
                     }
                 }
             }
@@ -526,14 +455,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all authors",
+                "description": "Возвращает список всех авторов",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Author"
+                    "Авторы"
                 ],
-                "summary": "Get all authors by employee",
+                "summary": "Получить всех авторов (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -561,7 +490,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Updates an existing author",
+                "description": "Обновляет данные существующего автора",
                 "consumes": [
                     "application/json"
                 ],
@@ -569,9 +498,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Author"
+                    "Авторы"
                 ],
-                "summary": "Update an author by employee",
+                "summary": "Обновить автора (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -581,7 +510,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Author update data",
+                        "description": "Данные для обновления автора",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -592,13 +521,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Успешно обновлено"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Автор не найден"
                     }
                 }
             },
@@ -608,7 +537,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Creates a new author",
+                "description": "Создает нового автора",
                 "consumes": [
                     "application/json"
                 ],
@@ -616,9 +545,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Author"
+                    "Авторы"
                 ],
-                "summary": "Add a new author by employee",
+                "summary": "Добавить нового автора (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -628,7 +557,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Author data",
+                        "description": "Данные автора",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -639,10 +568,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Автор создан"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     }
                 }
             },
@@ -652,7 +581,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Deletes an existing author",
+                "description": "Удаляет существующего автора",
                 "consumes": [
                     "application/json"
                 ],
@@ -660,9 +589,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Author"
+                    "Авторы"
                 ],
-                "summary": "Delete an author by employee",
+                "summary": "Удалить автора (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -672,7 +601,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Author delete data",
+                        "description": "Данные для удаления автора",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -683,16 +612,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Успешно удалено"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Автор не найден"
                     },
                     "409": {
-                        "description": "Conflict - Author has linked artworks"
+                        "description": "Конфликт - у автора есть связанные произведения"
                     }
                 }
             }
@@ -704,14 +633,14 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves all collections",
+                "description": "Возвращает список всех коллекций",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Collection"
+                    "Коллекции"
                 ],
-                "summary": "Get all collections by employee",
+                "summary": "Получить все коллекции (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -739,7 +668,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Updates an existing collection",
+                "description": "Обновляет существующую коллекцию",
                 "consumes": [
                     "application/json"
                 ],
@@ -747,9 +676,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Collection"
+                    "Коллекции"
                 ],
-                "summary": "Update a collection by employee",
+                "summary": "Обновить коллекцию (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -759,7 +688,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Collection update data",
+                        "description": "Данные для обновления коллекции",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -770,13 +699,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Коллекция обновлена"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Коллекция не найдена"
                     }
                 }
             },
@@ -786,7 +715,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Creates a new collection",
+                "description": "Создает новую коллекцию",
                 "consumes": [
                     "application/json"
                 ],
@@ -794,9 +723,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Collection"
+                    "Коллекции"
                 ],
-                "summary": "Add a new collection by employee",
+                "summary": "Добавить новую коллекцию (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -806,7 +735,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Collection data",
+                        "description": "Данные коллекции",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -817,10 +746,10 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Created"
+                        "description": "Коллекция создана"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     }
                 }
             },
@@ -830,7 +759,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Deletes an existing collection",
+                "description": "Удаляет существующую коллекцию",
                 "consumes": [
                     "application/json"
                 ],
@@ -838,9 +767,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Collection"
+                    "Коллекции"
                 ],
-                "summary": "Delete a collection by employee",
+                "summary": "Удалить коллекцию (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -850,7 +779,7 @@ const docTemplate = `{
                         "required": true
                     },
                     {
-                        "description": "Collection delete data",
+                        "description": "Данные для удаления коллекции",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -861,13 +790,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "Коллекция удалена"
                     },
                     "400": {
-                        "description": "Bad Request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Not Found"
+                        "description": "Коллекция не найдена"
                     }
                 }
             }
@@ -879,18 +808,18 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves list of all events",
+                "description": "Возвращает список всех мероприятий",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Get all events",
+                "summary": "Получить все мероприятия (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
@@ -914,7 +843,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Updates existing event",
+                "description": "Обновляет существующее мероприятие",
                 "consumes": [
                     "application/json"
                 ],
@@ -922,19 +851,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Update event",
+                "summary": "Обновить мероприятие (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
                     },
                     {
-                        "description": "Event update data",
+                        "description": "Данные для обновления мероприятия",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -945,13 +874,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Event updated successfully"
+                        "description": "Мероприятие успешно обновлено"
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "404": {
-                        "description": "Not Found - Event not found"
+                        "description": "Не найдено - мероприятие не найдено"
                     }
                 }
             },
@@ -961,7 +890,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Creates a new event",
+                "description": "Создает новое мероприятие",
                 "consumes": [
                     "application/json"
                 ],
@@ -969,19 +898,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Add new event",
+                "summary": "Добавить новое мероприятие (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
                     },
                     {
-                        "description": "Event data",
+                        "description": "Данные мероприятия",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -992,16 +921,16 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "201": {
-                        "description": "Event created successfully"
+                        "description": "Мероприятие успешно создано"
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "401": {
-                        "description": "unaithorized"
+                        "description": "Не авторизован"
                     },
                     "404": {
-                        "description": "Not Found - Employee not found"
+                        "description": "Не найдено - сотрудник не найден"
                     }
                 }
             },
@@ -1011,7 +940,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Deletes existing event",
+                "description": "Удаляет существующее мероприятие",
                 "consumes": [
                     "application/json"
                 ],
@@ -1019,19 +948,19 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Delete event",
+                "summary": "Удалить мероприятие (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
                     },
                     {
-                        "description": "Event delete data",
+                        "description": "Данные для удаления мероприятия",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1042,13 +971,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Event deleted successfully"
+                        "description": "Мероприятие успешно удалено"
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "404": {
-                        "description": "Not Found - Event not found"
+                        "description": "Не найдено - мероприятие не найдено"
                     }
                 }
             }
@@ -1060,7 +989,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Adds an artwork to an existing event",
+                "description": "Добавляет произведение к существующему мероприятию",
                 "consumes": [
                     "application/json"
                 ],
@@ -1068,26 +997,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Add artwork to event",
+                "summary": "Добавить произведение к мероприятию (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Event ID",
+                        "description": "ID мероприятия",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Artwork to event connection data",
+                        "description": "Данные для связи произведения с мероприятием",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1098,13 +1027,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Artwork added to event successfully"
+                        "description": "Произведение успешно добавлено к мероприятию"
                     },
                     "400": {
-                        "description": "Bad Request - Validation error or duplicate artwork"
+                        "description": "Неверный запрос - ошибка валидации или дублирование произведения"
                     },
                     "404": {
-                        "description": "Not Found - Event or artwork not found"
+                        "description": "Не найдено - мероприятие или произведение не найдено"
                     }
                 }
             },
@@ -1114,7 +1043,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Removes an artwork from an existing event",
+                "description": "Удаляет произведение из существующего мероприятия",
                 "consumes": [
                     "application/json"
                 ],
@@ -1122,26 +1051,26 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Delete artwork from event",
+                "summary": "Удалить произведение из мероприятия (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Bearer token",
+                        "description": "Bearer токен",
                         "name": "Authorization",
                         "in": "header",
                         "required": true
                     },
                     {
                         "type": "string",
-                        "description": "Event ID",
+                        "description": "ID мероприятия",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Artwork to event connection data",
+                        "description": "Данные для связи произведения с мероприятием",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1152,13 +1081,13 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Artwork removed from event successfully"
+                        "description": "Произведение успешно удалено из мероприятия"
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "404": {
-                        "description": "Not Found - Event or artwork not found"
+                        "description": "Не найдено - мероприятие или произведение не найдено"
                     }
                 }
             }
@@ -1170,7 +1099,7 @@ const docTemplate = `{
                         "ApiKeyAuth": []
                     }
                 ],
-                "description": "Retrieves a list of all artworks from this event",
+                "description": "Возвращает список всех произведений данного мероприятия",
                 "consumes": [
                     "application/json"
                 ],
@@ -1178,9 +1107,9 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Events"
+                    "Мероприятия"
                 ],
-                "summary": "Get all artworks from this event by employee",
+                "summary": "Получить все произведения мероприятия (сотрудник)",
                 "parameters": [
                     {
                         "type": "string",
@@ -1191,7 +1120,7 @@ const docTemplate = `{
                     },
                     {
                         "type": "string",
-                        "description": "Event ID",
+                        "description": "ID мероприятия",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1208,103 +1137,17 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "404": {
-                        "description": "Not Found - Event or artwork not found"
-                    }
-                }
-            }
-        },
-        "/employee/mailing/": {
-            "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Sends a message to all users using event data",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Mailing"
-                ],
-                "summary": "Send mailing to users",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "bearer {token}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Mailing sent successfully",
-                        "schema": {
-                            "$ref": "#/definitions/jsonreqresp.MailingResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "Error: no events found"
+                        "description": "Не найдено - мероприятие или произведение не найдено"
                     }
                 }
             }
         },
         "/guest/tickets": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Retrieves all ticket purchases for authenticated user",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tickets"
-                ],
-                "summary": "Get user's tickets",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/jsonreqresp.TicketPurchaseResponse"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized"
-                    },
-                    "403": {
-                        "description": "Forbidden"
-                    }
-                }
-            },
             "post": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Buy tickets for a specific event",
+                "description": "Покупка билетов на указанное мероприятие",
                 "consumes": [
                     "application/json"
                 ],
@@ -1312,18 +1155,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Tickets"
+                    "Билеты"
                 ],
-                "summary": "Purchase tickets",
+                "summary": "Покупка билетов",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
-                        "description": "Ticket purchase details",
+                        "description": "Данные для покупки билетов",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1334,37 +1171,32 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Sets purchase data in cookie",
+                        "description": "Данные покупки сохраняются в cookie",
                         "schema": {
                             "$ref": "#/definitions/jsonreqresp.TxTicketPurchaseResponse"
                         }
                     },
                     "400": {
-                        "description": "Invalid request format"
+                        "description": "Неверный формат запроса"
                     },
                     "401": {
-                        "description": "Unauthorized"
+                        "description": "Не авторизован"
                     },
                     "404": {
-                        "description": "Event not found"
+                        "description": "Мероприятие не найдено"
                     },
                     "409": {
-                        "description": "No tickets available"
+                        "description": "Нет доступных билетов"
                     },
                     "410": {
-                        "description": "Transaction expired"
+                        "description": "Транзакция просрочена"
                     }
                 }
             }
         },
         "/guest/tickets/cancel": {
             "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Cancels a pending ticket purchase",
+                "description": "Отменяет ожидающую транзакцию покупки билетов",
                 "consumes": [
                     "application/json"
                 ],
@@ -1372,18 +1204,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Tickets"
+                    "Билеты"
                 ],
-                "summary": "Cancel purchase",
+                "summary": "Отменить покупку",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
-                        "description": "Transaction ID",
+                        "description": "ID транзакции",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1394,28 +1220,23 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Purchase cancelled"
+                        "description": "Покупка отменена"
                     },
                     "400": {
-                        "description": "Invalid request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Transaction not found"
+                        "description": "Транзакция не найдена"
                     },
                     "410": {
-                        "description": "Transaction expired"
+                        "description": "Транзакция просрочена"
                     }
                 }
             }
         },
         "/guest/tickets/confirm": {
             "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Confirms a pending ticket purchase",
+                "description": "Подтверждает ожидающую транзакцию покупки билетов",
                 "consumes": [
                     "application/json"
                 ],
@@ -1423,18 +1244,12 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Tickets"
+                    "Билеты"
                 ],
-                "summary": "Confirm purchase",
+                "summary": "Подтвердить покупку",
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "Bearer token",
-                        "name": "Authorization",
-                        "in": "header"
-                    },
-                    {
-                        "description": "Transaction ID",
+                        "description": "ID транзакции",
                         "name": "request",
                         "in": "body",
                         "required": true,
@@ -1445,23 +1260,23 @@ const docTemplate = `{
                 ],
                 "responses": {
                     "200": {
-                        "description": "Purchase confirmed"
+                        "description": "Покупка подтверждена"
                     },
                     "400": {
-                        "description": "Invalid request"
+                        "description": "Неверный запрос"
                     },
                     "404": {
-                        "description": "Transaction not found"
+                        "description": "Транзакция не найдена"
                     },
                     "410": {
-                        "description": "Transaction expired"
+                        "description": "Транзакция просрочена"
                     }
                 }
             }
         },
         "/museum/artworks": {
             "get": {
-                "description": "Retrieves a list of all artworks",
+                "description": "Возвращает список всех произведений с возможностью фильтрации",
                 "consumes": [
                     "application/json"
                 ],
@@ -1469,35 +1284,35 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Searcher"
+                    "Поиск"
                 ],
-                "summary": "Get artworks",
+                "summary": "Получить произведения",
                 "parameters": [
                     {
                         "maxLength": 255,
                         "type": "string",
-                        "description": "Filter by artwork title (max 255 chars)",
+                        "description": "Фильтр по названию произведения (макс. 255 символов)",
                         "name": "title",
                         "in": "query"
                     },
                     {
                         "maxLength": 100,
                         "type": "string",
-                        "description": "Filter by author name (max 100 chars)",
+                        "description": "Фильтр по имени автора (макс. 100 символов)",
                         "name": "author_name",
                         "in": "query"
                     },
                     {
                         "maxLength": 255,
                         "type": "string",
-                        "description": "Filter by collection title (max 255 chars)",
+                        "description": "Фильтр по названию коллекции (макс. 255 символов)",
                         "name": "collection_title",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "format": "uuid",
-                        "description": "Filter by event UUID",
+                        "description": "Фильтр по ID мероприятия",
                         "name": "event_id",
                         "in": "query"
                     },
@@ -1508,7 +1323,7 @@ const docTemplate = `{
                             "creationYear"
                         ],
                         "type": "string",
-                        "description": "Field to sort by",
+                        "description": "Поле для сортировки",
                         "name": "sort_field",
                         "in": "query",
                         "required": true
@@ -1519,7 +1334,7 @@ const docTemplate = `{
                             "DESC"
                         ],
                         "type": "string",
-                        "description": "Sort direction",
+                        "description": "Направление сортировки",
                         "name": "direction_sort",
                         "in": "query",
                         "required": true
@@ -1540,7 +1355,7 @@ const docTemplate = `{
         },
         "/museum/events": {
             "get": {
-                "description": "Retrieves a list of all events with optional filtering",
+                "description": "Возвращает список всех мероприятий с возможностью фильтрации",
                 "consumes": [
                     "application/json"
                 ],
@@ -1548,51 +1363,57 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Searcher"
+                    "Поиск"
                 ],
-                "summary": "Get events",
+                "summary": "Получить мероприятия",
                 "parameters": [
                     {
                         "maxLength": 255,
                         "type": "string",
-                        "description": "Filter by event title",
+                        "description": "Фильтр по названию мероприятия",
                         "name": "title",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "format": "date",
-                        "description": "Filter by minimum start date (format: YYYY-MM-DD)",
+                        "description": "Фильтр по минимальной дате начала (формат: ГГГГ-ММ-ДД)",
                         "name": "date_begin",
                         "in": "query"
                     },
                     {
                         "type": "string",
                         "format": "date",
-                        "description": "Filter by maximum end date (format: YYYY-MM-DD)",
+                        "description": "Фильтр по максимальной дате окончания (формат: ГГГГ-ММ-ДД)",
                         "name": "date_end",
                         "in": "query"
                     },
                     {
                         "type": "boolean",
-                        "description": "Filter by visit availability",
+                        "description": "Фильтр по доступности для посещения",
                         "name": "can_visit",
                         "in": "query"
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK"
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.EventResponse"
+                            }
+                        }
                     },
                     "400": {
-                        "description": "Invalid date format. Use YYYY-MM-DD"
+                        "description": "Неверный формат даты. Используйте ГГГГ-ММ-ДД"
                     }
                 }
             }
         },
         "/museum/events/{id}": {
             "get": {
-                "description": "Retrieves a single event by its ID",
+                "description": "Возвращает одно мероприятие по его идентификатору",
                 "consumes": [
                     "application/json"
                 ],
@@ -1600,13 +1421,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Searcher"
+                    "Поиск"
                 ],
-                "summary": "Get event by ID",
+                "summary": "Получить мероприятие по ID",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Event ID",
+                        "description": "ID мероприятия",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1620,17 +1441,17 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Invalid ID format"
+                        "description": "Неверный формат ID"
                     },
                     "404": {
-                        "description": "Event not found"
+                        "description": "Мероприятие не найдено"
                     }
                 }
             }
         },
         "/museum/events/{id}/artworks": {
             "get": {
-                "description": "Retrieves a list of all artworks from this event",
+                "description": "Возвращает список всех произведений данного мероприятия",
                 "consumes": [
                     "application/json"
                 ],
@@ -1638,13 +1459,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Searcher"
+                    "Поиск"
                 ],
-                "summary": "Get all artworks from this event by employee",
+                "summary": "Получить все произведения мероприятия",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Event ID",
+                        "description": "ID мероприятия",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -1661,88 +1482,10 @@ const docTemplate = `{
                         }
                     },
                     "400": {
-                        "description": "Bad Request - Validation error"
+                        "description": "Неверный запрос - ошибка валидации"
                     },
                     "404": {
-                        "description": "Not Found - Event or artwork not found"
-                    }
-                }
-            }
-        },
-        "/user/self": {
-            "get": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Returns authenticated user's profile information",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Get user profile",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "bearer {token}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/jsonreqresp.UserSelfResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "ApiKeyAuth": []
-                    }
-                ],
-                "description": "Changes user's subscription to email mailings",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "User"
-                ],
-                "summary": "Update mailing subscription",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "bearer {token}",
-                        "name": "Authorization",
-                        "in": "header",
-                        "required": true
-                    },
-                    {
-                        "description": "Subscription preference",
-                        "name": "request",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK"
-                    },
-                    "400": {
-                        "description": "Invalid request body"
+                        "description": "Не найдено - мероприятие или произведение не найдено"
                     }
                 }
             }
@@ -1788,26 +1531,6 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.LoginUserRequest": {
-            "type": "object",
-            "required": [
-                "login",
-                "password"
-            ],
-            "properties": {
-                "login": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 4,
-                    "example": "ulogin"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 4,
-                    "example": "12345678"
-                }
-            }
-        },
         "auth.RegisterEmployeeRequest": {
             "type": "object",
             "required": [
@@ -1831,44 +1554,6 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 50,
                     "example": "ename"
-                }
-            }
-        },
-        "auth.RegisterUserRequest": {
-            "type": "object",
-            "required": [
-                "email",
-                "login",
-                "password",
-                "subscribe_email",
-                "username"
-            ],
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "maxLength": 100,
-                    "minLength": 6,
-                    "example": "uuser@test.ru"
-                },
-                "login": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "minLength": 4,
-                    "example": "ulogin"
-                },
-                "password": {
-                    "type": "string",
-                    "minLength": 4,
-                    "example": "12345678"
-                },
-                "subscribe_email": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "username": {
-                    "type": "string",
-                    "maxLength": 50,
-                    "example": "uname"
                 }
             }
         },
@@ -2091,15 +1776,6 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.ChangeSubscribeToMailingRequest": {
-            "type": "object",
-            "properties": {
-                "subscribe": {
-                    "type": "boolean",
-                    "example": true
-                }
-            }
-        },
         "jsonreqresp.CollectionResponse": {
             "type": "object",
             "properties": {
@@ -2255,20 +1931,6 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
-                }
-            }
-        },
-        "jsonreqresp.MailingResponse": {
-            "type": "object",
-            "properties": {
-                "msg_text": {
-                    "type": "string"
-                },
-                "user_ids": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -2470,27 +2132,6 @@ const docTemplate = `{
                     "example": true
                 }
             }
-        },
-        "jsonreqresp.UserSelfResponse": {
-            "type": "object",
-            "properties": {
-                "email": {
-                    "type": "string",
-                    "example": "alice.smith@example.com"
-                },
-                "login": {
-                    "type": "string",
-                    "example": "alice@example.com"
-                },
-                "subscribeMail": {
-                    "type": "boolean",
-                    "example": true
-                },
-                "username": {
-                    "type": "string",
-                    "example": "alice_smith"
-                }
-            }
         }
     }
 }`
@@ -2501,7 +2142,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:8080",
 	BasePath:         "/api/v1",
 	Schemes:          []string{},
-	Title:            "Museum",
+	Title:            "Музей",
 	Description:      "API для системы учета произведений искусств",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

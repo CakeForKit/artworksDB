@@ -29,21 +29,6 @@ definitions:
     - login
     - password
     type: object
-  auth.LoginUserRequest:
-    properties:
-      login:
-        example: ulogin
-        maxLength: 50
-        minLength: 4
-        type: string
-      password:
-        example: "12345678"
-        minLength: 4
-        type: string
-    required:
-    - login
-    - password
-    type: object
   auth.RegisterEmployeeRequest:
     properties:
       login:
@@ -62,36 +47,6 @@ definitions:
     required:
     - login
     - password
-    - username
-    type: object
-  auth.RegisterUserRequest:
-    properties:
-      email:
-        example: uuser@test.ru
-        maxLength: 100
-        minLength: 6
-        type: string
-      login:
-        example: ulogin
-        maxLength: 50
-        minLength: 4
-        type: string
-      password:
-        example: "12345678"
-        minLength: 4
-        type: string
-      subscribe_email:
-        example: true
-        type: boolean
-      username:
-        example: uname
-        maxLength: 50
-        type: string
-    required:
-    - email
-    - login
-    - password
-    - subscribe_email
     - username
     type: object
   jsonreqresp.AddArtworkRequest:
@@ -259,12 +214,6 @@ definitions:
     - cntTickets
     - eventID
     type: object
-  jsonreqresp.ChangeSubscribeToMailingRequest:
-    properties:
-      subscribe:
-        example: true
-        type: boolean
-    type: object
   jsonreqresp.CollectionResponse:
     properties:
       id:
@@ -373,15 +322,6 @@ definitions:
       valid:
         example: true
         type: boolean
-    type: object
-  jsonreqresp.MailingResponse:
-    properties:
-      msg_text:
-        type: string
-      user_ids:
-        items:
-          type: string
-        type: array
     type: object
   jsonreqresp.TicketPurchaseResponse:
     properties:
@@ -532,33 +472,18 @@ definitions:
         example: true
         type: boolean
     type: object
-  jsonreqresp.UserSelfResponse:
-    properties:
-      email:
-        example: alice.smith@example.com
-        type: string
-      login:
-        example: alice@example.com
-        type: string
-      subscribeMail:
-        example: true
-        type: boolean
-      username:
-        example: alice_smith
-        type: string
-    type: object
 host: localhost:8080
 info:
   contact: {}
   description: API для системы учета произведений искусств
-  title: Museum
+  title: Музей
   version: "1.0"
 paths:
   /admin/employeelist/:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all employees
+      description: Возвращает список всех сотрудников
       parameters:
       - description: bearer {token}
         in: header
@@ -575,24 +500,24 @@ paths:
               $ref: '#/definitions/jsonreqresp.EmployeeResponse'
             type: array
         "401":
-          description: Unauthorized
+          description: Не авторизован
       security:
       - ApiKeyAuth: []
-      summary: Get all employees by admin
+      summary: Получить всех сотрудников
       tags:
-      - admin
+      - Администратор
   /admin/employeelist/change-rights:
     put:
       consumes:
       - application/json
-      description: Change employee valid field
+      description: Изменяет поле valid сотрудника
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: update data
+      - description: Данные для обновления
         in: body
         name: request
         required: true
@@ -600,26 +525,26 @@ paths:
           $ref: '#/definitions/jsonreqresp.UpdateValidEmployeeRequest'
       responses:
         "200":
-          description: Success update
+          description: Успешное обновление
         "404":
-          description: Employee not found
+          description: Сотрудник не найден
       security:
       - ApiKeyAuth: []
-      summary: Change employee rights
+      summary: Изменить права сотрудника
       tags:
-      - admin
+      - Администратор
   /admin/employeelist/register-employee:
     post:
       consumes:
       - application/json
-      description: Register a new employee
+      description: Регистрирует нового сотрудника
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Register credentials
+      - description: Данные для регистрации
         in: body
         name: request
         required: true
@@ -627,23 +552,23 @@ paths:
           $ref: '#/definitions/auth.RegisterEmployeeRequest'
       responses:
         "200":
-          description: The employee registered
+          description: Сотрудник зарегистрирован
         "400":
-          description: Wrong input parameters
+          description: Неверные входные параметры
         "401":
-          description: Auth error
+          description: Ошибка авторизации
         "409":
-          description: Attempt to re-register
+          description: Попытка повторной регистрации
       security:
       - ApiKeyAuth: []
-      summary: Register employee
+      summary: Регистрация сотрудника
       tags:
-      - admin
+      - Администратор
   /admin/userlist/:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all users
+      description: Возвращает список всех пользователей
       parameters:
       - description: bearer {token}
         in: header
@@ -660,19 +585,19 @@ paths:
               $ref: '#/definitions/jsonreqresp.EmployeeResponse'
             type: array
         "401":
-          description: Unauthorized
+          description: Не авторизован
       security:
       - ApiKeyAuth: []
-      summary: Get all users by admin
+      summary: Получить всех пользователей
       tags:
-      - admin
+      - Администратор
   /auth-admin/login:
     post:
       consumes:
       - application/json
-      description: Authenticates a admin and return access token
+      description: Аутентифицирует администратора и возвращает токен доступа
       parameters:
-      - description: Login credentials
+      - description: Учетные данные для входа
         in: body
         name: request
         required: true
@@ -680,23 +605,23 @@ paths:
           $ref: '#/definitions/auth.LoginAdminRequest'
       responses:
         "200":
-          description: The admin has been authenticated
+          description: Администратор успешно аутентифицирован
         "400":
-          description: Wrong input parameters
+          description: Неверные входные параметры
         "401":
-          description: Auth error
+          description: Ошибка аутентификации
         "403":
-          description: Has no rights
-      summary: Login admin
+          description: Нет прав доступа
+      summary: Вход администратора
       tags:
-      - auth
+      - Аутентификация
   /auth-employee/login:
     post:
       consumes:
       - application/json
-      description: Authenticates a employee and return access token
+      description: Аутентифицирует сотрудника и возвращает токен доступа
       parameters:
-      - description: Login credentials
+      - description: Учетные данные для входа
         in: body
         name: request
         required: true
@@ -704,74 +629,28 @@ paths:
           $ref: '#/definitions/auth.LoginEmployeeRequest'
       responses:
         "200":
-          description: The employee has been authenticated
+          description: Сотрудник успешно аутентифицирован
         "400":
-          description: Wrong input parameters
+          description: Неверные входные параметры
         "401":
-          description: Auth error
+          description: Ошибка аутентификации
         "403":
-          description: Has no rights
-      summary: Login employee
+          description: Нет прав доступа
+      summary: Вход сотрудника
       tags:
-      - auth
-  /auth-user/login:
-    post:
-      consumes:
-      - application/json
-      description: Authenticates a user and return access token
-      parameters:
-      - description: Login credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.LoginUserRequest'
-      responses:
-        "200":
-          description: The user has been authenticated
-        "400":
-          description: Wrong input parameters
-        "401":
-          description: Auth error
-      summary: Login user
-      tags:
-      - auth
-  /auth-user/register:
-    post:
-      consumes:
-      - application/json
-      description: Register a new user
-      parameters:
-      - description: Register credentials
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/auth.RegisterUserRequest'
-      responses:
-        "200":
-          description: The user registered
-        "400":
-          description: Wrong input parameters
-        "401":
-          description: Auth error
-        "409":
-          description: Attempt to re-register
-      summary: Register user
-      tags:
-      - auth
+      - Аутентификация
   /employee/artworks:
     delete:
       consumes:
       - application/json
-      description: Deletes an existing artwork
+      description: Удаляет существующее произведение искусства
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Artwork delete data
+      - description: Данные для удаления произведения
         in: body
         name: request
         required: true
@@ -781,20 +660,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Успешно удалено
         "400":
-          description: Bad Request
+          description: Неверный запрос
         "404":
-          description: Not Found
+          description: Не найдено
       security:
       - ApiKeyAuth: []
-      summary: Delete an artwork
+      summary: Удалить произведение (сотрудник)
       tags:
-      - Artworks
+      - Экспонаты
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all artworks
+      description: Возвращает список всех произведений искусства
       parameters:
       - description: bearer {token}
         in: header
@@ -812,20 +691,20 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get all artworks by employee
+      summary: Получить все произведения (сотрудник)
       tags:
-      - Artworks
+      - Экспонаты
     post:
       consumes:
       - application/json
-      description: Add artwork with already created author and collection.
+      description: Добавляет произведение с уже созданными автором и коллекцией
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: New Artwork with already created author and collection.
+      - description: Новое произведение с существующими автором и коллекцией
         in: body
         name: request
         required: true
@@ -835,27 +714,27 @@ paths:
       - application/json
       responses:
         "201":
-          description: Artworks added
+          description: Произведение добавлено
         "400":
-          description: Wrong input parameters
+          description: Неверные входные параметры
         "404":
-          description: Not Found
+          description: Не найдено
       security:
       - ApiKeyAuth: []
-      summary: Add artwork by employee
+      summary: Добавить произведение (сотрудник)
       tags:
-      - Artworks
+      - Экспонаты
     put:
       consumes:
       - application/json
-      description: Update artwork with already created author and collection.
+      description: Обновляет произведение с новыми/существующими автором и коллекцией
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Updating Artwork with [new] author and [new] collection
+      - description: Обновляемые данные произведения с автором и коллекцией
         in: body
         name: request
         required: true
@@ -865,28 +744,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: Artwork updated
+          description: Произведение обновлено
         "400":
-          description: Wrong input parameters
+          description: Неверные входные параметры
         "404":
-          description: Not Found
+          description: Не найдено
       security:
       - ApiKeyAuth: []
-      summary: Update artwork by employee
+      summary: Обновить произведение (сотрудник)
       tags:
-      - Artworks
+      - Экспонаты
   /employee/authors:
     delete:
       consumes:
       - application/json
-      description: Deletes an existing author
+      description: Удаляет существующего автора
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Author delete data
+      - description: Данные для удаления автора
         in: body
         name: request
         required: true
@@ -896,20 +775,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Успешно удалено
         "400":
-          description: Bad Request
+          description: Неверный запрос
         "404":
-          description: Not Found
+          description: Автор не найден
         "409":
-          description: Conflict - Author has linked artworks
+          description: Конфликт - у автора есть связанные произведения
       security:
       - ApiKeyAuth: []
-      summary: Delete an author by employee
+      summary: Удалить автора (сотрудник)
       tags:
-      - Author
+      - Авторы
     get:
-      description: Retrieves all authors
+      description: Возвращает список всех авторов
       parameters:
       - description: bearer {token}
         in: header
@@ -927,20 +806,20 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get all authors by employee
+      summary: Получить всех авторов (сотрудник)
       tags:
-      - Author
+      - Авторы
     post:
       consumes:
       - application/json
-      description: Creates a new author
+      description: Создает нового автора
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Author data
+      - description: Данные автора
         in: body
         name: request
         required: true
@@ -950,25 +829,25 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Автор создан
         "400":
-          description: Bad Request
+          description: Неверный запрос
       security:
       - ApiKeyAuth: []
-      summary: Add a new author by employee
+      summary: Добавить нового автора (сотрудник)
       tags:
-      - Author
+      - Авторы
     put:
       consumes:
       - application/json
-      description: Updates an existing author
+      description: Обновляет данные существующего автора
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Author update data
+      - description: Данные для обновления автора
         in: body
         name: request
         required: true
@@ -978,28 +857,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Успешно обновлено
         "400":
-          description: Bad Request
+          description: Неверный запрос
         "404":
-          description: Not Found
+          description: Автор не найден
       security:
       - ApiKeyAuth: []
-      summary: Update an author by employee
+      summary: Обновить автора (сотрудник)
       tags:
-      - Author
+      - Авторы
   /employee/collections:
     delete:
       consumes:
       - application/json
-      description: Deletes an existing collection
+      description: Удаляет существующую коллекцию
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Collection delete data
+      - description: Данные для удаления коллекции
         in: body
         name: request
         required: true
@@ -1009,18 +888,18 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Коллекция удалена
         "400":
-          description: Bad Request
+          description: Неверный запрос
         "404":
-          description: Not Found
+          description: Коллекция не найдена
       security:
       - ApiKeyAuth: []
-      summary: Delete a collection by employee
+      summary: Удалить коллекцию (сотрудник)
       tags:
-      - Collection
+      - Коллекции
     get:
-      description: Retrieves all collections
+      description: Возвращает список всех коллекций
       parameters:
       - description: bearer {token}
         in: header
@@ -1038,20 +917,20 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get all collections by employee
+      summary: Получить все коллекции (сотрудник)
       tags:
-      - Collection
+      - Коллекции
     post:
       consumes:
       - application/json
-      description: Creates a new collection
+      description: Создает новую коллекцию
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Collection data
+      - description: Данные коллекции
         in: body
         name: request
         required: true
@@ -1061,25 +940,25 @@ paths:
       - application/json
       responses:
         "201":
-          description: Created
+          description: Коллекция создана
         "400":
-          description: Bad Request
+          description: Неверный запрос
       security:
       - ApiKeyAuth: []
-      summary: Add a new collection by employee
+      summary: Добавить новую коллекцию (сотрудник)
       tags:
-      - Collection
+      - Коллекции
     put:
       consumes:
       - application/json
-      description: Updates an existing collection
+      description: Обновляет существующую коллекцию
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Collection update data
+      - description: Данные для обновления коллекции
         in: body
         name: request
         required: true
@@ -1089,28 +968,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Коллекция обновлена
         "400":
-          description: Bad Request
+          description: Неверный запрос
         "404":
-          description: Not Found
+          description: Коллекция не найдена
       security:
       - ApiKeyAuth: []
-      summary: Update a collection by employee
+      summary: Обновить коллекцию (сотрудник)
       tags:
-      - Collection
+      - Коллекции
   /employee/events:
     delete:
       consumes:
       - application/json
-      description: Deletes existing event
+      description: Удаляет существующее мероприятие
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event delete data
+      - description: Данные для удаления мероприятия
         in: body
         name: request
         required: true
@@ -1120,20 +999,20 @@ paths:
       - application/json
       responses:
         "200":
-          description: Event deleted successfully
+          description: Мероприятие успешно удалено
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "404":
-          description: Not Found - Event not found
+          description: Не найдено - мероприятие не найдено
       security:
       - ApiKeyAuth: []
-      summary: Delete event
+      summary: Удалить мероприятие (сотрудник)
       tags:
-      - Events
+      - Мероприятия
     get:
-      description: Retrieves list of all events
+      description: Возвращает список всех мероприятий
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
@@ -1149,20 +1028,20 @@ paths:
             type: array
       security:
       - ApiKeyAuth: []
-      summary: Get all events
+      summary: Получить все мероприятия (сотрудник)
       tags:
-      - Events
+      - Мероприятия
     post:
       consumes:
       - application/json
-      description: Creates a new event
+      description: Создает новое мероприятие
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event data
+      - description: Данные мероприятия
         in: body
         name: request
         required: true
@@ -1172,29 +1051,29 @@ paths:
       - application/json
       responses:
         "201":
-          description: Event created successfully
+          description: Мероприятие успешно создано
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "401":
-          description: unaithorized
+          description: Не авторизован
         "404":
-          description: Not Found - Employee not found
+          description: Не найдено - сотрудник не найден
       security:
       - ApiKeyAuth: []
-      summary: Add new event
+      summary: Добавить новое мероприятие (сотрудник)
       tags:
-      - Events
+      - Мероприятия
     put:
       consumes:
       - application/json
-      description: Updates existing event
+      description: Обновляет существующее мероприятие
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event update data
+      - description: Данные для обновления мероприятия
         in: body
         name: request
         required: true
@@ -1204,33 +1083,33 @@ paths:
       - application/json
       responses:
         "200":
-          description: Event updated successfully
+          description: Мероприятие успешно обновлено
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "404":
-          description: Not Found - Event not found
+          description: Не найдено - мероприятие не найдено
       security:
       - ApiKeyAuth: []
-      summary: Update event
+      summary: Обновить мероприятие (сотрудник)
       tags:
-      - Events
+      - Мероприятия
   /employee/events/{id}:
     delete:
       consumes:
       - application/json
-      description: Removes an artwork from an existing event
+      description: Удаляет произведение из существующего мероприятия
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event ID
+      - description: ID мероприятия
         in: path
         name: id
         required: true
         type: string
-      - description: Artwork to event connection data
+      - description: Данные для связи произведения с мероприятием
         in: body
         name: request
         required: true
@@ -1240,32 +1119,32 @@ paths:
       - application/json
       responses:
         "200":
-          description: Artwork removed from event successfully
+          description: Произведение успешно удалено из мероприятия
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "404":
-          description: Not Found - Event or artwork not found
+          description: Не найдено - мероприятие или произведение не найдено
       security:
       - ApiKeyAuth: []
-      summary: Delete artwork from event
+      summary: Удалить произведение из мероприятия (сотрудник)
       tags:
-      - Events
+      - Мероприятия
     put:
       consumes:
       - application/json
-      description: Adds an artwork to an existing event
+      description: Добавляет произведение к существующему мероприятию
       parameters:
-      - description: Bearer token
+      - description: Bearer токен
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event ID
+      - description: ID мероприятия
         in: path
         name: id
         required: true
         type: string
-      - description: Artwork to event connection data
+      - description: Данные для связи произведения с мероприятием
         in: body
         name: request
         required: true
@@ -1275,28 +1154,28 @@ paths:
       - application/json
       responses:
         "200":
-          description: Artwork added to event successfully
+          description: Произведение успешно добавлено к мероприятию
         "400":
-          description: Bad Request - Validation error or duplicate artwork
+          description: Неверный запрос - ошибка валидации или дублирование произведения
         "404":
-          description: Not Found - Event or artwork not found
+          description: Не найдено - мероприятие или произведение не найдено
       security:
       - ApiKeyAuth: []
-      summary: Add artwork to event
+      summary: Добавить произведение к мероприятию (сотрудник)
       tags:
-      - Events
+      - Мероприятия
   /employee/events/{id}/artworks:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all artworks from this event
+      description: Возвращает список всех произведений данного мероприятия
       parameters:
       - description: bearer {token}
         in: header
         name: Authorization
         required: true
         type: string
-      - description: Event ID
+      - description: ID мероприятия
         in: path
         name: id
         required: true
@@ -1311,76 +1190,21 @@ paths:
               $ref: '#/definitions/jsonreqresp.ArtworkResponse'
             type: array
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "404":
-          description: Not Found - Event or artwork not found
+          description: Не найдено - мероприятие или произведение не найдено
       security:
       - ApiKeyAuth: []
-      summary: Get all artworks from this event by employee
+      summary: Получить все произведения мероприятия (сотрудник)
       tags:
-      - Events
-  /employee/mailing/:
-    post:
-      consumes:
-      - application/json
-      description: Sends a message to all users using event data
-      parameters:
-      - description: bearer {token}
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: Mailing sent successfully
-          schema:
-            $ref: '#/definitions/jsonreqresp.MailingResponse'
-        "404":
-          description: 'Error: no events found'
-      security:
-      - ApiKeyAuth: []
-      summary: Send mailing to users
-      tags:
-      - Mailing
+      - Мероприятия
   /guest/tickets:
-    get:
-      description: Retrieves all ticket purchases for authenticated user
-      parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/jsonreqresp.TicketPurchaseResponse'
-            type: array
-        "401":
-          description: Unauthorized
-        "403":
-          description: Forbidden
-      security:
-      - ApiKeyAuth: []
-      summary: Get user's tickets
-      tags:
-      - Tickets
     post:
       consumes:
       - application/json
-      description: Buy tickets for a specific event
+      description: Покупка билетов на указанное мероприятие
       parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        type: string
-      - description: Ticket purchase details
+      - description: Данные для покупки билетов
         in: body
         name: request
         required: true
@@ -1390,35 +1214,29 @@ paths:
       - application/json
       responses:
         "200":
-          description: Sets purchase data in cookie
+          description: Данные покупки сохраняются в cookie
           schema:
             $ref: '#/definitions/jsonreqresp.TxTicketPurchaseResponse'
         "400":
-          description: Invalid request format
+          description: Неверный формат запроса
         "401":
-          description: Unauthorized
+          description: Не авторизован
         "404":
-          description: Event not found
+          description: Мероприятие не найдено
         "409":
-          description: No tickets available
+          description: Нет доступных билетов
         "410":
-          description: Transaction expired
-      security:
-      - ApiKeyAuth: []
-      summary: Purchase tickets
+          description: Транзакция просрочена
+      summary: Покупка билетов
       tags:
-      - Tickets
+      - Билеты
   /guest/tickets/cancel:
     put:
       consumes:
       - application/json
-      description: Cancels a pending ticket purchase
+      description: Отменяет ожидающую транзакцию покупки билетов
       parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        type: string
-      - description: Transaction ID
+      - description: ID транзакции
         in: body
         name: request
         required: true
@@ -1428,29 +1246,23 @@ paths:
       - application/json
       responses:
         "200":
-          description: Purchase cancelled
+          description: Покупка отменена
         "400":
-          description: Invalid request
+          description: Неверный запрос
         "404":
-          description: Transaction not found
+          description: Транзакция не найдена
         "410":
-          description: Transaction expired
-      security:
-      - ApiKeyAuth: []
-      summary: Cancel purchase
+          description: Транзакция просрочена
+      summary: Отменить покупку
       tags:
-      - Tickets
+      - Билеты
   /guest/tickets/confirm:
     put:
       consumes:
       - application/json
-      description: Confirms a pending ticket purchase
+      description: Подтверждает ожидающую транзакцию покупки билетов
       parameters:
-      - description: Bearer token
-        in: header
-        name: Authorization
-        type: string
-      - description: Transaction ID
+      - description: ID транзакции
         in: body
         name: request
         required: true
@@ -1460,45 +1272,43 @@ paths:
       - application/json
       responses:
         "200":
-          description: Purchase confirmed
+          description: Покупка подтверждена
         "400":
-          description: Invalid request
+          description: Неверный запрос
         "404":
-          description: Transaction not found
+          description: Транзакция не найдена
         "410":
-          description: Transaction expired
-      security:
-      - ApiKeyAuth: []
-      summary: Confirm purchase
+          description: Транзакция просрочена
+      summary: Подтвердить покупку
       tags:
-      - Tickets
+      - Билеты
   /museum/artworks:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all artworks
+      description: Возвращает список всех произведений с возможностью фильтрации
       parameters:
-      - description: Filter by artwork title (max 255 chars)
+      - description: Фильтр по названию произведения (макс. 255 символов)
         in: query
         maxLength: 255
         name: title
         type: string
-      - description: Filter by author name (max 100 chars)
+      - description: Фильтр по имени автора (макс. 100 символов)
         in: query
         maxLength: 100
         name: author_name
         type: string
-      - description: Filter by collection title (max 255 chars)
+      - description: Фильтр по названию коллекции (макс. 255 символов)
         in: query
         maxLength: 255
         name: collection_title
         type: string
-      - description: Filter by event UUID
+      - description: Фильтр по ID мероприятия
         format: uuid
         in: query
         name: event_id
         type: string
-      - description: Field to sort by
+      - description: Поле для сортировки
         enum:
         - title
         - author_name
@@ -1507,7 +1317,7 @@ paths:
         name: sort_field
         required: true
         type: string
-      - description: Sort direction
+      - description: Направление сортировки
         enum:
         - ASC
         - DESC
@@ -1524,31 +1334,31 @@ paths:
             items:
               $ref: '#/definitions/jsonreqresp.ArtworkResponse'
             type: array
-      summary: Get artworks
+      summary: Получить произведения
       tags:
-      - Searcher
+      - Поиск
   /museum/events:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all events with optional filtering
+      description: Возвращает список всех мероприятий с возможностью фильтрации
       parameters:
-      - description: Filter by event title
+      - description: Фильтр по названию мероприятия
         in: query
         maxLength: 255
         name: title
         type: string
-      - description: 'Filter by minimum start date (format: YYYY-MM-DD)'
+      - description: 'Фильтр по минимальной дате начала (формат: ГГГГ-ММ-ДД)'
         format: date
         in: query
         name: date_begin
         type: string
-      - description: 'Filter by maximum end date (format: YYYY-MM-DD)'
+      - description: 'Фильтр по максимальной дате окончания (формат: ГГГГ-ММ-ДД)'
         format: date
         in: query
         name: date_end
         type: string
-      - description: Filter by visit availability
+      - description: Фильтр по доступности для посещения
         in: query
         name: can_visit
         type: boolean
@@ -1557,18 +1367,22 @@ paths:
       responses:
         "200":
           description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.EventResponse'
+            type: array
         "400":
-          description: Invalid date format. Use YYYY-MM-DD
-      summary: Get events
+          description: Неверный формат даты. Используйте ГГГГ-ММ-ДД
+      summary: Получить мероприятия
       tags:
-      - Searcher
+      - Поиск
   /museum/events/{id}:
     get:
       consumes:
       - application/json
-      description: Retrieves a single event by its ID
+      description: Возвращает одно мероприятие по его идентификатору
       parameters:
-      - description: Event ID
+      - description: ID мероприятия
         in: path
         name: id
         required: true
@@ -1581,19 +1395,19 @@ paths:
           schema:
             $ref: '#/definitions/jsonreqresp.EventResponse'
         "400":
-          description: Invalid ID format
+          description: Неверный формат ID
         "404":
-          description: Event not found
-      summary: Get event by ID
+          description: Мероприятие не найдено
+      summary: Получить мероприятие по ID
       tags:
-      - Searcher
+      - Поиск
   /museum/events/{id}/artworks:
     get:
       consumes:
       - application/json
-      description: Retrieves a list of all artworks from this event
+      description: Возвращает список всех произведений данного мероприятия
       parameters:
-      - description: Event ID
+      - description: ID мероприятия
         in: path
         name: id
         required: true
@@ -1608,59 +1422,10 @@ paths:
               $ref: '#/definitions/jsonreqresp.ArtworkResponse'
             type: array
         "400":
-          description: Bad Request - Validation error
+          description: Неверный запрос - ошибка валидации
         "404":
-          description: Not Found - Event or artwork not found
-      summary: Get all artworks from this event by employee
+          description: Не найдено - мероприятие или произведение не найдено
+      summary: Получить все произведения мероприятия
       tags:
-      - Searcher
-  /user/self:
-    get:
-      description: Returns authenticated user's profile information
-      parameters:
-      - description: bearer {token}
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            $ref: '#/definitions/jsonreqresp.UserSelfResponse'
-      security:
-      - ApiKeyAuth: []
-      summary: Get user profile
-      tags:
-      - User
-    put:
-      consumes:
-      - application/json
-      description: Changes user's subscription to email mailings
-      parameters:
-      - description: bearer {token}
-        in: header
-        name: Authorization
-        required: true
-        type: string
-      - description: Subscription preference
-        in: body
-        name: request
-        required: true
-        schema:
-          $ref: '#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-        "400":
-          description: Invalid request body
-      security:
-      - ApiKeyAuth: []
-      summary: Update mailing subscription
-      tags:
-      - User
+      - Поиск
 swagger: "2.0"

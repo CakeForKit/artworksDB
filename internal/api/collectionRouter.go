@@ -26,9 +26,9 @@ func (r *CollectionRouter) Init(router *gin.RouterGroup, collectionServ collecti
 }
 
 // GetAllCollections godoc
-// @Summary Get all collections by employee
-// @Description Retrieves all collections
-// @Tags Collection
+// @Summary Получить все коллекции (сотрудник)
+// @Description Возвращает список всех коллекций
+// @Tags Коллекции
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
@@ -49,16 +49,16 @@ func (r *CollectionRouter) GetAllCollections(c *gin.Context) {
 }
 
 // AddCollection godoc
-// @Summary Add a new collection by employee
-// @Description Creates a new collection
-// @Tags Collection
+// @Summary Добавить новую коллекцию (сотрудник)
+// @Description Создает новую коллекцию
+// @Tags Коллекции
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.AddCollectionRequest true "Collection data"
-// @Success 201 "Created"
-// @Failure 400 "Bad Request"
+// @Param request body jsonreqresp.AddCollectionRequest true "Данные коллекции"
+// @Success 201 "Коллекция создана"
+// @Failure 400 "Неверный запрос"
 // @Router /employee/collections [post]
 func (r *CollectionRouter) AddCollection(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -84,17 +84,17 @@ func (r *CollectionRouter) AddCollection(c *gin.Context) {
 }
 
 // UpdateCollection godoc
-// @Summary Update a collection by employee
-// @Description Updates an existing collection
-// @Tags Collection
+// @Summary Обновить коллекцию (сотрудник)
+// @Description Обновляет существующую коллекцию
+// @Tags Коллекции
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.UpdateCollectionRequest true "Collection update data"
-// @Success 200  "OK"
-// @Failure 400 "Bad Request"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.UpdateCollectionRequest true "Данные для обновления коллекции"
+// @Success 200 "Коллекция обновлена"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Коллекция не найдена"
 // @Router /employee/collections [put]
 func (r *CollectionRouter) UpdateCollection(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -118,17 +118,17 @@ func (r *CollectionRouter) UpdateCollection(c *gin.Context) {
 }
 
 // DeleteCollection godoc
-// @Summary Delete a collection by employee
-// @Description Deletes an existing collection
-// @Tags Collection
+// @Summary Удалить коллекцию (сотрудник)
+// @Description Удаляет существующую коллекцию
+// @Tags Коллекции
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.DeleteCollectionRequest true "Collection delete data"
-// @Success 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.DeleteCollectionRequest true "Данные для удаления коллекции"
+// @Success 200 "Коллекция удалена"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Коллекция не найдена"
 // @Router /employee/collections [delete]
 func (r *CollectionRouter) DeleteCollection(c *gin.Context) {
 	ctx := c.Request.Context()

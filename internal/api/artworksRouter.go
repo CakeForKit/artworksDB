@@ -31,9 +31,9 @@ func NewArtworksRouter(router *gin.RouterGroup, artworksServ artworkserv.Artwork
 }
 
 // getAllArtworks godoc
-// @Summary Get all artworks by employee
-// @Description Retrieves a list of all artworks
-// @Tags Artworks
+// @Summary Получить все произведения (сотрудник)
+// @Description Возвращает список всех произведений искусства
+// @Tags Экспонаты
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
@@ -55,17 +55,17 @@ func (r *ArtworksRouter) GetAllArtworks(c *gin.Context) {
 }
 
 // AddArtwork godoc
-// @Summary Add artwork by employee
-// @Description Add artwork with already created author and collection.
-// @Tags Artworks
+// @Summary Добавить произведение (сотрудник)
+// @Description Добавляет произведение с уже созданными автором и коллекцией
+// @Tags Экспонаты
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.AddArtworkRequest true "New Artwork with already created author and collection."
-// @Success 201 "Artworks added"
-// @Failure 400 "Wrong input parameters"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.AddArtworkRequest true "Новое произведение с существующими автором и коллекцией"
+// @Success 201 "Произведение добавлено"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 404 "Не найдено"
 // @Router /employee/artworks [post]
 func (r *ArtworksRouter) AddArtwork(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -91,17 +91,17 @@ func (r *ArtworksRouter) AddArtwork(c *gin.Context) {
 }
 
 // Update Artwork godoc
-// @Summary Update artwork by employee
-// @Description Update artwork with already created author and collection.
-// @Tags Artworks
+// @Summary Обновить произведение (сотрудник)
+// @Description Обновляет произведение с новыми/существующими автором и коллекцией
+// @Tags Экспонаты
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.UpdateArtworkRequest true "Updating Artwork with [new] author and [new] collection"
-// @Success 200 "Artwork updated"
-// @Failure 400 "Wrong input parameters"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.UpdateArtworkRequest true "Обновляемые данные произведения с автором и коллекцией"
+// @Success 200 "Произведение обновлено"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 404 "Не найдено"
 // @Router /employee/artworks [put]
 func (r *ArtworksRouter) UpdateArtwork(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -141,17 +141,17 @@ func (r *ArtworksRouter) UpdateArtwork(c *gin.Context) {
 }
 
 // DeleteArtwork godoc
-// @Summary Delete an artwork
-// @Description Deletes an existing artwork
-// @Tags Artworks
+// @Summary Удалить произведение (сотрудник)
+// @Description Удаляет существующее произведение искусства
+// @Tags Экспонаты
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.DeleteArtworkRequest true "Artwork delete data"
-// @Success 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.DeleteArtworkRequest true "Данные для удаления произведения"
+// @Success 200 "Успешно удалено"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Не найдено"
 // @Router /employee/artworks [delete]
 func (r *ArtworksRouter) DeleteArtwork(c *gin.Context) {
 	ctx := c.Request.Context()

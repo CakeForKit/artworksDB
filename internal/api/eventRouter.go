@@ -36,12 +36,12 @@ func NewEventRouter(router *gin.RouterGroup, eventServ eventserv.EventService, a
 }
 
 // GetAllEvents godoc
-// @Summary Get all events
-// @Description Retrieves list of all events
-// @Tags Events
+// @Summary Получить все мероприятия (сотрудник)
+// @Description Возвращает список всех мероприятий
+// @Tags Мероприятия
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
+// @Param Authorization header string true "Bearer токен"
 // @Success 200 {array} jsonreqresp.EventResponse
 // @Router /employee/events [get]
 func (r *EventRouter) GetAllEvents(c *gin.Context) {
@@ -60,18 +60,18 @@ func (r *EventRouter) GetAllEvents(c *gin.Context) {
 }
 
 // AddEvent godoc
-// @Summary Add new event
-// @Description Creates a new event
-// @Tags Events
+// @Summary Добавить новое мероприятие (сотрудник)
+// @Description Создает новое мероприятие
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
-// @Param request body jsonreqresp.AddEventRequest true "Event data"
-// @Success 201 "Event created successfully"
-// @Failure 400  "Bad Request - Validation error"
-// @Failure 401  "unaithorized"
-// @Failure 404 "Not Found - Employee not found"
+// @Param Authorization header string true "Bearer токен"
+// @Param request body jsonreqresp.AddEventRequest true "Данные мероприятия"
+// @Success 201 "Мероприятие успешно создано"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 401 "Не авторизован"
+// @Failure 404 "Не найдено - сотрудник не найден"
 // @Router /employee/events [post]
 func (r *EventRouter) AddEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -110,17 +110,17 @@ func (r *EventRouter) AddEvent(c *gin.Context) {
 }
 
 // DeleteEvent godoc
-// @Summary Delete event
-// @Description Deletes existing event
-// @Tags Events
+// @Summary Удалить мероприятие (сотрудник)
+// @Description Удаляет существующее мероприятие
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
-// @Param request body jsonreqresp.DeleteEventRequest true "Event delete data"
-// @Success 200 "Event deleted successfully"
-// @Failure 400 "Bad Request - Validation error"
-// @Failure 404 "Not Found - Event not found"
+// @Param Authorization header string true "Bearer токен"
+// @Param request body jsonreqresp.DeleteEventRequest true "Данные для удаления мероприятия"
+// @Success 200 "Мероприятие успешно удалено"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие не найдено"
 // @Router /employee/events [delete]
 func (r *EventRouter) DeleteEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -142,18 +142,18 @@ func (r *EventRouter) DeleteEvent(c *gin.Context) {
 }
 
 // UpdateEvent godoc
-// @Summary Update event
-// @Description Updates existing event
-// @Tags Events
+// @Summary Обновить мероприятие (сотрудник)
+// @Description Обновляет существующее мероприятие
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
-// @Param request body jsonreqresp.UpdateEventRequest true "Event update data"
-// @Success 200 "Event updated successfully"
-// @Failure 400 "Bad Request - Validation error"
-// @Failure 404  "Not Found - Event not found"
-// @Router  /employee/events [put]
+// @Param Authorization header string true "Bearer токен"
+// @Param request body jsonreqresp.UpdateEventRequest true "Данные для обновления мероприятия"
+// @Success 200 "Мероприятие успешно обновлено"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие не найдено"
+// @Router /employee/events [put]
 func (r *EventRouter) UpdateEvent(c *gin.Context) {
 	ctx := c.Request.Context()
 	var req jsonreqresp.UpdateEventRequest
@@ -185,18 +185,18 @@ func (r *EventRouter) UpdateEvent(c *gin.Context) {
 }
 
 // AddArtworkToEvent godoc
-// @Summary Add artwork to event
-// @Description Adds an artwork to an existing event
-// @Tags Events
+// @Summary Добавить произведение к мероприятию (сотрудник)
+// @Description Добавляет произведение к существующему мероприятию
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
-// @Param id path string true "Event ID"
-// @Param request body jsonreqresp.ConArtworkEventRequest true "Artwork to event connection data"
-// @Success 200 "Artwork added to event successfully"
-// @Failure 400 "Bad Request - Validation error or duplicate artwork"
-// @Failure 404 "Not Found - Event or artwork not found"
+// @Param Authorization header string true "Bearer токен"
+// @Param id path string true "ID мероприятия"
+// @Param request body jsonreqresp.ConArtworkEventRequest true "Данные для связи произведения с мероприятием"
+// @Success 200 "Произведение успешно добавлено к мероприятию"
+// @Failure 400 "Неверный запрос - ошибка валидации или дублирование произведения"
+// @Failure 404 "Не найдено - мероприятие или произведение не найдено"
 // @Router /employee/events/{id} [PUT]
 func (r *EventRouter) AddArtworkToEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -229,18 +229,18 @@ func (r *EventRouter) AddArtworkToEvent(c *gin.Context) {
 }
 
 // DeleteArtworkFromEvent godoc
-// @Summary Delete artwork from event
-// @Description Removes an artwork from an existing event
-// @Tags Events
+// @Summary Удалить произведение из мероприятия (сотрудник)
+// @Description Удаляет произведение из существующего мероприятия
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
-// @Param id path string true "Event ID"
-// @Param request body jsonreqresp.ConArtworkEventRequest true "Artwork to event connection data"
-// @Success 200 "Artwork removed from event successfully"
-// @Failure 400 "Bad Request - Validation error"
-// @Failure 404 "Not Found - Event or artwork not found"
+// @Param Authorization header string true "Bearer токен"
+// @Param id path string true "ID мероприятия"
+// @Param request body jsonreqresp.ConArtworkEventRequest true "Данные для связи произведения с мероприятием"
+// @Success 200 "Произведение успешно удалено из мероприятия"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие или произведение не найдено"
 // @Router /employee/events/{id} [delete]
 func (r *EventRouter) DeleteArtworkFromEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -274,17 +274,17 @@ func (r *EventRouter) DeleteArtworkFromEvent(c *gin.Context) {
 }
 
 // GetArtworkFromEvent godoc
-// @Summary Get all artworks from this event by employee
-// @Description Retrieves a list of all artworks from this event
-// @Tags Events
+// @Summary Получить все произведения мероприятия (сотрудник)
+// @Description Возвращает список всех произведений данного мероприятия
+// @Tags Мероприятия
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param id path string true "Event ID"
+// @Param id path string true "ID мероприятия"
 // @Success 200 {array} jsonreqresp.ArtworkResponse
-// @Failure 400 "Bad Request - Validation error"
-// @Failure 404 "Not Found - Event or artwork not found"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие или произведение не найдено"
 // @Router /employee/events/{id}/artworks [get]
 func (r *EventRouter) GetArtworkFromEvent(c *gin.Context) {
 	ctx := c.Request.Context()

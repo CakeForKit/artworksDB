@@ -31,15 +31,15 @@ func NewSearcherRouter(router *gin.RouterGroup, serv searcher.Searcher) Searcher
 }
 
 // GetEvent godoc
-// @Summary Get event by ID
-// @Description Retrieves a single event by its ID
-// @Tags Searcher
+// @Summary Получить мероприятие по ID
+// @Description Возвращает одно мероприятие по его идентификатору
+// @Tags Поиск
 // @Accept json
 // @Produce json
-// @Param id path string true "Event ID"
+// @Param id path string true "ID мероприятия"
 // @Success 200 {object} jsonreqresp.EventResponse
-// @Failure 400 "Invalid ID format"
-// @Failure 404 "Event not found"
+// @Failure 400 "Неверный формат ID"
+// @Failure 404 "Мероприятие не найдено"
 // @Router /museum/events/{id} [GET]
 func (r *SearcherRouter) GetEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -63,15 +63,15 @@ func (r *SearcherRouter) GetEvent(c *gin.Context) {
 }
 
 // GetArtworkFromEvent godoc
-// @Summary Get all artworks from this event by employee
-// @Description Retrieves a list of all artworks from this event
-// @Tags Searcher
+// @Summary Получить все произведения мероприятия
+// @Description Возвращает список всех произведений данного мероприятия
+// @Tags Поиск
 // @Accept json
 // @Produce json
-// @Param id path string true "Event ID"
+// @Param id path string true "ID мероприятия"
 // @Success 200 {array} jsonreqresp.ArtworkResponse
-// @Failure 400 "Bad Request - Validation error"
-// @Failure 404 "Not Found - Event or artwork not found"
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие или произведение не найдено"
 // @Router /museum/events/{id}/artworks [get]
 func (r *SearcherRouter) GetArtworkFromEvent(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -101,17 +101,17 @@ func (r *SearcherRouter) GetArtworkFromEvent(c *gin.Context) {
 }
 
 // getArtworks godoc
-// @Summary Get artworks
-// @Description Retrieves a list of all artworks
-// @Tags Searcher
+// @Summary Получить произведения
+// @Description Возвращает список всех произведений с возможностью фильтрации
+// @Tags Поиск
 // @Accept json
 // @Produce json
-// @Param title            query string     false  "Filter by artwork title (max 255 chars)"  maxLength(255)
-// @Param author_name      query string     false  "Filter by author name (max 100 chars)"    maxLength(100)
-// @Param collection_title query string     false  "Filter by collection title (max 255 chars)" maxLength(255)
-// @Param event_id         query string     false  "Filter by event UUID" format(uuid)
-// @Param sort_field       query string     true   "Field to sort by"  Enums(title, author_name, creationYear)
-// @Param direction_sort   query string     true   "Sort direction"  Enums(ASC, DESC)
+// @Param title            query string     false  "Фильтр по названию произведения (макс. 255 символов)"  maxLength(255)
+// @Param author_name      query string     false  "Фильтр по имени автора (макс. 100 символов)"    maxLength(100)
+// @Param collection_title query string     false  "Фильтр по названию коллекции (макс. 255 символов)" maxLength(255)
+// @Param event_id         query string     false  "Фильтр по ID мероприятия" format(uuid)
+// @Param sort_field       query string     true   "Поле для сортировки"  Enums(title, author_name, creationYear)
+// @Param direction_sort   query string     true   "Направление сортировки"  Enums(ASC, DESC)
 // @Success 200 {array} jsonreqresp.ArtworkResponse
 // @Router /museum/artworks [get]
 func (r *SearcherRouter) GetAllArtworks(c *gin.Context) {
@@ -150,17 +150,17 @@ func (r *SearcherRouter) GetAllArtworks(c *gin.Context) {
 }
 
 // getAllEvents godoc
-// @Summary Get events
-// @Description Retrieves a list of all events with optional filtering
-// @Tags Searcher
+// @Summary Получить мероприятия
+// @Description Возвращает список всех мероприятий с возможностью фильтрации
+// @Tags Поиск
 // @Accept json
 // @Produce json
-// @Param title      query string  false  "Filter by event title"  maxLength(255)
-// @Param date_begin query string  false  "Filter by minimum start date (format: YYYY-MM-DD)"  format(date)
-// @Param date_end   query string  false  "Filter by maximum end date (format: YYYY-MM-DD)"    format(date)
-// @Param can_visit  query boolean false  "Filter by visit availability"
-// @Success 200
-// @Failure 400 "Invalid date format. Use YYYY-MM-DD"
+// @Param title      query string  false  "Фильтр по названию мероприятия"  maxLength(255)
+// @Param date_begin query string  false  "Фильтр по минимальной дате начала (формат: ГГГГ-ММ-ДД)"  format(date)
+// @Param date_end   query string  false  "Фильтр по максимальной дате окончания (формат: ГГГГ-ММ-ДД)"    format(date)
+// @Param can_visit  query boolean false  "Фильтр по доступности для посещения"
+// @Success 200 {array} jsonreqresp.EventResponse
+// @Failure 400 "Неверный формат даты. Используйте ГГГГ-ММ-ДД"
 // @Router /museum/events [get]
 func (r *SearcherRouter) GetAllEvents(c *gin.Context) {
 	ctx := c.Request.Context()

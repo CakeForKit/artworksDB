@@ -29,9 +29,9 @@ func NewAuthorRouter(router *gin.RouterGroup, authorServ authorserv.AuthorServ) 
 }
 
 // GetAllAuthors godoc
-// @Summary Get all authors by employee
-// @Description Retrieves all authors
-// @Tags Author
+// @Summary Получить всех авторов (сотрудник)
+// @Description Возвращает список всех авторов
+// @Tags Авторы
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
@@ -52,16 +52,16 @@ func (r *AuthorRouter) GetAllAuthors(c *gin.Context) {
 }
 
 // AddAuthor godoc
-// @Summary Add a new author by employee
-// @Description Creates a new author
-// @Tags Author
+// @Summary Добавить нового автора (сотрудник)
+// @Description Создает нового автора
+// @Tags Авторы
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.AddAuthorRequest true "Author data"
-// @Success 201 "Created"
-// @Failure 400 "Bad Request"
+// @Param request body jsonreqresp.AddAuthorRequest true "Данные автора"
+// @Success 201 "Автор создан"
+// @Failure 400 "Неверный запрос"
 // @Router /employee/authors [post]
 func (r *AuthorRouter) AddAuthor(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -87,17 +87,17 @@ func (r *AuthorRouter) AddAuthor(c *gin.Context) {
 }
 
 // UpdateAuthor godoc
-// @Summary Update an author by employee
-// @Description Updates an existing author
-// @Tags Author
+// @Summary Обновить автора (сотрудник)
+// @Description Обновляет данные существующего автора
+// @Tags Авторы
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.UpdateAuthorRequest true "Author update data"
-// @Success 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 404 "Not Found"
+// @Param request body jsonreqresp.UpdateAuthorRequest true "Данные для обновления автора"
+// @Success 200 "Успешно обновлено"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Автор не найден"
 // @Router /employee/authors [put]
 func (r *AuthorRouter) UpdateAuthor(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -127,18 +127,18 @@ func (r *AuthorRouter) UpdateAuthor(c *gin.Context) {
 }
 
 // DeleteAuthor godoc
-// @Summary Delete an author by employee
-// @Description Deletes an existing author
-// @Tags Author
+// @Summary Удалить автора (сотрудник)
+// @Description Удаляет существующего автора
+// @Tags Авторы
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.DeleteAuthorRequest true "Author delete data"
-// @Success 200 "OK"
-// @Failure 400 "Bad Request"
-// @Failure 404 "Not Found"
-// @Failure 409 "Conflict - Author has linked artworks"
+// @Param request body jsonreqresp.DeleteAuthorRequest true "Данные для удаления автора"
+// @Success 200 "Успешно удалено"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Автор не найден"
+// @Failure 409 "Конфликт - у автора есть связанные произведения"
 // @Router /employee/authors [delete]
 func (r *AuthorRouter) DeleteAuthor(c *gin.Context) {
 	ctx := c.Request.Context()

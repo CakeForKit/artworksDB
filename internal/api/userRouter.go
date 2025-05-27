@@ -33,6 +33,8 @@ func NewUserRouter(router *gin.RouterGroup, userServ userservice.UserService) Us
 // @Param Authorization header string true "bearer {token}"
 // @Success 200 {object} jsonreqresp.UserSelfResponse
 // @Router /user/self [get]
+
+// ---
 func (r *UserRouter) GetSelf(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -57,6 +59,8 @@ func (r *UserRouter) GetSelf(c *gin.Context) {
 // @Success 200 "OK"
 // @Failure 400 "Invalid request body"
 // @Router /user/self [put]
+
+// ---
 func (r *UserRouter) ChangeSubscribeToMailing(c *gin.Context) {
 	ctx := c.Request.Context()
 

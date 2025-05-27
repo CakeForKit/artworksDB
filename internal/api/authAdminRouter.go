@@ -47,15 +47,15 @@ func (r *AuthAdminRouter) Init(router *gin.RouterGroup, authu auth.AuthAdmin) {
 // }
 
 // Login Handler
-// @Summary Login admin
-// @Description Authenticates a admin and return access token
-// @Tags auth
+// @Summary Вход администратора
+// @Description Аутентифицирует администратора и возвращает токен доступа
+// @Tags Аутентификация
 // @Accept json
-// @Param request body auth.LoginAdminRequest true "Login credentials"
-// @Success 200 "The admin has been authenticated"
-// @Failure 400 "Wrong input parameters"
-// @Failure 401 "Auth error"
-// @Failure 403 "Has no rights"
+// @Param request body auth.LoginAdminRequest true "Учетные данные для входа"
+// @Success 200 "Администратор успешно аутентифицирован"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 401 "Ошибка аутентификации"
+// @Failure 403 "Нет прав доступа"
 // @Router /auth-admin/login [post]
 func (r *AuthAdminRouter) Login(c *gin.Context) {
 	ctx := c.Request.Context()

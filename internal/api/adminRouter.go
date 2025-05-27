@@ -33,15 +33,15 @@ func (r *AdminRouter) Init(
 }
 
 // GetAllEmployees godoc
-// @Summary Get all employees by admin
-// @Description Retrieves a list of all employees
-// @Tags admin
+// @Summary Получить всех сотрудников
+// @Description Возвращает список всех сотрудников
+// @Tags Администратор
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
 // @Success 200 {array} jsonreqresp.EmployeeResponse
-// @Failure 401 "Unauthorized"
+// @Failure 401 "Не авторизован"
 // @Router /admin/employeelist/ [get]
 func (r *AdminRouter) GetAllEmployees(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -58,15 +58,15 @@ func (r *AdminRouter) GetAllEmployees(c *gin.Context) {
 }
 
 // GetAllUsers godoc
-// @Summary Get all users by admin
-// @Description Retrieves a list of all users
-// @Tags admin
+// @Summary Получить всех пользователей
+// @Description Возвращает список всех пользователей
+// @Tags Администратор
 // @Accept json
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
 // @Success 200 {array} jsonreqresp.EmployeeResponse
-// @Failure 401 "Unauthorized"
+// @Failure 401 "Не авторизован"
 // @Router /admin/userlist/ [get]
 func (r *AdminRouter) GetAllUsers(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -83,17 +83,17 @@ func (r *AdminRouter) GetAllUsers(c *gin.Context) {
 }
 
 // Register employee Handler
-// @Summary Register employee
-// @Description Register a new employee
-// @Tags admin
+// @Summary Регистрация сотрудника
+// @Description Регистрирует нового сотрудника
+// @Tags Администратор
 // @Accept json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body auth.RegisterEmployeeRequest true "Register credentials"
-// @Success 200 "The employee registered"
-// @Failure 400 "Wrong input parameters"
-// @Failure 401 "Auth error"
-// @Failure 409 "Attempt to re-register"
+// @Param request body auth.RegisterEmployeeRequest true "Данные для регистрации"
+// @Success 200 "Сотрудник зарегистрирован"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 401 "Ошибка авторизации"
+// @Failure 409 "Попытка повторной регистрации"
 // @Router /admin/employeelist/register-employee [post]
 func (r *AdminRouter) Register(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -126,15 +126,15 @@ func (r *AdminRouter) Register(c *gin.Context) {
 }
 
 // Change employee rights
-// @Summary Change employee rights
-// @Description Change employee valid field
-// @Tags admin
+// @Summary Изменить права сотрудника
+// @Description Изменяет поле valid сотрудника
+// @Tags Администратор
 // @Accept json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.UpdateValidEmployeeRequest true "update data"
-// @Success 200 "Success update"
-// @Failure 404 "Employee not found"
+// @Param request body jsonreqresp.UpdateValidEmployeeRequest true "Данные для обновления"
+// @Success 200 "Успешное обновление"
+// @Failure 404 "Сотрудник не найден"
 // @Router /admin/employeelist/change-rights [put]
 func (r *AdminRouter) ChangeRights(c *gin.Context) {
 	ctx := c.Request.Context()

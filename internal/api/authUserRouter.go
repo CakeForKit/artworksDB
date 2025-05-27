@@ -21,16 +21,18 @@ func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu auth.AuthUser) {
 }
 
 // Register Handler
-// @Summary Register user
-// @Description Register a new user
-// @Tags auth
+// @Summary Регистрация пользователя
+// @Description Регистрирует нового пользователя
+// @Tags аутентификация
 // @Accept json
-// @Param request body auth.RegisterUserRequest true "Register credentials"
-// @Success 200 "The user registered"
-// @Failure 400 "Wrong input parameters"
-// @Failure 401 "Auth error"
-// @Failure 409 "Attempt to re-register"
+// @Param request body auth.RegisterUserRequest true "Данные для регистрации"
+// @Success 200 "Пользователь зарегистрирован"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 401 "Ошибка аутентификации"
+// @Failure 409 "Попытка повторной регистрации"
 // @Router /auth-user/register [post]
+
+// --------
 func (r *AuthUserRouter) Register(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -52,15 +54,17 @@ func (r *AuthUserRouter) Register(c *gin.Context) {
 }
 
 // Login Handler
-// @Summary Login user
-// @Description Authenticates a user and return access token
-// @Tags auth
+// @Summary Вход пользователя
+// @Description Аутентифицирует пользователя и возвращает токен доступа
+// @Tags аутентификация
 // @Accept json
-// @Param request body auth.LoginUserRequest true "Login credentials"
-// @Success 200 "The user has been authenticated"
-// @Failure 400 "Wrong input parameters"
-// @Failure 401 "Auth error"
+// @Param request body auth.LoginUserRequest true "Учетные данные для входа"
+// @Success 200 "Пользователь успешно аутентифицирован"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 401 "Ошибка аутентификации"
 // @Router /auth-user/login [post]
+
+// --------
 func (r *AuthUserRouter) Login(c *gin.Context) {
 	ctx := c.Request.Context()
 

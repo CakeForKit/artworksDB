@@ -113,66 +113,33 @@ func EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventResp
 					return templ_7745c5c3_Err
 				}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></div></div>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 8, "</span></div></div><!-- Модальное окно покупки билета --><div id=\"ticketModal\" class=\"modal-buy\"><div class=\"modal-content-buy\"><span class=\"close-buy\" onclick=\"hideTicketModal()\">&times;</span><h2>Подтверждение покупки билета</h2><p>Вы уверены, что хотите приобрести билет на мероприятие \"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			if event.CanVisit {
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "<!-- Блок с билетами --> <div class=\"event-buy-tickets\"><h3>Билеты</h3><p>Доступно билетов: ")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				var templ_7745c5c3_Var7 string
-				templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(event.CntTickets)
-				if templ_7745c5c3_Err != nil {
-					return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/event_id.templ`, Line: 33, Col: 74}
-				}
-				_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "</p>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
-				if event.CanVisit && event.CntTickets > 0 {
-					templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<button class=\"buy-ticket-button\" onclick=\"showTicketModal()\">Купить билет</button>")
-					if templ_7745c5c3_Err != nil {
-						return templ_7745c5c3_Err
-					}
-				}
-				templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 12, "</div>")
-				if templ_7745c5c3_Err != nil {
-					return templ_7745c5c3_Err
-				}
+			var templ_7745c5c3_Var7 string
+			templ_7745c5c3_Var7, templ_7745c5c3_Err = templ.JoinStringErrs(event.Title)
+			if templ_7745c5c3_Err != nil {
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/event_id.templ`, Line: 45, Col: 138}
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 13, "<!-- Модальное окно покупки билета --><div id=\"ticketModal\" class=\"modal-buy\"><div class=\"modal-content-buy\"><span class=\"close-buy\" onclick=\"hideTicketModal()\">&times;</span><h2>Подтверждение покупки билета</h2><p>Вы уверены, что хотите приобрести билет на мероприятие \"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var7))
+			if templ_7745c5c3_Err != nil {
+				return templ_7745c5c3_Err
+			}
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 9, "\"?</p><div class=\"modal-buttons-buy\"><button class=\"confirm-button-buy\" onclick=\"confirmTicketPurchase()\">Подтвердить</button> <button class=\"cancel-button-buy\" onclick=\"cancelTicketPurchase()\">Отмена</button></div></div></div><!-- Список произведений на мероприятии --><h2>Произведения на выставке (")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
 			var templ_7745c5c3_Var8 string
-			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(event.Title)
+			templ_7745c5c3_Var8, templ_7745c5c3_Err = templ.JoinStringErrs(len(event.ArtworkIDs))
 			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/event_id.templ`, Line: 45, Col: 138}
+				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/event_id.templ`, Line: 54, Col: 87}
 			}
 			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var8))
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 14, "\"?</p><div class=\"modal-buttons-buy\"><button class=\"confirm-button-buy\" onclick=\"confirmTicketPurchase()\">Подтвердить</button> <button class=\"cancel-button-buy\" onclick=\"cancelTicketPurchase()\">Отмена</button></div></div></div><!-- Список произведений на мероприятии --><h2>Произведения на выставке (")
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			var templ_7745c5c3_Var9 string
-			templ_7745c5c3_Var9, templ_7745c5c3_Err = templ.JoinStringErrs(len(event.ArtworkIDs))
-			if templ_7745c5c3_Err != nil {
-				return templ.Error{Err: templ_7745c5c3_Err, FileName: `internal/frontend/components/event_id.templ`, Line: 54, Col: 87}
-			}
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString(templ.EscapeString(templ_7745c5c3_Var9))
-			if templ_7745c5c3_Err != nil {
-				return templ_7745c5c3_Err
-			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 15, "):</h2>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 10, "):</h2>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
@@ -180,7 +147,7 @@ func EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventResp
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}
-			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 16, "<!-- Кнопка возврата --><div class=\"back-button-container\"><a href=\"/museum/events\" class=\"back-button\">← Вернуться к списку мероприятий</a></div></div><script>\n            let currentTxId = null; // Хранит ID текущей транзакции\n            \n            // Инициализация покупки билета (вызов BuyTickets API)\n            async function initTicketPurchase(eventId) {\n                try {\n                    console.log('initTicketPurchase:');\n                    const response = await fetch('/api/v1/guest/tickets', {\n                        method: 'POST',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            eventID: eventId,\n                            cntTickets: 1, // Покупаем 1 билет\n                            customerName: '', // Эти поля могут быть заполнены из профиля\n                            customerEmail: ''\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    const data = await response.json();\n                    currentTxId = data.txID; // Сохраняем ID транзакции\n                    showTicketModal();\n                    \n                } catch (error) {\n                    console.error('Ошибка инициализации покупки:', error);\n                    alert(error.error || 'Не удалось начать покупку билета');\n                }\n            }\n\n            // Подтверждение покупки (вызов ConfirmBuyTicket API)\n            async function confirmTicketPurchase() {\n                if (!currentTxId) {\n                    alert('Нет активной транзакции');\n                    return;\n                }\n\n                try {\n                    const response = await fetch('/api/v1/guest/tickets/confirm', {\n                        method: 'PUT',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            txID: currentTxId\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    hideTicketModal();\n                    alert('Билет успешно приобретен!');\n                    window.location.reload();\n                } catch (error) {\n                    console.error('Ошибка подтверждения покупки:', error);\n                    alert(error.error || 'Не удалось подтвердить покупку');\n                } finally {\n                    currentTxId = null;\n                }\n            }\n\n            // Отмена покупки (вызов CancelBuyTicket API)\n            async function cancelTicketPurchase() {\n                if (!currentTxId) {\n                    hideTicketModal();\n                    return;\n                }\n\n                try {\n                    const response = await fetch('/api/v1/guest/tickets/cancel', {\n                        method: 'PUT',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            txID: currentTxId\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    hideTicketModal();\n                    alert('Покупка отменена');\n                } catch (error) {\n                    console.error('Ошибка отмены покупки:', error);\n                    alert(error.error || 'Не удалось отменить покупку');\n                } finally {\n                    currentTxId = null;\n                }\n            }\n\n            // Показ модального окна\n            function showTicketModal() {\n                document.getElementById('ticketModal').style.display = 'block';\n            }\n\n            // Скрытие модального окна\n            function hideTicketModal() {\n                document.getElementById('ticketModal').style.display = 'none';\n            }\n\n            // Закрытие модального окна при клике вне его\n            window.onclick = function(event) {\n                const modal = document.getElementById('ticketModal');\n                if (event.target == modal) {\n                    cancelTicketPurchase();\n                }\n            }\n        </script>")
+			templ_7745c5c3_Err = templruntime.WriteString(templ_7745c5c3_Buffer, 11, "<!-- Кнопка возврата --><div class=\"back-button-container\"><a href=\"/museum/events\" class=\"back-button\">← Вернуться к списку мероприятий</a></div></div><script>\n            let currentTxId = null; // Хранит ID текущей транзакции\n            \n            // Инициализация покупки билета (вызов BuyTickets API)\n            async function initTicketPurchase(eventId) {\n                try {\n                    console.log('initTicketPurchase:');\n                    const response = await fetch('/api/v1/guest/tickets', {\n                        method: 'POST',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            eventID: eventId,\n                            cntTickets: 1, // Покупаем 1 билет\n                            customerName: '', // Эти поля могут быть заполнены из профиля\n                            customerEmail: ''\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    const data = await response.json();\n                    currentTxId = data.txID; // Сохраняем ID транзакции\n                    showTicketModal();\n                    \n                } catch (error) {\n                    console.error('Ошибка инициализации покупки:', error);\n                    alert(error.error || 'Не удалось начать покупку билета');\n                }\n            }\n\n            // Подтверждение покупки (вызов ConfirmBuyTicket API)\n            async function confirmTicketPurchase() {\n                if (!currentTxId) {\n                    alert('Нет активной транзакции');\n                    return;\n                }\n\n                try {\n                    const response = await fetch('/api/v1/guest/tickets/confirm', {\n                        method: 'PUT',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            txID: currentTxId\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    hideTicketModal();\n                    alert('Билет успешно приобретен!');\n                    window.location.reload();\n                } catch (error) {\n                    console.error('Ошибка подтверждения покупки:', error);\n                    alert(error.error || 'Не удалось подтвердить покупку');\n                } finally {\n                    currentTxId = null;\n                }\n            }\n\n            // Отмена покупки (вызов CancelBuyTicket API)\n            async function cancelTicketPurchase() {\n                if (!currentTxId) {\n                    hideTicketModal();\n                    return;\n                }\n\n                try {\n                    const response = await fetch('/api/v1/guest/tickets/cancel', {\n                        method: 'PUT',\n                        headers: {\n                            'Content-Type': 'application/json',\n                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`\n                        },\n                        body: JSON.stringify({\n                            txID: currentTxId\n                        })\n                    });\n\n                    if (!response.ok) {\n                        const error = await response.json();\n                        throw error;\n                    }\n                    \n                    hideTicketModal();\n                    alert('Покупка отменена');\n                } catch (error) {\n                    console.error('Ошибка отмены покупки:', error);\n                    alert(error.error || 'Не удалось отменить покупку');\n                } finally {\n                    currentTxId = null;\n                }\n            }\n\n            // Показ модального окна\n            function showTicketModal() {\n                document.getElementById('ticketModal').style.display = 'block';\n            }\n\n            // Скрытие модального окна\n            function hideTicketModal() {\n                document.getElementById('ticketModal').style.display = 'none';\n            }\n\n            // Закрытие модального окна при клике вне его\n            window.onclick = function(event) {\n                const modal = document.getElementById('ticketModal');\n                if (event.target == modal) {\n                    cancelTicketPurchase();\n                }\n            }\n        </script>")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

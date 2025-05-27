@@ -26,16 +26,16 @@ templ EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventRes
                 </div>
             </div>
 
-            if event.CanVisit {
-                <!-- Блок с билетами -->
-                <div class="event-buy-tickets">
-                    <h3>Билеты</h3>
-                    <p>Доступно билетов: { event.CntTickets }</p>
-                    if event.CanVisit && event.CntTickets > 0 {
-                        <button class="buy-ticket-button" onclick="showTicketModal()">Купить билет</button>
-                    }
-                </div>
-            }
+            // if event.CanVisit {
+            //     <!-- Блок с билетами -->
+            //     <div class="event-buy-tickets">
+            //         <h3>Билеты</h3>
+            //         <p>Доступно билетов: { event.CntTickets }</p>
+            //         if event.CanVisit && event.CntTickets > 0 {
+            //             <button class="buy-ticket-button" onclick="showTicketModal()">Купить билет</button>
+            //         }
+            //     </div>
+            // }
             
             <!-- Модальное окно покупки билета -->
             <div id="ticketModal" class="modal-buy">
