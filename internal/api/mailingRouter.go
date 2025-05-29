@@ -37,6 +37,8 @@ func NewMailingRouter(router *gin.RouterGroup, mailingServ mailing.MailingServic
 // @Success 200 {object} jsonreqresp.MailingResponse "Mailing sent successfully"
 // @Failure 404 "Error: no events found"
 // @Router /employee/mailing/ [post]
+
+// ---
 func (r *MailingRouter) SendMails(c *gin.Context) {
 	ctx := c.Request.Context()
 

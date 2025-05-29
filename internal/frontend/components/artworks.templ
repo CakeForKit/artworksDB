@@ -1,0 +1,148 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+)
+
+templ ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+    @UsersNavigate("Произведения искусства") {
+        <div class="artworks-page">
+            @FilterArtworksForm(filter, sortOps)
+            
+            <div class="artworks-container" id="artworks-content">
+                <h2>Произведения искусства</h2>
+                @ArtworksTable(artworks)
+            </div>
+        </div>
+    }
+}
+
+// templ EmplArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+//     @EmployeesNavigate("Произведения искусства") {
+//         <div class="artworks-page">
+//             @FilterArtworksForm(filter, sortOps)
+            
+//             <div class="artworks-container" id="artworks-content">
+//                 <h2>Произведения искусства</h2>
+//                 @ArtworksTable(artworks)
+//             </div>
+//         </div>
+//     }
+// }
+
+templ ArtworksTable(artworks []jsonreqresp.ArtworkResponse) {
+    <table class="artworks-table">
+        <thead>
+            <tr>
+                <th>Название</th>
+                <th>Автор</th>
+                <th>Год создания</th>
+                <th>Коллекция</th>
+            </tr>
+        </thead>
+        <tbody>
+            for _, artwork := range artworks {
+                <tr class="artwork-row">
+                    <td class="artwork-title">{ artwork.Title }</td>
+                    <td class="artwork-author">{ artwork.Author.Name }</td>
+                    <td class="artwork-year">{ artwork.CreationYear }</td>
+                    <td class="artwork-collection">{ artwork.Collection.Title }</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+
+templ FilterArtworksForm(filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) {
+    <form action="/museum/artworks" method="GET" class="filter-form">
+        <div class="filter-grid">
+            <div class="filter-group">
+                <label for="title">Название произведения</label>
+                <input 
+                    type="text" 
+                    id="title" 
+                    name="title" 
+                    value={ filter.Title }
+                    placeholder="Введите название"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="author_name">Автор</label>
+                <input 
+                    type="text" 
+                    id="author_name" 
+                    name="author_name" 
+                    value={ filter.AuthorName }
+                    placeholder="Введите имя автора"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="collection_title">Коллекция</label>
+                <input 
+                    type="text" 
+                    id="collection_title" 
+                    name="collection_title" 
+                    value={ filter.Collection }
+                    placeholder="Введите название коллекции"
+                >
+            </div>
+            
+            <div class="filter-group">
+                <label for="sort_field">Сортировать по</label>
+                <select id="sort_field" name="sort_field">
+                    if sortOps.Field == "title" {
+                        <option value="title" selected>Названию</option>
+                        <option value="author_name">Автору</option>
+                        <option value="creationYear">Году создания</option>
+                    } else if sortOps.Field == "author_name" {
+                        <option value="title">Названию</option>
+                        <option value="author_name" selected>Автору</option>
+                        <option value="creationYear">Году создания</option>
+                    } else {
+                        <option value="title">Названию</option>
+                        <option value="author_name">Автору</option>
+                        <option value="creationYear" selected>Году создания</option>
+                    }
+                </select>
+            </div>
+            
+            <div class="filter-group">
+                <label for="id_direction_sort">Направление сортировки</label>
+                <select id="id_direction_sort" name="direction_sort">
+                    if sortOps.Direction == "asc" {
+                        <option value="asc" selected>По возрастанию</option>
+                        <option value="desc">По убыванию</option>
+                    } else {
+                        <option value="asc">По возрастанию</option>
+                        <option value="desc" selected>По убыванию</option>
+                    }
+                </select>
+            </div>
+        </div>
+        
+        <div class="filter-buttons">
+            <button type="submit" class="apply-button">Применить</button>
+            <a href="/museum/artworks" class="reset-button">Сбросить</a>
+        </div>
+        // <div class="filter-buttons">
+        //     // <button type="submit" class="apply-button">Применить</button>
+        //     <button 
+        //         type="submit" 
+        //         class="apply-button"
+        //         hx-get="/museum/artworks" 
+        //         hx-target="#bg-cream" 
+        //         hx-swap="innerHTML"
+        //         hx-include="[name='title'], [name='author_name'], [name='collection_title'], [name='sort_field'], [name='direction_sort']"
+        //     >Применить</button>
+        //     <button 
+        //         type="button" 
+        //         class="reset-button"
+        //         hx-get="/museum/artworks" 
+        //         hx-target="#bg-cream" 
+        //         hx-swap="outerHTML"
+        //     >Сбросить</button>
+        // </div>
+    </form>
+}

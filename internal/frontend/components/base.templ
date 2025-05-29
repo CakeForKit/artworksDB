@@ -1,0 +1,114 @@
+package components
+
+import (
+	"time"
+)
+
+templ Base(title string) {
+    <!DOCTYPE html>
+    <html lang="ru">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="/static/css/event_details.css">
+        <link rel="stylesheet" href="/static/css/style.css">
+        <link rel="stylesheet" href="/static/css/crud.css">
+        <link rel="stylesheet" href="/static/css/events.css">
+        <title>{ title } | Музейный каталог</title>
+        <script src="https://unpkg.com/htmx.org@1.9.6"></script>
+        <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+        <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;700&family=Montserrat:wght@300;400&display=swap" rel="stylesheet">
+    </head>
+    <body class="bg-cream" id="bg-cream">
+        { children... }
+        <footer class="footer">
+            <p>© { time.Now().Year() } Музей Искусств. Все права защищены.</p>
+        </footer>
+    </body>
+    </html>
+}
+ 
+templ UsersNavigate(title string) {
+    @Base(title) {
+        <!-- Главный заголовок -->
+        <header class="header-container">
+            <div class="header-content">
+                <h1 class="museum-title">Музей Искусств</h1>
+                <p class="museum-subtitle">Коллекция шедевров мирового значения</p>
+            </div>
+            
+            <!-- Навигация -->
+            <nav class="nav-container">
+                <a href="/museum/artworks" class="nav-button">
+                    <span class="button-text">Экспонаты</span>
+                </a>
+                <a href="/museum/events" class="nav-button">
+                    <span class="button-text">Мероприятия</span>
+                </a>
+                <a href="/museum/login" class="nav-button">
+                    <span class="button-text">Сотрудник</span>
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            { children... }
+        </main>
+    }
+}
+
+templ EmployeesNavigate(title string) {
+    @Base(title) {
+        <!-- Главный заголовок -->
+        <header class="header-container">
+            <div class="header-content">
+                <h1 class="museum-title">Музей Искусств</h1>
+                <p class="museum-subtitle">Коллекция шедевров мирового значения</p>
+            </div>
+            
+            <!-- Навигация -->
+            <nav class="nav-container">
+                // <a href="/museum/artworks" class="nav-button">
+                //     <span class="button-text">Экспонаты</span>
+                // </a>
+                // <a href="/museum/events" class="nav-button">
+                //     <span class="button-text">Мероприятия</span>
+                // </a>
+                <a href="/museum/employee/artworks" class="nav-button">
+                    <span class="button-text">Экспонаты</span>
+                </a>
+                <a href="/museum/employee/authors" class="nav-button">
+                    <span class="button-text">Авторы</span>
+                </a>
+                <a href="/museum/employee/collections" class="nav-button">
+                    <span class="button-text">Коллекции</span>
+                </a>
+                <a href="/museum/employee/events" class="nav-button">
+                    <span class="button-text">Мероприятия</span>
+                </a>
+                <a href="/museum/artworks" class="nav-button" onclick="logout(event)">
+                    <span class="button-text">Выйти</span>
+                </a>
+            </nav>
+        </header>
+
+        <main class="main-content">
+            { children... }
+        </main>
+
+        <script>
+            function logout(event) {
+                event.preventDefault();
+                
+                // Удаляем токен из localStorage
+                localStorage.removeItem('access_token');
+                
+                // Удаляем токен из куков
+                document.cookie = 'access_token=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT;';
+                
+                // Перенаправляем на главную страницу
+                window.location.href = '/museum/artworks';
+            }
+        </script>
+    }
+}

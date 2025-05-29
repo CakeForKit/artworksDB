@@ -1,0 +1,136 @@
+package components
+
+
+templ LoginPage(tokenKey string, errorMsg string) {
+    @UsersNavigate("Авторизация сотрудников") {
+        <div class="login-container">
+            <div class="login-card">
+                <h2 class="login-title">Вход для сотрудников</h2>
+                
+                <!-- Блок для отображения ошибок (изначально скрыт) -->
+                <div id="error-message" class="login-error" style="display: none;">
+                    { errorMsg }
+                </div>
+                
+                <form id="login-form" class="login-form">
+                    <div class="form-group">
+                        <label for="login">Логин</label>
+                        <input 
+                            type="text" 
+                            id="login" 
+                            name="login" 
+                            required
+                            minlength="4"
+                            maxlength="50"
+                            pattern="[a-zA-Z0-9]+"
+                            title="Только латинские буквы и цифры (4-50 символов)"
+                            placeholder="Введите ваш логин"
+                        />
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="password">Пароль</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            required
+                            minlength="4"
+                            placeholder="Введите ваш пароль"
+                        />
+                    </div>
+                    
+                    <button type="button" id="login-btn" class="login-button">Войти</button>
+                </form>
+            </div>
+        </div>
+        
+        <script>
+            const ACCESS_TOKEN_KEY = "@tokenKey";
+            console.log('Начало чего то'); 
+            document.getElementById('login-btn').addEventListener('click', async function() {
+                const btn = this;
+                const login = document.getElementById('login').value;
+                const password = document.getElementById('password').value;
+                const errorElement = document.getElementById('error-message');
+                
+                // Скрываем предыдущие ошибки
+                errorElement.style.display = 'none';
+                errorElement.textContent = '';
+
+                btn.disabled = true;
+                btn.textContent = 'Авторизация...';
+                
+                console.log('Начало авторизации'); // Логирование
+
+                try {
+                    const response = await fetch('/api/v1/auth-employee/login', {
+                        method: 'POST',
+                        mode: 'cors',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            login: login,
+                            password: password
+                        })
+                    });
+
+                    console.log('Получен ответ:', response.status); // Логирование
+                    
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw new Error(error.error || 'Ошибка авторизации');
+                    }
+                    
+                    const data = await response.json();
+                    console.log('Данные ответа:', data); // Логирование
+
+                    localStorage.setItem(ACCESS_TOKEN_KEY, data.access_token);
+                    document.cookie = `access_token=${encodeURIComponent(data.access_token)}; Path=/; SameSite=Strict; Max-Age=86400${location.protocol === 'https:' ? '; Secure' : ''}`;
+                    console.log('Токен сохранен в localStorage и Cookie:', localStorage.getItem(ACCESS_TOKEN_KEY)); // Логирование
+                    window.location.href = '/museum/employee/authors';
+                    // navigateToAuthors();
+                } catch (error) {
+                    // Показываем ошибку без перезагрузки страницы
+                    errorElement.textContent = 'Неверный логин или пароль';
+                    errorElement.style.display = 'block';
+                    
+                    // Анимация для привлечения внимания
+                    errorElement.style.animation = 'shake 0.5s';
+                    setTimeout(() => {
+                        errorElement.style.animation = '';
+                    }, 500);
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = 'Войти';
+                }
+            }); 
+            // Обработка нажатия Enter в полях формы
+            document.getElementById('login-form').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('login-btn').click();
+                }
+            });
+        </script>
+
+        <style>
+            /* Анимация для ошибки */
+            @keyframes shake {
+                0%, 100% { transform: translateX(0); }
+                10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+                20%, 40%, 60%, 80% { transform: translateX(5px); }
+            }
+            
+            .login-error {
+                background-color: #ffebee;
+                color: #c62828;
+                padding: 12px;
+                border-radius: 4px;
+                margin-bottom: 16px;
+                border: 1px solid #ef9a9a;
+            }
+        </style>
+    }
+}

@@ -108,10 +108,7 @@ func (pg *PgArtworkRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonr
 		query = query.Where(sq.ILike{"author.name": "%" + filterOps.AuthorName + "%"}) // Поиск подстроки
 	}
 	if filterOps.Collection != "" {
-		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
-	}
-	if filterOps.Collection != "" {
-		query = query.Where(sq.Eq{"collection.title": filterOps.Collection})
+		query = query.Where(sq.ILike{"collection.title": "%" + filterOps.Collection + "%"})
 	}
 	if filterOps.EventID != uuid.Nil {
 		existsSubQuery := sq.Select("1").

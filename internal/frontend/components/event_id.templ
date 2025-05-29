@@ -1,0 +1,187 @@
+package components
+
+import (
+    "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+    // "time"
+)
+
+templ EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventResponse, artworks []jsonreqresp.ArtworkResponse) {
+    @UsersNavigate(title) {
+        <div class="event-details-container">
+            <!-- Основная информация о мероприятии -->
+            <div class="event-header">
+                <h1>{ event.Title }</h1>
+                <div class="event-meta">
+                    <span class="event-date">
+                        { event.DateBegin.Format("02.01.2006 15:04") } - { event.DateEnd.Format("02.01.2006 15:04") }
+                    </span>
+                    <span class="event-location">📍 { event.Address }</span>
+                    <span class="event-status">
+                        if event.CanVisit {
+                            <span class="status-active">Доступно для посещения</span>
+                        } else {
+                            <span class="status-inactive">Недоступно для посещения</span>
+                        }
+                    </span>
+                </div>
+            </div>
+
+            // if event.CanVisit {
+            //     <!-- Блок с билетами -->
+            //     <div class="event-buy-tickets">
+            //         <h3>Билеты</h3>
+            //         <p>Доступно билетов: { event.CntTickets }</p>
+            //         if event.CanVisit && event.CntTickets > 0 {
+            //             <button class="buy-ticket-button" onclick="showTicketModal()">Купить билет</button>
+            //         }
+            //     </div>
+            // }
+            
+            <!-- Модальное окно покупки билета -->
+            <div id="ticketModal" class="modal-buy">
+                <div class="modal-content-buy">
+                    <span class="close-buy" onclick="hideTicketModal()">&times;</span>
+                    <h2>Подтверждение покупки билета</h2>
+                    <p>Вы уверены, что хотите приобрести билет на мероприятие "{ event.Title }"?</p>
+                    <div class="modal-buttons-buy">
+                        <button class="confirm-button-buy" onclick="confirmTicketPurchase()">Подтвердить</button>
+                        <button class="cancel-button-buy" onclick="cancelTicketPurchase()">Отмена</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Список произведений на мероприятии -->
+            <h2>Произведения на выставке ({ len(event.ArtworkIDs) }):</h2>
+            @ArtworksTable(artworks)
+
+            <!-- Кнопка возврата -->
+            <div class="back-button-container">
+                <a href="/museum/events" class="back-button">← Вернуться к списку мероприятий</a>
+            </div>
+        </div>
+
+        <script>
+            let currentTxId = null; // Хранит ID текущей транзакции
+            
+            // Инициализация покупки билета (вызов BuyTickets API)
+            async function initTicketPurchase(eventId) {
+                try {
+                    console.log('initTicketPurchase:');
+                    const response = await fetch('/api/v1/guest/tickets', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`
+                        },
+                        body: JSON.stringify({
+                            eventID: eventId,
+                            cntTickets: 1, // Покупаем 1 билет
+                            customerName: '', // Эти поля могут быть заполнены из профиля
+                            customerEmail: ''
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw error;
+                    }
+                    
+                    const data = await response.json();
+                    currentTxId = data.txID; // Сохраняем ID транзакции
+                    showTicketModal();
+                    
+                } catch (error) {
+                    console.error('Ошибка инициализации покупки:', error);
+                    alert(error.error || 'Не удалось начать покупку билета');
+                }
+            }
+
+            // Подтверждение покупки (вызов ConfirmBuyTicket API)
+            async function confirmTicketPurchase() {
+                if (!currentTxId) {
+                    alert('Нет активной транзакции');
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/v1/guest/tickets/confirm', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`
+                        },
+                        body: JSON.stringify({
+                            txID: currentTxId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw error;
+                    }
+                    
+                    hideTicketModal();
+                    alert('Билет успешно приобретен!');
+                    window.location.reload();
+                } catch (error) {
+                    console.error('Ошибка подтверждения покупки:', error);
+                    alert(error.error || 'Не удалось подтвердить покупку');
+                } finally {
+                    currentTxId = null;
+                }
+            }
+
+            // Отмена покупки (вызов CancelBuyTicket API)
+            async function cancelTicketPurchase() {
+                if (!currentTxId) {
+                    hideTicketModal();
+                    return;
+                }
+
+                try {
+                    const response = await fetch('/api/v1/guest/tickets/cancel', {
+                        method: 'PUT',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': `Bearer ${localStorage.getItem('@tokenKey')}`
+                        },
+                        body: JSON.stringify({
+                            txID: currentTxId
+                        })
+                    });
+
+                    if (!response.ok) {
+                        const error = await response.json();
+                        throw error;
+                    }
+                    
+                    hideTicketModal();
+                    alert('Покупка отменена');
+                } catch (error) {
+                    console.error('Ошибка отмены покупки:', error);
+                    alert(error.error || 'Не удалось отменить покупку');
+                } finally {
+                    currentTxId = null;
+                }
+            }
+
+            // Показ модального окна
+            function showTicketModal() {
+                document.getElementById('ticketModal').style.display = 'block';
+            }
+
+            // Скрытие модального окна
+            function hideTicketModal() {
+                document.getElementById('ticketModal').style.display = 'none';
+            }
+
+            // Закрытие модального окна при клике вне его
+            window.onclick = function(event) {
+                const modal = document.getElementById('ticketModal');
+                if (event.target == modal) {
+                    cancelTicketPurchase();
+                }
+            }
+        </script>
+    }
+}

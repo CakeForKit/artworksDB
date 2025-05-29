@@ -3,7 +3,8 @@ FROM golang:1.24.2-alpine
 
 # Устанавливаем зависимости (добавляем swag)
 RUN apk add --no-cache git bash && \
-    go install github.com/swaggo/swag/cmd/swag@latest
+    go install github.com/swaggo/swag/cmd/swag@latest && \
+    go install github.com/a-h/templ/cmd/templ@latest
 
 # Настраиваем окружение Go
 RUN go env -w GOPROXY=https://proxy.golang.org,direct && \

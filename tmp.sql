@@ -6,7 +6,7 @@ WHERE schemaname = 'public';
 select count(*)  from Artwork_event;
 select count(*) from artworks;
 
-select count(*) from Events;
+select * from Events;
 
 select * from TicketPurchases where eventID = 'b10f841d-ba75-48df-a9cf-c86fc9bd3041';
 

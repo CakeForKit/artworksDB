@@ -21,15 +21,15 @@ func (r *AuthEmployeeRouter) Init(router *gin.RouterGroup, authu auth.AuthEmploy
 }
 
 // Login Handler
-// @Summary Login employee
-// @Description Authenticates a employee and return access token
-// @Tags auth
+// @Summary Вход сотрудника
+// @Description Аутентифицирует сотрудника и возвращает токен доступа
+// @Tags Аутентификация
 // @Accept json
-// @Param request body auth.LoginEmployeeRequest true "Login credentials"
-// @Success 200 "The employee has been authenticated"
-// @Failure 400 "Wrong input parameters"
-// @Failure 401 "Auth error"
-// @Failure 403 "Has no rights"
+// @Param request body auth.LoginEmployeeRequest true "Учетные данные для входа"
+// @Success 200 "Сотрудник успешно аутентифицирован"
+// @Failure 400 "Неверные входные параметры"
+// @Failure 401 "Ошибка аутентификации"
+// @Failure 403 "Нет прав доступа"
 // @Router /auth-employee/login [post]
 func (r *AuthEmployeeRouter) Login(c *gin.Context) {
 	ctx := c.Request.Context()

@@ -3,6 +3,13 @@
 
 [http://localhost:8080/swagger/index.html](http://localhost:8080/swagger/index.html)
 
+## Запуск
+
+```bash
+cd deployment/
+make dev_up
+```
+
 ## 1. Название проекта;
 Система учета произведений искусства
 

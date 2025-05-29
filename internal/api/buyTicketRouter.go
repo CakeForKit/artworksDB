@@ -34,20 +34,20 @@ func NewBuyTicketRouter(router *gin.RouterGroup, buyTicketServ buyticketserv.Buy
 }
 
 // BuyTickets purchases tickets for an event
-// @Summary Purchase tickets
-// @Description Buy tickets for a specific event
-// @Tags Tickets
+// @Summary Покупка билетов
+// @Description Покупка билетов на указанное мероприятие
+// @Tags Билеты
 // @Accept json
 // @Produce json
-// @Security ApiKeyAuth
-// @Param Authorization header string false "Bearer token"
-// @Param request body jsonreqresp.BuyTicketRequest true "Ticket purchase details"
-// @Success 200 {object} jsonreqresp.TxTicketPurchaseResponse "Sets purchase data in cookie"
-// @Failure 400 "Invalid request format"
-// @Failure 401 "Unauthorized"
-// @Failure 404 "Event not found"
-// @Failure 409 "No tickets available"
-// @Failure 410 "Transaction expired"
+// // @Security ApiKeyAuth
+// // @Param Authorization header string false "Bearer токен"
+// @Param request body jsonreqresp.BuyTicketRequest true "Данные для покупки билетов"
+// @Success 200 {object} jsonreqresp.TxTicketPurchaseResponse "Данные покупки сохраняются в cookie"
+// @Failure 400 "Неверный формат запроса"
+// @Failure 401 "Не авторизован"
+// @Failure 404 "Мероприятие не найдено"
+// @Failure 409 "Нет доступных билетов"
+// @Failure 410 "Транзакция просрочена"
 // @Router /guest/tickets [post]
 func (r *BuyTicketRouter) BuyTickets(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -86,16 +86,18 @@ func (r *BuyTicketRouter) BuyTickets(c *gin.Context) {
 }
 
 // GetAllTicketPurchasesOfUser retrieves user's ticket purchases
-// @Summary Get user's tickets
-// @Description Retrieves all ticket purchases for authenticated user
-// @Tags Tickets
+// @Summary Получить билеты пользователя
+// @Description Получение всех покупок билетов для авторизованного пользователя
+// @Tags Билеты
 // @Produce json
 // @Security ApiKeyAuth
-// @Param Authorization header string true "Bearer token"
+// @Param Authorization header string true "Bearer токен"
 // @Success 200 {array} jsonreqresp.TicketPurchaseResponse
-// @Failure 401 "Unauthorized"
-// @Failure 403 "Forbidden"
+// @Failure 401 "Не авторизован"
+// @Failure 403 "Доступ запрещен"
 // @Router /guest/tickets [get]
+
+// ---
 func (r *BuyTicketRouter) GetAllTicketPurchasesOfUser(c *gin.Context) {
 	ctx := c.Request.Context()
 
@@ -117,18 +119,18 @@ func (r *BuyTicketRouter) GetAllTicketPurchasesOfUser(c *gin.Context) {
 }
 
 // ConfirmBuyTicket confirms a ticket purchase
-// @Summary Confirm purchase
-// @Description Confirms a pending ticket purchase
-// @Tags Tickets
+// @Summary Подтвердить покупку
+// @Description Подтверждает ожидающую транзакцию покупки билетов
+// @Tags Билеты
 // @Accept json
 // @Produce json
-// @Security ApiKeyAuth
-// @Param Authorization header string false "Bearer token"
-// @Param request body jsonreqresp.ConfirmCancelTxRequest true "Transaction ID"
-// @Success 200 "Purchase confirmed"
-// @Failure 400 "Invalid request"
-// @Failure 404 "Transaction not found"
-// @Failure 410 "Transaction expired"
+// // @Security ApiKeyAuth
+// // @Param Authorization header string false "Bearer токен"
+// @Param request body jsonreqresp.ConfirmCancelTxRequest true "ID транзакции"
+// @Success 200 "Покупка подтверждена"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Транзакция не найдена"
+// @Failure 410 "Транзакция просрочена"
 // @Router /guest/tickets/confirm [put]
 func (r *BuyTicketRouter) ConfirmBuyTicket(c *gin.Context) {
 	ctx := c.Request.Context()
@@ -153,18 +155,18 @@ func (r *BuyTicketRouter) ConfirmBuyTicket(c *gin.Context) {
 }
 
 // CancelBuyTicket cancels a ticket purchase
-// @Summary Cancel purchase
-// @Description Cancels a pending ticket purchase
-// @Tags Tickets
+// @Summary Отменить покупку
+// @Description Отменяет ожидающую транзакцию покупки билетов
+// @Tags Билеты
 // @Accept json
 // @Produce json
-// @Security ApiKeyAuth
-// @Param Authorization header string false "Bearer token"
-// @Param request body jsonreqresp.ConfirmCancelTxRequest true "Transaction ID"
-// @Success 200 "Purchase cancelled"
-// @Failure 400 "Invalid request"
-// @Failure 404 "Transaction not found"
-// @Failure 410 "Transaction expired"
+// // @Security ApiKeyAuth
+// // @Param Authorization header string false "Bearer токен"
+// @Param request body jsonreqresp.ConfirmCancelTxRequest true "ID транзакции"
+// @Success 200 "Покупка отменена"
+// @Failure 400 "Неверный запрос"
+// @Failure 404 "Транзакция не найдена"
+// @Failure 410 "Транзакция просрочена"
 // @Router /guest/tickets/cancel [put]
 func (r *BuyTicketRouter) CancelBuyTicket(c *gin.Context) {
 	ctx := c.Request.Context()
