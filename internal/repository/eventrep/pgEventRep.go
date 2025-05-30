@@ -268,6 +268,42 @@ func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 	return events, nil
 }
 
+func (pg *PgEventRep) GetCollectionsStat(ctx context.Context, eventID uuid.UUID) ([]*models.StatCollections, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	funcCall := sq.DebugSqlizer(sq.Expr("get_event_collection_stats(?)", eventID))
+	query, args, err := psql.Select("collection_id", "collection_title", "artwork_count").
+		From(funcCall).
+		ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %v", ErrQueryBuilds, err)
+	}
+	rows, err := pg.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %v", ErrQueryExec, err)
+	}
+	defer rows.Close()
+
+	var res []*models.StatCollections
+	for rows.Next() {
+		var colID uuid.UUID
+		var coltTitle string
+		var cntArtworks int
+		if err := rows.Scan(&colID, &coltTitle, &cntArtworks); err != nil {
+			return nil, fmt.Errorf("scan error: %v", err)
+		}
+		statCol, err := models.NewStatCollections(colID, coltTitle, cntArtworks)
+		if err != nil {
+			return nil, fmt.Errorf("PgEventRep.GetCollectionsStat: %w", err)
+		}
+		res = append(res, &statCol)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat rows iteration error: %v", err)
+	}
+	return res, nil
+}
+
 func (pg *PgEventRep) CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("id").

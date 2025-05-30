@@ -24,6 +24,7 @@ type EventRep interface {
 	GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uuid.UUIDs, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Event, error)
 	GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error)
+	GetCollectionsStat(ctx context.Context, eventID uuid.UUID) ([]*models.StatCollections, error)
 	CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool, error)
 	//
 	Add(ctx context.Context, e *models.Event) error

@@ -323,6 +323,15 @@ definitions:
         example: true
         type: boolean
     type: object
+  jsonreqresp.StatCollectionsResponse:
+    properties:
+      CntArtworks:
+        type: integer
+      ColID:
+        type: string
+      ColTitle:
+        type: string
+    type: object
   jsonreqresp.TicketPurchaseResponse:
     properties:
       customerEmail:
@@ -1426,6 +1435,34 @@ paths:
         "404":
           description: Не найдено - мероприятие или произведение не найдено
       summary: Получить все произведения мероприятия
+      tags:
+      - Поиск
+  /museum/events/{id}/statcols:
+    get:
+      consumes:
+      - application/json
+      description: Возвращает список коллекиций произведения искусства из которых
+        участвуют в выставке
+      parameters:
+      - description: ID мероприятия
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/jsonreqresp.StatCollectionsResponse'
+            type: array
+        "400":
+          description: Неверный запрос - ошибка валидации
+        "404":
+          description: Не найдено - мероприятие или произведение не найдено
+      summary: Получить статистику по коллекциям для мероприятия
       tags:
       - Поиск
 swagger: "2.0"

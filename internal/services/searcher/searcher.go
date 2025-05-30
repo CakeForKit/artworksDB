@@ -16,6 +16,7 @@ type Searcher interface {
 	GetAllEvents(ctx context.Context, filterOps *jsonreqresp.EventFilter) ([]*models.Event, error)
 	GetEvent(ctx context.Context, eventID uuid.UUID) (*models.Event, error)
 	GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error)
+	GetCollectionsStat(ctx context.Context, eventID uuid.UUID) ([]*models.StatCollections, error)
 }
 
 type searcher struct {
@@ -59,4 +60,16 @@ func (s *searcher) GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) 
 		artworks[i] = art
 	}
 	return artworks, nil
+}
+
+func (s *searcher) GetCollectionsStat(ctx context.Context, eventID uuid.UUID) ([]*models.StatCollections, error) {
+	_, err := s.eventRep.GetByID(ctx, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("searcher.GetCollectionsStat: %w", err)
+	}
+	statCols, err := s.eventRep.GetCollectionsStat(ctx, eventID)
+	if err != nil {
+		return nil, fmt.Errorf("searcher.GetCollectionsStat: %w", err)
+	}
+	return statCols, nil
 }

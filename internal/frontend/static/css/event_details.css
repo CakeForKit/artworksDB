@@ -233,3 +233,73 @@
 .cancel-button-buy:hover {
     background-color: var(--rose);
 }
+
+/* Стили для контейнера статистики коллекций */
+/* Collections Statistics Styles */
+.collections-stats {
+    margin: 30px 0;
+    padding: 20px;
+    background-color: var(--light-beige);
+    border: 1px solid var(--rose);
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+}
+
+.collections-stats h2 {
+    margin-top: 0;
+    margin-bottom: 20px;
+    color: var(--brown);
+    font-size: 1.5rem;
+}
+
+.stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background-color: white;
+}
+
+.stats-table thead {
+    background-color: var(--rose);
+    color: var(--light-beige);
+}
+
+.stats-table th {
+    padding: 12px 15px;
+    text-align: left;
+    font-weight: 600;
+}
+
+.stats-table td {
+    padding: 10px 15px;
+    border-bottom: 1px solid rgba(217, 165, 165, 0.2); /* Lighter border */
+}
+
+.stats-table tbody tr {
+    background-color: rgba(255, 255, 255, 0.8); /* Semi-transparent white */
+}
+
+.stats-table tbody tr:nth-child(even) {
+    background-color: rgba(245, 233, 217, 0.3); /* Very light beige for even rows */
+}
+
+.stats-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+.stats-table tbody tr:hover {
+    background-color: rgba(232, 196, 196, 0.15); /* Very subtle rose tint on hover */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .collections-stats {
+        padding: 15px;
+    }
+    
+    .stats-table th,
+    .stats-table td {
+        padding: 8px 10px;
+        font-size: 0.9rem;
+    }
+}

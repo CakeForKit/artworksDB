@@ -27,6 +27,7 @@ func NewSearcherRouter(router *gin.RouterGroup, serv searcher.Searcher) Searcher
 	gr.GET("/events", r.GetAllEvents)
 	gr.GET("/events/:id", r.GetEvent)
 	gr.GET("/events/:id/artworks", r.GetArtworkFromEvent)
+	gr.GET("/events/:id/statcols", r.GetCollectionsStat)
 	return r
 }
 
@@ -210,4 +211,43 @@ func (r *SearcherRouter) GetAllEvents(c *gin.Context) {
 		eventsResp[i] = a.ToEventResponse()
 	}
 	c.JSON(http.StatusOK, eventsResp)
+}
+
+// GetCollectionsStat godoc
+// @Summary Получить статистику по коллекциям для мероприятия
+// @Description Возвращает список коллекиций произведения искусства из которых участвуют в выставке
+// @Tags Поиск
+// @Accept json
+// @Produce json
+// @Param id path string true "ID мероприятия"
+// @Success 200 {array} jsonreqresp.StatCollectionsResponse
+// @Failure 400 "Неверный запрос - ошибка валидации"
+// @Failure 404 "Не найдено - мероприятие или произведение не найдено"
+// @Router /museum/events/{id}/statcols [get]
+func (r *SearcherRouter) GetCollectionsStat(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	// Получаем eventID из параметра пути
+	eventID, err := uuid.Parse(c.Param("id"))
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid event ID format"})
+		return
+	}
+
+	statCols, err := r.serv.GetCollectionsStat(ctx, eventID)
+	if err != nil {
+		if errors.Is(err, eventrep.ErrEventNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+
+	resp := make([]jsonreqresp.StatCollectionsResponse, len(statCols))
+	for i, v := range statCols {
+		resp[i] = v.ToResponse()
+	}
+
+	c.JSON(http.StatusOK, resp)
 }

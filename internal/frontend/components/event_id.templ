@@ -5,7 +5,13 @@ import (
     // "time"
 )
 
-templ EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventResponse, artworks []jsonreqresp.ArtworkResponse) {
+templ EventDetailsPage(
+    tokenKey string, 
+    title string, 
+    event jsonreqresp.EventResponse, 
+    artworks []jsonreqresp.ArtworkResponse,
+    statCollections []jsonreqresp.StatCollectionsResponse,
+) {
     @UsersNavigate(title) {
         <div class="event-details-container">
             <!-- Основная информация о мероприятии -->
@@ -49,6 +55,29 @@ templ EventDetailsPage(tokenKey string, title string, event jsonreqresp.EventRes
                     </div>
                 </div>
             </div>
+
+            <!-- Статистика по коллекциям -->
+            if len(statCollections) > 0 {
+                <div class="collections-stats">
+                    <h2>Статистика по коллекциям ({ len(statCollections) }):</h2>
+                    <table class="stats-table">
+                        <thead>
+                            <tr>
+                                <th>Название коллекции</th>
+                                <th>Количество произведений</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            for _, col := range statCollections {
+                                <tr>
+                                    <td>{ col.ColTitle }</td>
+                                    <td>{ col.CntArtworks }</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
 
             <!-- Список произведений на мероприятии -->
             <h2>Произведения на выставке ({ len(event.ArtworkIDs) }):</h2>
