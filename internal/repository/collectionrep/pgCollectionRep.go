@@ -33,7 +33,7 @@ var (
 	ErrRowsAffected          = errors.New("no rows affected")
 )
 
-func NewPgCollectionRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgCollectionRep, error) {
+func NewPgCollectionRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgCollectionRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",

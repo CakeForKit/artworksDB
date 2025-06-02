@@ -3,6 +3,7 @@ package employeerep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -27,7 +28,13 @@ type EmployeeRep interface {
 	Close()
 }
 
-func NewEmployeeRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
-	return NewPgEmployeeRep(ctx, pgCreds, dbConf)
-	// return &MockEmployeeRep{}, nil
+func NewEmployeeRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgEmployeeRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHEmployeeRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewEmployeeRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }

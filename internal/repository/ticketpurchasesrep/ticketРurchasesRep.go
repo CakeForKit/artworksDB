@@ -3,6 +3,7 @@ package ticketpurchasesrep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -23,7 +24,13 @@ type TicketPurchasesRep interface {
 	Close()
 }
 
-func NewTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
-	return NewPgTicketPurchasesRep(ctx, pgCreds, dbConf)
-	// return &MockTicketPurchasesRep{}, nil
+func NewTicketPurchasesRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgTicketPurchasesRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHTicketPurchasesRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewTicketPurchasesRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }

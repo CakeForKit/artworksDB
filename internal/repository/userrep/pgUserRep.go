@@ -34,7 +34,7 @@ var (
 )
 
 // func NewPgUserRep(ctx context.Context) (UserRep, error) {
-func NewPgUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
+func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"

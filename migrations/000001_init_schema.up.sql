@@ -280,8 +280,3 @@ BEGIN
         artwork_count DESC;
 END;
 $$ LANGUAGE plpgsql;
-
--- select * from events;
-
-select collection_id, collection_title, artwork_count
-from get_event_collection_stats('2c490870-ce8b-4bb7-8013-015fbb2b9e45');

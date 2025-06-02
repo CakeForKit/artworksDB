@@ -31,7 +31,7 @@ type testHelper struct {
 	authorRep *authorrep.PgAuthorRep
 	colRep    *collectionrep.PgCollectionRep
 	dbCnfg    *cnfg.DatebaseConfig
-	pgCreds   *cnfg.PostgresCredentials
+	pgCreds   *cnfg.DatebaseCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {

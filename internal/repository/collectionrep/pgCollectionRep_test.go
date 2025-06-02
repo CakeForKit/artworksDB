@@ -25,7 +25,7 @@ type testHelper struct {
 	ctx     context.Context
 	crep    *collectionrep.PgCollectionRep
 	dbCnfg  *cnfg.DatebaseConfig
-	pgCreds *cnfg.PostgresCredentials
+	pgCreds *cnfg.DatebaseCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {

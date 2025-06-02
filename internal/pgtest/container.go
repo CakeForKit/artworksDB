@@ -18,7 +18,7 @@ var (
 // pgSetupErr error
 )
 
-func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.PostgresCredentials, error) {
+func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.DatebaseCredentials, error) {
 	// pgOnce.Do(func() {
 	pgTestConfig := *cnfg.GetPgTestConfig()
 	pgContainer, pgCreds, pgSetupErr := NewTestPostgres(ctx, &pgTestConfig)
@@ -26,7 +26,7 @@ func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.Postgr
 	return pgContainer, pgCreds, pgSetupErr
 }
 
-func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (testcontainers.Container, cnfg.PostgresCredentials, error) {
+func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (testcontainers.Container, cnfg.DatebaseCredentials, error) {
 	strPort := fmt.Sprintf("%d/tcp", config.Port)
 	// strPort := "5432/tcp"
 
@@ -51,19 +51,19 @@ func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (test
 	})
 
 	if err != nil {
-		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
+		return nil, cnfg.DatebaseCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
 	}
 
 	host, err := cnt.Host(ctx)
 	if err != nil {
-		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
+		return nil, cnfg.DatebaseCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
 	}
 	// fmt.Printf("NewTestPostgres: host - %s\n", host)
 	port, err := cnt.MappedPort(ctx, "5432/tcp")
 	if err != nil {
-		return nil, cnfg.PostgresCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
+		return nil, cnfg.DatebaseCredentials{}, fmt.Errorf("NewTestPostgres: %w", err)
 	}
-	creds := cnfg.PostgresCredentials{
+	creds := cnfg.DatebaseCredentials{
 		Host:     host,
 		DbName:   config.DbName,
 		Port:     port.Int(),

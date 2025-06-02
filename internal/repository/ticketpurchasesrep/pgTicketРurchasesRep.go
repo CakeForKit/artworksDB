@@ -34,7 +34,7 @@ var (
 )
 
 // func NewPgTicketPurchasesRep(ctx context.Context) (TicketPurchasesRep, error) {
-func NewPgTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgTicketPurchasesRep, error) {
+func NewPgTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgTicketPurchasesRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"

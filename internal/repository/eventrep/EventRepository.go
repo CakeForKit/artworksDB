@@ -3,6 +3,7 @@ package eventrep
 import (
 	"context"
 	"errors"
+	"fmt"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -37,7 +38,13 @@ type EventRep interface {
 	Close()
 }
 
-func NewEventRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (EventRep, error) {
-	return NewPgEventRep(ctx, pgCreds, dbConf)
-	// return &MockEventRep{}, nil
+func NewEventRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (EventRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgEventRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHEventRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewEventRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }

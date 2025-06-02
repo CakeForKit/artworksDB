@@ -33,7 +33,7 @@ var (
 	ErrRowsAffected     = errors.New("no rows affected")
 )
 
-func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
+func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"

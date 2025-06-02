@@ -35,7 +35,7 @@ var (
 	ErrRowsAffected     = errors.New("no rows affected")
 )
 
-func NewPgEventRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgEventRep, error) {
+func NewPgEventRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgEventRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_Events:5432/Events"

@@ -29,13 +29,13 @@ type testHelper struct {
 	ctx        context.Context
 	tprep      *ticketpurchasesrep.PgTicketPurchasesRep
 	dbCnfg     *cnfg.DatebaseConfig
-	pgCreds    *cnfg.PostgresCredentials
+	pgCreds    *cnfg.DatebaseCredentials
 	userIDs    []uuid.UUID
 	eventIDs   []uuid.UUID
 	employeeID uuid.UUID
 }
 
-func addUser(t *testing.T, ctx context.Context, userID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, num int) {
+func addUser(t *testing.T, ctx context.Context, userID uuid.UUID, pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig, num int) {
 	user, err := models.NewUser(
 		userID,
 		fmt.Sprintf("user%d", num),
@@ -52,7 +52,7 @@ func addUser(t *testing.T, ctx context.Context, userID uuid.UUID, pgCreds *cnfg.
 	require.NoError(t, err)
 }
 
-func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) {
+func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig) {
 	admin, err := models.NewAdmin(
 		uuid.New(),
 		"admin",
@@ -83,7 +83,7 @@ func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCred
 	require.NoError(t, err)
 }
 
-func addEvent(t *testing.T, ctx context.Context, eventID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig, employeeID uuid.UUID, num int) {
+func addEvent(t *testing.T, ctx context.Context, eventID uuid.UUID, pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig, employeeID uuid.UUID, num int) {
 	event, err := models.NewEvent(
 		eventID,
 		fmt.Sprintf("Event %d", num),

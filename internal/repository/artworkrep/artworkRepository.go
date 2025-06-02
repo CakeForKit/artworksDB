@@ -3,6 +3,7 @@ package artworkrep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -26,7 +27,13 @@ type ArtworkRep interface {
 	Close()
 }
 
-func NewArtworkRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (ArtworkRep, error) {
-	return NewPgArtworkRep(ctx, pgCreds, dbConf)
-	// return &MockArtworkRep{}, nil
+func NewArtworkRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (ArtworkRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgArtworkRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHArtworkRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewArtworkRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }
