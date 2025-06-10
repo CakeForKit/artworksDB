@@ -35,11 +35,11 @@ type testHelper struct {
 	authorRep  *authorrep.PgAuthorRep
 	colRep     *collectionrep.PgCollectionRep
 	dbCnfg     *cnfg.DatebaseConfig
-	pgCreds    *cnfg.PostgresCredentials
+	pgCreds    *cnfg.DatebaseCredentials
 	employeeID uuid.UUID
 }
 
-func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.PostgresCredentials, dbCnfg *cnfg.DatebaseConfig) {
+func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig) {
 	admin, err := models.NewAdmin(
 		uuid.New(),
 		"admin",

@@ -11,7 +11,7 @@ import (
 )
 
 // func MigrateUp(ctx context.Context, db *cnfg.PostgresCredentials, migrationDir string) error {
-func MigrateUp(ctx context.Context, migrationDir string, pgCreds *cnfg.PostgresCredentials) error {
+func MigrateUp(ctx context.Context, migrationDir string, pgCreds *cnfg.DatebaseCredentials) error {
 	// wd, err := os.Getwd() // Получает директорию, из которой запущен `go run`
 	// if err != nil {
 	// 	panic(err)
@@ -33,7 +33,7 @@ func MigrateUp(ctx context.Context, migrationDir string, pgCreds *cnfg.PostgresC
 }
 
 // func MigrateDown(ctx context.Context, db *cnfg.PostgresCredentials, migrationDir string) error {
-func MigrateDown(ctx context.Context, migrationDir string, pgCreds *cnfg.PostgresCredentials) error {
+func MigrateDown(ctx context.Context, migrationDir string, pgCreds *cnfg.DatebaseCredentials) error {
 	sourceUrl := fmt.Sprintf("file://%s", migrationDir)
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=disable", pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 	m, err := migrate.New(sourceUrl, dbUrl)

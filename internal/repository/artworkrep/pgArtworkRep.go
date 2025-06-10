@@ -34,7 +34,7 @@ var (
 	ErrRowsAffected       = errors.New("no rows affected")
 )
 
-func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (*PgArtworkRep, error) {
+func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgArtworkRep, error) {
 	var resErr error
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"

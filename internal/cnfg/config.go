@@ -12,13 +12,13 @@ import (
 
 // Viper использует пакет mapstructure под капотом для преобразования значений
 
-// type Config struct {
-// 	App      AppConfig
-// 	Postgres PostgresCredentials
-// 	Datebase DatebaseConfig
-// }
+const (
+	PostgresDB   = "postgres"
+	ClickHouseDB = "clickhouse"
+)
 
 type AppConfig struct {
+	Datebase                     string        `mapstructure:"datebase"`
 	TokenSymmetricKey            string        `mapstructure:"token_symmetric_key"`
 	AccessTokenDuration          time.Duration `mapstructure:"access_token_duration"`
 	BuyTicketTransactionDuration time.Duration `mapstructure:"buy_ticket_transaction_duration"`
@@ -31,12 +31,12 @@ type DatebaseConfig struct {
 	ConnMaxLifetime time.Duration `mapstructure:"conn_max_lifetime"`
 }
 
-type PostgresCredentials struct {
-	Host     string `mapstructure:"POSTGRES_HOST"`
-	DbName   string `mapstructure:"POSTGRES_DB"`
-	Port     int    `mapstructure:"POSTGRES_PORT"`
-	Username string `mapstructure:"POSTGRES_USER"`
-	Password string `mapstructure:"POSTGRES_PASSWORD"`
+type DatebaseCredentials struct {
+	Host     string
+	DbName   string
+	Port     int
+	Username string
+	Password string
 }
 
 type PostgresTestConfig struct {
@@ -59,6 +59,7 @@ var (
 	ErrConfigRead    = errors.New("ReadInConfig")
 	ErrUnmarshalRead = errors.New("err to unmarshal config ")
 	ErrEnvRead       = errors.New("read env error")
+	ErrUnknownDB     = errors.New("unknown datebase")
 )
 
 func LoadAppConfig() (config *AppConfig, err error) {
@@ -72,6 +73,9 @@ func LoadAppConfig() (config *AppConfig, err error) {
 	}
 	if err = v.UnmarshalKey("app", config); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
+	}
+	if config.Datebase != PostgresDB && config.Datebase != ClickHouseDB {
+		return nil, ErrUnknownDB
 	}
 
 	return config, nil
@@ -93,19 +97,33 @@ func LoadDatebaseConfig(path string) (config *DatebaseConfig, err error) {
 	return config, nil
 }
 
-func LoadPgCredentials() (config *PostgresCredentials, err error) {
-	viper.AddConfigPath("./configs/") // расположение файла с настройками
+type PostgresCredentials struct {
+	Host     string `mapstructure:"POSTGRES_HOST"`
+	DbName   string `mapstructure:"POSTGRES_DB"`
+	Port     int    `mapstructure:"POSTGRES_PORT"`
+	Username string `mapstructure:"POSTGRES_USER"`
+	Password string `mapstructure:"POSTGRES_PASSWORD"`
+}
+
+func LoadPgCredentials(path string) (*DatebaseCredentials, error) {
+	viper.AddConfigPath(path) // расположение файла с настройками
 	viper.SetConfigName("db")
 	viper.SetConfigType("env")
 	viper.AutomaticEnv()
-	if err = viper.ReadInConfig(); err != nil {
+	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
-	config = &PostgresCredentials{}
-	if err = viper.Unmarshal(config); err != nil { // преобразование значений в переданный объект
+	config := &PostgresCredentials{}
+	if err := viper.Unmarshal(config); err != nil { // преобразование значений в переданный объект
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
-	return config, nil
+	return &DatebaseCredentials{
+		Host:     config.Host,
+		DbName:   config.DbName,
+		Port:     config.Port,
+		Username: config.Username,
+		Password: config.Password,
+	}, nil
 }
 
 func LoadPgTestConfig() (config *PostgresTestConfig, err error) {
@@ -141,6 +159,35 @@ func LoadRedisCredentials() (config *RedisCredentials, err error) {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
 	return config, nil
+}
+
+type ClickHouseCredentials struct {
+	Host     string `mapstructure:"CLICKHOUSE_HOST"`
+	DbName   string `mapstructure:"CLICKHOUSE_DB"`
+	Port     int    `mapstructure:"CLICKHOUSE_PORT"`
+	Username string `mapstructure:"CLICKHOUSE_USER"`
+	Password string `mapstructure:"CLICKHOUSE_PASSWORD"`
+}
+
+func LoadClickHouseCredentials() (*DatebaseCredentials, error) {
+	viper.AddConfigPath("./configs/") // расположение файла с настройками
+	viper.SetConfigName("clickhouse")
+	viper.SetConfigType("env")
+	viper.AutomaticEnv()
+	if err := viper.ReadInConfig(); err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
+	}
+	config := &ClickHouseCredentials{}
+	if err := viper.Unmarshal(config); err != nil { // преобразование значений в переданный объект
+		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
+	}
+	return &DatebaseCredentials{
+		Host:     config.Host,
+		DbName:   config.DbName,
+		Port:     config.Port,
+		Username: config.Username,
+		Password: config.Password,
+	}, nil
 }
 
 func GetProjectRoot() string {

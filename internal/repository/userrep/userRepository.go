@@ -3,6 +3,7 @@ package userrep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -29,7 +30,13 @@ type UserRep interface {
 	Close()
 }
 
-func NewUserRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
-	return NewPgUserRep(ctx, pgCreds, dbConf)
-	// return &MockUserRep{}, nil
+func NewUserRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgUserRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHUserRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewUserRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }

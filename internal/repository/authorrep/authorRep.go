@@ -3,6 +3,7 @@ package authorrep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -23,7 +24,13 @@ type AuthorRep interface {
 	HasArtworks(ctx context.Context, authorID uuid.UUID) (bool, error)
 }
 
-func NewAuthorRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {
-	return NewPgAuthorRep(ctx, pgCreds, dbConf)
-	// return &MockAuthorRep{}, nil
+func NewAuthorRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgAuthorRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHAuthorRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewAuthorRep: %w", cnfg.ErrUnknownDB)
+	}
+	// return &MockAdminRep{}, nil
 }

@@ -16,6 +16,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
+	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
@@ -40,6 +41,34 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+func main2() {
+	ctx := context.Background()
+	clhCreds, err := cnfg.LoadClickHouseCredentials()
+	if err != nil {
+		panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
+	}
+	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
+	if err != nil {
+		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
+	}
+	appCnfg, err := cnfg.LoadAppConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load AppConfig: %v", err))
+	}
+	arep, err := eventrep.NewEventRep(ctx, appCnfg.Datebase, clhCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
+	res, err := arep.GetAll(ctx, &jsonreqresp.EventFilter{})
+	if err != nil {
+		panic(err)
+	}
+	for _, a := range res {
+		fmt.Printf("%+v\n\n", *a)
+	}
+
+}
 
 func main() {
 	ctx := context.Background()
@@ -79,9 +108,23 @@ func main() {
 	engine.Use(gin.Recovery())
 
 	// ----- Config ------
-	pgCreds, err := cnfg.LoadPgCredentials()
+	appCnfg, err := cnfg.LoadAppConfig()
 	if err != nil {
-		panic(fmt.Errorf("cannot load PgCredentials: %v", err))
+		panic(fmt.Errorf("cannot load AppConfig: %v", err))
+	}
+	var dbCreds *cnfg.DatebaseCredentials
+	if appCnfg.Datebase == cnfg.PostgresDB {
+		pgCreds, err := cnfg.LoadPgCredentials("./configs/")
+		if err != nil {
+			panic(fmt.Errorf("cannot load PgCredentials: %v", err))
+		}
+		dbCreds = pgCreds
+	} else if appCnfg.Datebase == cnfg.ClickHouseDB {
+		clhCreds, err := cnfg.LoadClickHouseCredentials()
+		if err != nil {
+			panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
+		}
+		dbCreds = clhCreds
 	}
 	redisCreds, err := cnfg.LoadRedisCredentials()
 	if err != nil {
@@ -91,10 +134,6 @@ func main() {
 	if err != nil {
 		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
 	}
-	appCnfg, err := cnfg.LoadAppConfig()
-	if err != nil {
-		panic(fmt.Errorf("cannot load AppConfig: %v", err))
-	}
 	// ------------------
 
 	// для Swagger - НЕ ТРОГАТЬ
@@ -102,31 +141,31 @@ func main() {
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// ----- Repositories -----
-	userRep, err := userrep.NewUserRep(ctx, pgCreds, dbCnfg)
+	userRep, err := userrep.NewUserRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	employeeRep, err := employeerep.NewEmployeeRep(ctx, pgCreds, dbCnfg)
+	employeeRep, err := employeerep.NewEmployeeRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	adminRep, err := adminrep.NewAdminRep(ctx, pgCreds, dbCnfg)
+	adminRep, err := adminrep.NewAdminRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	collectionRep, err := collectionrep.NewCollectionRep(ctx, pgCreds, dbCnfg)
+	collectionRep, err := collectionrep.NewCollectionRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	authorRep, err := authorrep.NewAuthorRep(ctx, pgCreds, dbCnfg)
+	authorRep, err := authorrep.NewAuthorRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	artworkRep, err := artworkrep.NewArtworkRep(ctx, pgCreds, dbCnfg)
+	artworkRep, err := artworkrep.NewArtworkRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
-	eventRep, err := eventrep.NewEventRep(ctx, pgCreds, dbCnfg)
+	eventRep, err := eventrep.NewEventRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
@@ -134,7 +173,7 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	tPurchasesRep, err := ticketpurchasesrep.NewTicketPurchasesRep(ctx, pgCreds, dbCnfg)
+	tPurchasesRep, err := ticketpurchasesrep.NewTicketPurchasesRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}

@@ -3,6 +3,7 @@ package adminrep
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
@@ -27,7 +28,13 @@ type AdminRep interface {
 	Close()
 }
 
-func NewAdminRep(ctx context.Context, pgCreds *cnfg.PostgresCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
-	return NewPgAdminRep(ctx, pgCreds, dbConf)
+func NewAdminRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
+	if datebaseType == cnfg.PostgresDB {
+		return NewPgAdminRep(ctx, pgCreds, dbConf)
+	} else if datebaseType == cnfg.ClickHouseDB {
+		return NewCHAdminRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
+	} else {
+		return nil, fmt.Errorf("NewAdminRep: %w", cnfg.ErrUnknownDB)
+	}
 	// return &MockAdminRep{}, nil
 }

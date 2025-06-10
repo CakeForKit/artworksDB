@@ -27,7 +27,7 @@ type testHelper struct {
 	ctx     context.Context
 	arep    *adminrep.PgAdminRep
 	dbCnfg  *cnfg.DatebaseConfig
-	pgCreds *cnfg.PostgresCredentials
+	pgCreds *cnfg.DatebaseCredentials
 }
 
 func setupTestHelper(t *testing.T) *testHelper {

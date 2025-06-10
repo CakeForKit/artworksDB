@@ -28,7 +28,7 @@ type testHelper struct {
 	ctx     context.Context
 	erep    *employeerep.PgEmployeeRep
 	dbCnfg  *cnfg.DatebaseConfig
-	pgCreds *cnfg.PostgresCredentials
+	pgCreds *cnfg.DatebaseCredentials
 	adminID uuid.UUID
 }
 
