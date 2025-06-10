@@ -1489,6 +1489,47 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/museum/events/{id}/statcols": {
+            "get": {
+                "description": "Возвращает список коллекиций произведения искусства из которых участвуют в выставке",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Поиск"
+                ],
+                "summary": "Получить статистику по коллекциям для мероприятия",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "ID мероприятия",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/jsonreqresp.StatCollectionsResponse"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Неверный запрос - ошибка валидации"
+                    },
+                    "404": {
+                        "description": "Не найдено - мероприятие или произведение не найдено"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1931,6 +1972,20 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "jsonreqresp.StatCollectionsResponse": {
+            "type": "object",
+            "properties": {
+                "CntArtworks": {
+                    "type": "integer"
+                },
+                "ColID": {
+                    "type": "string"
+                },
+                "ColTitle": {
+                    "type": "string"
                 }
             }
         },

@@ -253,3 +253,35 @@ CREATE TRIGGER check_artworks_on_author_update
 BEFORE UPDATE ON Author
 FOR EACH ROW
 EXECUTE FUNCTION validate_existing_artworks_on_author_update();
+
+
+
+CREATE OR REPLACE FUNCTION get_event_collection_stats(event_id UUID)
+RETURNS TABLE (
+    collection_id UUID,
+    collection_title VARCHAR(255),
+    artwork_count BIGINT
+) AS $$
+BEGIN
+    RETURN QUERY
+    SELECT 
+        c.id AS collection_id,
+        c.title AS collection_title,
+        COUNT(a.id) AS artwork_count
+    FROM 
+        Artwork_event ae
+        JOIN Artworks a ON ae.artworkID = a.id
+        JOIN Collection c ON a.collectionID = c.id
+    WHERE 
+        ae.eventID = event_id
+    GROUP BY 
+        c.id, c.title
+    ORDER BY 
+        artwork_count DESC;
+END;
+$$ LANGUAGE plpgsql;
+
+-- select * from events;
+
+select collection_id, collection_title, artwork_count
+from get_event_collection_stats('2c490870-ce8b-4bb7-8013-015fbb2b9e45');

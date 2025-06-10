@@ -190,12 +190,27 @@ func (r *CiteRouter) GetEvent(c *gin.Context) {
 		artworksResp[i] = a.ToArtworkResponse()
 	}
 
+	modelStatCols, err := r.searcherServ.GetCollectionsStat(ctx, eventID)
+	if err != nil {
+		if errors.Is(err, eventrep.ErrEventNotFound) {
+			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+		} else {
+			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		}
+		return
+	}
+	statCollections := make([]jsonreqresp.StatCollectionsResponse, len(modelStatCols))
+	for i, v := range modelStatCols {
+		statCollections[i] = v.ToResponse()
+	}
+
 	rend := gintemplrenderer.New(
 		c.Request.Context(),
 		http.StatusOK,
 		components.EventDetailsPage(
 			TokenLocalstorage, event.GetTitle(),
 			event.ToEventResponse(), artworksResp,
+			statCollections,
 		),
 	)
 	c.Render(http.StatusOK, rend)
