@@ -29,6 +29,8 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/adminserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
@@ -185,7 +187,15 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep)
+	tokenMaker, err := token.NewTokenMaker(appCnfg.TokenSymmetricKey)
+	if err != nil {
+		panic(fmt.Errorf("cannot create token maker: %w", err))
+	}
+	hasher, err := hasher.NewHasher()
+	if err != nil {
+		panic(err)
+	}
+	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep, tokenMaker, hasher)
 	if err != nil {
 		panic(err)
 	}

@@ -83,7 +83,7 @@ func TestAuthEmployee_LoginEmployee(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
-			hasher := new(MockHasher)
+			hasher := new(hasher.MockHasher)
 
 			service := &authEmployee{
 				tokenMaker:  tokenMaker,
@@ -161,7 +161,7 @@ func TestAuthEmployee_RegisterEmployee(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			mockRepo := new(employeerep.MockEmployeeRep)
 			tokenMaker, _ := token.NewTokenMaker(config.TokenSymmetricKey)
-			hasher := new(MockHasher)
+			hasher := new(hasher.MockHasher)
 
 			hasher.On("HashPassword", tt.request.Password).Return("hashed_password", tt.hashError)
 			if tt.hashError == nil {

@@ -1,155 +1,309 @@
-package auth
+package auth_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
+	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/mock"
+
+	// "github.com/stateio/testify/mock"
 	"github.com/stateio/testify/require"
-	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 )
 
-// MockHasher implements hasher.Hasher interface
-type MockHasher struct {
-	mock.Mock
+type AppConfigMother interface {
+	Default() cnfg.AppConfig
 }
 
-func (m *MockHasher) HashPassword(password string) (string, error) {
-	args := m.Called(password)
-	return args.String(0), args.Error(1)
+func NewAppConfigMother() AppConfigMother {
+	return &appConfigMother{}
 }
 
-func (m *MockHasher) CheckPassword(password string, hashedPassword string) error {
-	args := m.Called(password, hashedPassword)
-	return args.Error(0)
-}
+type appConfigMother struct{}
 
-func TestAuthUserService(t *testing.T) {
-	validUserID := uuid.New()
-	validUsername := "testuser"
-	validLogin := "testlogin"
-	validPassword := "securepassword"
-	validEmail := "test@example.com"
-	hashedPassword := "hashedpassword"
-
+func (am *appConfigMother) Default() cnfg.AppConfig {
 	config := cnfg.AppConfig{
-		TokenSymmetricKey:   "01234567890123456789012345678912",
-		AccessTokenDuration: time.Hour,
+		Datebase:                     cnfg.PostgresDB,
+		TokenSymmetricKey:            "01234567890123456789012345678912",
+		AccessTokenDuration:          time.Hour,
+		BuyTicketTransactionDuration: time.Hour,
+		Port:                         8000,
+	}
+	return config
+}
+
+func TestAuthUser_RegisterUser(t *testing.T) {
+	appConfigCreator := NewAppConfigMother()
+	appCnfg := appConfigCreator.Default()
+
+	tokenMaker, err := token.NewTokenMaker(appCnfg.TokenSymmetricKey)
+	require.Nil(t, err)
+
+	userCreator := testobj.NewUserMother()
+	hashedPassword := "$2a$10$hashedpassword123"
+	user := userCreator.UserWithPswdHash(uuid.New(), hashedPassword)
+	passwordUser := "password123"
+	registerReq := auth.RegisterUserRequest{
+		Username:       user.GetUsername(),
+		Login:          user.GetLogin(),
+		Password:       passwordUser,
+		Email:          user.GetEmail(),
+		SubscribeEmail: user.IsSubscribedToMail(),
 	}
 
-	t.Run("LoginUser", func(t *testing.T) {
+	t.Run("success", func(t *testing.T) {
 		ctx := context.Background()
-		t.Run("Success", func(t *testing.T) {
-			userRep := new(userrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
-			hasher := new(MockHasher)
+		mockHasher := new(hasher.MockHasher)
 
-			user, err := models.NewUser(
-				validUserID,
-				validUsername,
-				validLogin,
-				hashedPassword,
-				time.Now(),
-				validEmail,
-				true,
-			)
-			require.NoError(t, err)
+		mockHasher.On("HashPassword", passwordUser).Return(hashedPassword, nil)
 
-			userRep.On("GetByLogin", ctx, validLogin).Return(&user, nil)
-			hasher.On("CheckPassword", validPassword, hashedPassword).Return(nil)
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("Add", ctx, mock.MatchedBy(func(u *models.User) bool {
+			return user.GetUsername() == u.GetUsername() &&
+				user.GetLogin() == u.GetLogin() &&
+				user.GetHashedPassword() == hashedPassword &&
+				user.GetEmail() == u.GetEmail() &&
+				user.IsSubscribedToMail() == u.IsSubscribedToMail()
+		})).Return(nil)
 
-			service := &authUser{
-				tokenMaker: tokenMaker,
-				config:     config,
-				userrep:    userRep,
-				hasher:     hasher,
-			}
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		require.Nil(t, err)
+		// act
+		err = authUserServ.RegisterUser(ctx, registerReq)
 
-			_, err = service.LoginUser(ctx, LoginUserRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
-			require.NoError(t, err)
+		require.NoError(t, err)
+		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
+		mockUserRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.User"))
+	})
+	t.Run("hasher error", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockHasher := new(hasher.MockHasher)
+		expectedErr := hasher.ErrHash
+		mockHasher.On("HashPassword", passwordUser).Return("", expectedErr)
 
-			userRep.AssertExpectations(t)
-			hasher.AssertExpectations(t)
-		})
+		mockUserRep := new(userrep.MockUserRep)
 
-		t.Run("InvalidPassword", func(t *testing.T) {
-			userRep := new(userrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
-			hasher := new(MockHasher)
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		require.Nil(t, err)
 
-			user, err := models.NewUser(
-				validUserID,
-				validUsername,
-				validLogin,
-				hashedPassword,
-				time.Now(),
-				validEmail,
-				true,
-			)
-			require.NoError(t, err)
+		// ACT
+		err = authUserServ.RegisterUser(ctx, registerReq)
 
-			userRep.On("GetByLogin", ctx, validLogin).Return(&user, nil)
-			hasher.On("CheckPassword", validPassword, hashedPassword).Return(assert.AnError)
-
-			service := &authUser{
-				tokenMaker: tokenMaker,
-				config:     config,
-				userrep:    userRep,
-				hasher:     hasher,
-			}
-
-			_, err = service.LoginUser(ctx, LoginUserRequest{
-				Login:    validLogin,
-				Password: validPassword,
-			})
-
-			require.Error(t, err)
-			assert.ErrorIs(t, err, assert.AnError)
-		})
-
+		// ASSERT
+		require.Error(t, err)
+		require.Equal(t, expectedErr, err)
+		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
+		mockUserRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
-	t.Run("RegisterUser", func(t *testing.T) {
+	t.Run("user repository error", func(t *testing.T) {
+		// ARRANGE
 		ctx := context.Background()
-		t.Run("Success", func(t *testing.T) {
-			userRep := new(userrep.MockUserRep)
-			tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-			require.NoError(t, err)
-			hasher := new(MockHasher)
+		mockHasher := new(hasher.MockHasher)
+		mockHasher.On("HashPassword", passwordUser).Return(hashedPassword, nil)
 
-			hasher.On("HashPassword", validPassword).Return(hashedPassword, nil)
-			userRep.On("Add", ctx, mock.Anything).Return(nil)
+		mockUserRep := new(userrep.MockUserRep)
+		expectedErr := errors.New("database error")
+		mockUserRep.On("Add", ctx, mock.AnythingOfType("*models.User")).Return(expectedErr)
 
-			service := &authUser{
-				tokenMaker: tokenMaker,
-				config:     config,
-				userrep:    userRep,
-				hasher:     hasher,
-			}
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		require.Nil(t, err)
 
-			err = service.RegisterUser(ctx, RegisterUserRequest{
-				Username:       validUsername,
-				Login:          validLogin,
-				Password:       validPassword,
-				Email:          validEmail,
-				SubscribeEmail: true,
-			})
+		// ACT
+		err = authUserServ.RegisterUser(ctx, registerReq)
 
-			require.NoError(t, err)
+		// ASSERT
+		require.Error(t, err)
+		require.Equal(t, expectedErr, err)
+		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
+		mockUserRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.User"))
+	})
+}
 
-			hasher.AssertExpectations(t)
-			userRep.AssertExpectations(t)
-		})
+func TestAuthUser_LoginUser(t *testing.T) {
+	appConfigCreator := NewAppConfigMother()
+	appCnfg := appConfigCreator.Default()
+
+	userCreator := testobj.NewUserMother()
+	hashedPassword := "$2a$10$hashedpassword123"
+	user := userCreator.UserWithPswdHash(uuid.New(), hashedPassword)
+	passwordUser := "password123"
+
+	loginReq := auth.LoginUserRequest{
+		Login:    user.GetLogin(),
+		Password: passwordUser,
+	}
+
+	t.Run("success", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		// Настройка моков
+		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
+		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(nil)
+
+		expectedToken := "access-token-123"
+		mockTokenMaker.On("CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration).
+			Return(expectedToken, nil)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+
+		// ASSERT
+		require.NoError(t, err)
+		require.Equal(t, expectedToken, tokenStr)
+		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
+		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
+		mockTokenMaker.AssertCalled(t, "CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration)
+	})
+
+	t.Run("error user not found", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		expectedErr := errors.New("user not found")
+		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(nil, expectedErr)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+
+		// ASSERT
+		require.Error(t, err)
+		require.Empty(t, tokenStr)
+		require.Equal(t, expectedErr, err)
+		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
+		mockHasher.AssertNotCalled(t, "CheckPassword", mock.Anything, mock.Anything)
+	})
+
+	t.Run("error wrong password", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
+
+		expectedErr := errors.New("wrong password")
+		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(expectedErr)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+
+		// ASSERT
+		require.Error(t, err)
+		require.Empty(t, tokenStr)
+		require.Equal(t, expectedErr, err)
+		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
+		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
+	})
+
+	t.Run("token creation failed", func(t *testing.T) {
+		// ARRANGE
+		ctx := context.Background()
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
+		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(nil)
+
+		expectedErr := errors.New("token creation failed")
+		mockTokenMaker.On("CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration).
+			Return("", expectedErr)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+
+		// ASSERT
+		require.Error(t, err)
+		require.Empty(t, tokenStr)
+		require.Equal(t, expectedErr, err)
+		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
+		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
+		mockTokenMaker.AssertCalled(t, "CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration)
+	})
+}
+
+func TestAuthUser_VerifyByToken(t *testing.T) {
+	appConfigCreator := NewAppConfigMother()
+	appCnfg := appConfigCreator.Default()
+
+	t.Run("success", func(t *testing.T) {
+		// ARRANGE
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		expectedPayload := &token.Payload{
+			PersonID:  uuid.New(),
+			Role:      token.UserRole,
+			ExpiredAt: time.Now().Add(time.Hour),
+		}
+
+		tokenString := "valid-token-123"
+		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(expectedPayload, nil)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		payload, err := authUserServ.VerifyByToken(tokenString)
+
+		// ASSERT
+		require.NoError(t, err)
+		require.Equal(t, expectedPayload, payload)
+		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.UserRole)
+	})
+
+	t.Run("error", func(t *testing.T) {
+		// ARRANGE
+		mockHasher := new(hasher.MockHasher)
+		mockUserRep := new(userrep.MockUserRep)
+		mockTokenMaker := new(token.MockTokenMaker)
+
+		tokenString := "invalid-token"
+		expectedErr := errors.New("invalid token")
+		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(nil, expectedErr)
+
+		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		require.Nil(t, err)
+
+		// ACT
+		payload, err := authUserServ.VerifyByToken(tokenString)
+
+		// ASSERT
+		require.Error(t, err)
+		require.Nil(t, payload)
+		require.Equal(t, expectedErr, err)
+		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.UserRole)
 	})
 }

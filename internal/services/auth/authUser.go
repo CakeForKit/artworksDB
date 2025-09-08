@@ -2,7 +2,6 @@ package auth
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -43,16 +42,15 @@ type authUser struct {
 	hasher     hasher.Hasher
 }
 
-func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep) (AuthUser, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
-	}
-
-	hasher, err := hasher.NewHasher()
-	if err != nil {
-		return nil, err
-	}
+func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthUser, error) {
+	// tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
+	// if err != nil {
+	// 	return nil, fmt.Errorf("cannot create token maker: %w", err)
+	// }
+	// hasher, err := hasher.NewHasher()
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	server := &authUser{
 		tokenMaker: tokenMaker,
