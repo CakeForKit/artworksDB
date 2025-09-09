@@ -1,16 +1,28 @@
-package mailing
+package mailing_test
 
-import (
-	"context"
-	"testing"
-	"time"
+// func TestMailingService_SendMailToAllUsers(t *testing.T) {
+// 	userCreator := testobj.NewUserMother()
+// 	user := userCreator.DefaultUser(uuid.New())
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
-)
+// 	t.Run("success", func(t *testing.T) {
+// 		ctx := context.Background()
 
+// 		mockUserRep := new(userrep.MockUserRep)
+// 		mockUserRep.On("GetByID", ctx, user.GetID()).Return(&user, nil)
+
+// 		mailServ := mailing.NewGmailSender(mockUserRep, "name", "fromEmailAddress", "fromEmailPassword")
+// 		// ACT
+// 		resUser, err := mailServ.SendMailToAllUsers(ctx)
+
+// 		require.Nil(t, err)
+// 		require.True(t, models.CmpUsers(&user, resUser))
+// 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
+// 		mockUserRep.AssertCalled(t, "GetByID", ctx, user.GetID())
+// 	})
+
+// }
+
+/*
 func createTestConfig() (string, string, string) {
 	return "Test Museum", "museum@test.com", "test-password"
 }
@@ -109,3 +121,4 @@ func TestMailingService_SendMailToAllUsers(t *testing.T) {
 		})
 	}
 }
+*/

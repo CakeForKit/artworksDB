@@ -13,8 +13,8 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/require"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/require"
 )
 
 var (

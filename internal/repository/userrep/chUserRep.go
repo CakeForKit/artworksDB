@@ -101,9 +101,7 @@ func (ch *CHUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("CHUserRep.GetAll: %v", err)
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
+
 	return users, nil
 }
 
@@ -119,9 +117,7 @@ func (ch *CHUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, erro
 	if err != nil {
 		return nil, fmt.Errorf("CHUserRep.GetAllSubscribed: %v", err)
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
+
 	return users, nil
 }
 

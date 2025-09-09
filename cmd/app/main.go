@@ -199,11 +199,11 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep)
+	authEmployeeServ, err := auth.NewAuthEmployee(*appCnfg, employeeRep, tokenMaker, hasher)
 	if err != nil {
 		panic(err)
 	}
-	authAdminServ, err := auth.NewAuthAdmin(*appCnfg, adminRep)
+	authAdminServ, err := auth.NewAuthAdmin(*appCnfg, adminRep, tokenMaker, hasher)
 	if err != nil {
 		panic(err)
 	}

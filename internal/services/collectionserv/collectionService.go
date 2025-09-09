@@ -26,15 +26,15 @@ type collectionServ struct {
 }
 
 func (s *collectionServ) GetAll(ctx context.Context) ([]*models.Collection, error) {
-	return s.collectionRep.GetAllCollections(ctx)
+	return s.collectionRep.GetAll(ctx)
 }
 
 func (s *collectionServ) Add(ctx context.Context, col *models.Collection) error {
-	return s.collectionRep.AddCollection(ctx, col)
+	return s.collectionRep.Add(ctx, col)
 }
 
 func (s *collectionServ) Delete(ctx context.Context, idCol uuid.UUID) error {
-	return s.collectionRep.DeleteCollection(ctx, idCol)
+	return s.collectionRep.Delete(ctx, idCol)
 }
 
 func (s *collectionServ) Update(
@@ -42,7 +42,7 @@ func (s *collectionServ) Update(
 	idCol uuid.UUID,
 	updateReq models.CollectionUpdateReq,
 ) error {
-	return s.collectionRep.UpdateCollection(
+	return s.collectionRep.Update(
 		ctx,
 		idCol,
 		func(c *models.Collection) (*models.Collection, error) {

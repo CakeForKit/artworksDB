@@ -59,6 +59,24 @@ func (a *Author) validate() error {
 	return nil
 }
 
+func (a1 *Author) Equals(other interface{}) bool {
+	if a1 == nil {
+		return other == nil
+	}
+
+	a2, ok := other.(*Author)
+	if !ok {
+		return false
+	}
+	if a2 == nil {
+		return false
+	}
+
+	return a1.name == a2.name &&
+		a1.birthYear == a2.birthYear &&
+		a1.deathYear == a2.deathYear
+}
+
 func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
 	return jsonreqresp.AuthorResponse{
 		ID:        a.id.String(),

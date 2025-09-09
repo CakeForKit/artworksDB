@@ -10,6 +10,7 @@ import (
 type UserMother interface {
 	DefaultUser(userID uuid.UUID) models.User
 	UserWithPswdHash(userID uuid.UUID, hashedPassword string) models.User
+	DefaultUserP(userID uuid.UUID) *models.User
 }
 
 func NewUserMother() UserMother {
@@ -42,4 +43,17 @@ func (um *userMother) UserWithPswdHash(userID uuid.UUID, hashedPassword string) 
 		true,
 	)
 	return user
+}
+
+func (um *userMother) DefaultUserP(userID uuid.UUID) *models.User {
+	user, _ := models.NewUser(
+		userID,
+		"test-user",
+		"test-login",
+		"hashed-password",
+		time.Now(),
+		"user@test.com",
+		true,
+	)
+	return &user
 }

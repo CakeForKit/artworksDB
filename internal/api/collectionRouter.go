@@ -19,13 +19,13 @@ type CollectionRouter struct {
 func (r *CollectionRouter) Init(router *gin.RouterGroup, collectionServ collectionserv.CollectionServ) {
 	r.collectionServ = collectionServ
 	gr := router.Group("collections")
-	gr.GET("/", r.GetAllCollections)
-	gr.POST("/", r.AddCollection)
-	gr.PUT("/", r.UpdateCollection)
-	gr.DELETE("/", r.DeleteCollection)
+	gr.GET("/", r.GetAll)
+	gr.POST("/", r.Add)
+	gr.PUT("/", r.Update)
+	gr.DELETE("/", r.Delete)
 }
 
-// GetAllCollections godoc
+// GetAll godoc
 // @Summary Получить все коллекции (сотрудник)
 // @Description Возвращает список всех коллекций
 // @Tags Коллекции
@@ -34,7 +34,7 @@ func (r *CollectionRouter) Init(router *gin.RouterGroup, collectionServ collecti
 // @Param Authorization header string true "bearer {token}"
 // @Success 200 {array} jsonreqresp.CollectionResponse
 // @Router /employee/collections [get]
-func (r *CollectionRouter) GetAllCollections(c *gin.Context) {
+func (r *CollectionRouter) GetAll(c *gin.Context) {
 	ctx := c.Request.Context()
 	cols, err := r.collectionServ.GetAll(ctx)
 	if err != nil {
@@ -48,7 +48,7 @@ func (r *CollectionRouter) GetAllCollections(c *gin.Context) {
 	c.JSON(http.StatusOK, colsResp)
 }
 
-// AddCollection godoc
+// Add godoc
 // @Summary Добавить новую коллекцию (сотрудник)
 // @Description Создает новую коллекцию
 // @Tags Коллекции
@@ -56,14 +56,14 @@ func (r *CollectionRouter) GetAllCollections(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.AddCollectionRequest true "Данные коллекции"
+// @Param request body jsonreqresp.AddRequest true "Данные коллекции"
 // @Success 201 "Коллекция создана"
 // @Failure 400 "Неверный запрос"
 // @Router /employee/collections [post]
-func (r *CollectionRouter) AddCollection(c *gin.Context) {
+func (r *CollectionRouter) Add(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req jsonreqresp.AddCollectionRequest
+	var req jsonreqresp.AddRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -83,7 +83,7 @@ func (r *CollectionRouter) AddCollection(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{})
 }
 
-// UpdateCollection godoc
+// Update godoc
 // @Summary Обновить коллекцию (сотрудник)
 // @Description Обновляет существующую коллекцию
 // @Tags Коллекции
@@ -91,15 +91,15 @@ func (r *CollectionRouter) AddCollection(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.UpdateCollectionRequest true "Данные для обновления коллекции"
+// @Param request body jsonreqresp.UpdateRequest true "Данные для обновления коллекции"
 // @Success 200 "Коллекция обновлена"
 // @Failure 400 "Неверный запрос"
 // @Failure 404 "Коллекция не найдена"
 // @Router /employee/collections [put]
-func (r *CollectionRouter) UpdateCollection(c *gin.Context) {
+func (r *CollectionRouter) Update(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req jsonreqresp.UpdateCollectionRequest
+	var req jsonreqresp.UpdateRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -117,7 +117,7 @@ func (r *CollectionRouter) UpdateCollection(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{})
 }
 
-// DeleteCollection godoc
+// Delete godoc
 // @Summary Удалить коллекцию (сотрудник)
 // @Description Удаляет существующую коллекцию
 // @Tags Коллекции
@@ -125,15 +125,15 @@ func (r *CollectionRouter) UpdateCollection(c *gin.Context) {
 // @Produce json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body jsonreqresp.DeleteCollectionRequest true "Данные для удаления коллекции"
+// @Param request body jsonreqresp.DeleteRequest true "Данные для удаления коллекции"
 // @Success 200 "Коллекция удалена"
 // @Failure 400 "Неверный запрос"
 // @Failure 404 "Коллекция не найдена"
 // @Router /employee/collections [delete]
-func (r *CollectionRouter) DeleteCollection(c *gin.Context) {
+func (r *CollectionRouter) Delete(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req jsonreqresp.DeleteCollectionRequest
+	var req jsonreqresp.DeleteRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

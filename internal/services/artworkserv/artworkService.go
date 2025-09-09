@@ -48,7 +48,7 @@ func (a *artworkService) Add(ctx context.Context, artworkReq jsonreqresp.AddArtw
 	if err != nil {
 		return fmt.Errorf("artworkService.Add: %w", err)
 	}
-	collection, err := a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(artworkReq.CollectionID))
+	collection, err := a.collectionRep.GetByID(ctx, uuid.MustParse(artworkReq.CollectionID))
 	if err != nil {
 		return fmt.Errorf("artworkService.Add: %w", err)
 	}
@@ -84,7 +84,7 @@ func (a *artworkService) Update(ctx context.Context, idArt uuid.UUID, updateFiel
 	if err != nil {
 		return fmt.Errorf("artworkService.Add: %w", err)
 	}
-	_, err = a.collectionRep.GetCollectionByID(ctx, uuid.MustParse(updateFields.CollectionID))
+	_, err = a.collectionRep.GetByID(ctx, uuid.MustParse(updateFields.CollectionID))
 	if err != nil {
 		return fmt.Errorf("artworkService.Add: %w", err)
 	}

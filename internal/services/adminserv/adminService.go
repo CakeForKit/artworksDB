@@ -59,7 +59,7 @@ func (e *adminService) ChangeEmployeeRights(ctx context.Context, employeeID uuid
 	}
 	_, err = e.employeeRep.Update(ctx, employeeID, funcUpdate)
 	if err != nil {
-		return fmt.Errorf("mployeeService.ChangeRights: %w", err)
+		return fmt.Errorf("adminService.ChangeRights: %w", err)
 	}
 	return nil
 }

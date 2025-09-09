@@ -2,239 +2,218 @@ package authorserv_test
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
+	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 )
 
-func createTestAuthor() *models.Author {
-	author, _ := models.NewAuthor(uuid.New(), "Test Author", 1900, 2000)
-	return &author
+func TestAuthorServ_GetAll(t *testing.T) {
+	authorCreator := testobj.NewAuthorMother()
+
+	t.Run("success return 2 authors", func(t *testing.T) {
+		ctx := context.Background()
+		authors := []*models.Author{
+			authorCreator.AuthorP(uuid.New()),
+			authorCreator.AuthorP(uuid.New()),
+		}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("GetAll", ctx).Return(authors, nil)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		resAuthors, err := authorServ.GetAll(ctx)
+		require.Nil(t, err)
+		require.True(t, len(authors) == len(resAuthors))
+		for i := range len(resAuthors) {
+			require.True(t, authors[i].Equals(resAuthors[i]))
+		}
+		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
+	})
+	t.Run("success return 0 authors", func(t *testing.T) {
+		ctx := context.Background()
+		authors := []*models.Author{}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("GetAll", ctx).Return(authors, nil)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		resAuthors, err := authorServ.GetAll(ctx)
+		require.Nil(t, err)
+		require.True(t, len(resAuthors) == 0)
+		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
+	})
+	t.Run("error in rep", func(t *testing.T) {
+		ctx := context.Background()
+		authors := []*models.Author{}
+		expectedErr := errors.New("userRep error")
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("GetAll", ctx).Return(authors, expectedErr)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		_, err := authorServ.GetAll(ctx)
+		require.ErrorIs(t, err, expectedErr)
+		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
+	})
 }
 
-func createTestUpdateRequest() models.AuthorUpdateReq {
-	return models.AuthorUpdateReq{
-		Name:      "Updated Author",
-		BirthYear: 1901,
-		DeathYear: 2001,
-	}
+func TestAuthorServ_Add(t *testing.T) {
+	authorCreator := testobj.NewAuthorMother()
+
+	t.Run("success add author", func(t *testing.T) {
+		ctx := context.Background()
+		author := authorCreator.AuthorP(uuid.New())
+
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("Add", ctx, author).Return(nil)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Add(ctx, author)
+		require.Nil(t, err)
+		mockAuthorRep.AssertCalled(t, "Add", ctx, author)
+	})
+
+	t.Run("error in rep", func(t *testing.T) {
+		ctx := context.Background()
+		author := authorCreator.AuthorP(uuid.New())
+		expectedErr := errors.New("database error")
+
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("Add", ctx, author).Return(expectedErr)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Add(ctx, author)
+		require.ErrorIs(t, err, expectedErr)
+		mockAuthorRep.AssertCalled(t, "Add", ctx, author)
+	})
 }
 
-func TestAuthorService_GetAll(t *testing.T) {
-	ctx := context.Background()
-	tests := []struct {
-		name          string
-		setupMocks    func(*authorrep.MockAuthorRep)
-		expectedCount int
-		expectedError error
-	}{
-		{
-			name: "success with authors",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				authors := []*models.Author{
-					createTestAuthor(),
-					createTestAuthor(),
-				}
-				m.On("GetAll", ctx).Return(authors, nil)
-			},
-			expectedCount: 2,
-		},
-		{
-			name: "empty result",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("GetAll", ctx).Return([]*models.Author{}, nil)
-			},
-			expectedCount: 0,
-		},
-		{
-			name: "repository error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("GetAll", ctx).Return(nil, assert.AnError)
-			},
-			expectedError: assert.AnError,
-		},
-	}
+func TestAuthorServ_Update(t *testing.T) {
+	authorCreator := testobj.NewAuthorMother()
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &authorrep.MockAuthorRep{}
-			tt.setupMocks(mockRepo)
+	t.Run("success update author", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
+		updateReq := authorCreator.AuthorUpdateReq()
 
-			service := authorserv.NewAuthorServ(mockRepo)
-			result, err := service.GetAll(ctx)
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).Return(nil)
 
-			if tt.expectedError != nil {
-				assert.ErrorIs(t, err, tt.expectedError)
-				assert.Nil(t, result)
-			} else {
-				require.NoError(t, err)
-				assert.Equal(t, tt.expectedCount, len(result))
-			}
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Update(ctx, authorID, updateReq)
+		require.Nil(t, err)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+	})
 
-			mockRepo.AssertExpectations(t)
-		})
-	}
+	t.Run("error in rep", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
+		updateReq := models.AuthorUpdateReq{
+			Name: "Updated Name",
+		}
+		expectedErr := errors.New("update error")
+
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).Return(expectedErr)
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Update(ctx, authorID, updateReq)
+		require.ErrorIs(t, err, expectedErr)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+	})
+
+	t.Run("error in update function", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
+		updateReq := models.AuthorUpdateReq{}
+
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).
+			Return(errors.New("validation error"))
+
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Update(ctx, authorID, updateReq)
+		require.Error(t, err)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+	})
+
 }
 
-func TestAuthorService_Add(t *testing.T) {
-	ctx := context.Background()
-	testAuthor := createTestAuthor()
+func TestAuthorServ_Delete(t *testing.T) {
+	t.Run("success delete author", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
 
-	tests := []struct {
-		name          string
-		setupMocks    func(*authorrep.MockAuthorRep)
-		author        *models.Author
-		expectedError error
-	}{
-		{
-			name: "success",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("Add", ctx, testAuthor).Return(nil)
-			},
-			author: testAuthor,
-		},
-		{
-			name: "repository error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("Add", ctx, testAuthor).Return(assert.AnError)
-			},
-			author:        testAuthor,
-			expectedError: assert.AnError,
-		},
-	}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("HasArtworks", ctx, authorID).Return(false, nil)
+		mockAuthorRep.On("Delete", ctx, authorID).Return(nil)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &authorrep.MockAuthorRep{}
-			tt.setupMocks(mockRepo)
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Delete(ctx, authorID)
+		require.Nil(t, err)
+		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
+		mockAuthorRep.AssertCalled(t, "Delete", ctx, authorID)
+	})
 
-			service := authorserv.NewAuthorServ(mockRepo)
-			err := service.Add(ctx, tt.author)
+	t.Run("error author has linked artworks", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
 
-			if tt.expectedError != nil {
-				assert.ErrorIs(t, err, tt.expectedError)
-			} else {
-				assert.NoError(t, err)
-			}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("HasArtworks", ctx, authorID).Return(true, nil)
 
-			mockRepo.AssertExpectations(t)
-		})
-	}
-}
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Delete(ctx, authorID)
+		require.ErrorIs(t, err, authorserv.ErrHasLinkedArtworks)
+		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
+		mockAuthorRep.AssertNotCalled(t, "Delete", ctx, authorID)
+	})
 
-func TestAuthorService_Update(t *testing.T) {
-	ctx := context.Background()
-	authorID := uuid.New()
-	testRequest := createTestUpdateRequest()
+	t.Run("error checking artworks", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
+		expectedErr := errors.New("check artworks error")
 
-	tests := []struct {
-		name          string
-		setupMocks    func(*authorrep.MockAuthorRep)
-		expectedError error
-	}{
-		{
-			name: "success",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("Update", ctx, authorID, mock.Anything).Return(nil)
-			},
-		},
-		{
-			name: "repository error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("Update", ctx, authorID, mock.Anything).Return(assert.AnError)
-			},
-			expectedError: assert.AnError,
-		},
-		{
-			name: "validation error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("Update", ctx, authorID, mock.Anything).
-					Return(models.ErrAuthorBirthAfterDeath)
-			},
-			expectedError: models.ErrAuthorBirthAfterDeath,
-		},
-	}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("HasArtworks", ctx, authorID).Return(false, expectedErr)
 
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &authorrep.MockAuthorRep{}
-			tt.setupMocks(mockRepo)
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Delete(ctx, authorID)
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "authorServ.Delete")
+		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
+		mockAuthorRep.AssertNotCalled(t, "Delete", ctx, authorID)
+	})
 
-			service := authorserv.NewAuthorServ(mockRepo)
-			err := service.Update(ctx, authorID, testRequest)
+	t.Run("error in delete", func(t *testing.T) {
+		ctx := context.Background()
+		authorID := uuid.New()
+		expectedErr := errors.New("delete error")
 
-			if tt.expectedError != nil {
-				assert.ErrorIs(t, err, tt.expectedError)
-			} else {
-				assert.NoError(t, err)
-			}
+		mockAuthorRep := new(authorrep.MockAuthorRep)
+		mockAuthorRep.On("HasArtworks", ctx, authorID).Return(false, nil)
+		mockAuthorRep.On("Delete", ctx, authorID).Return(expectedErr)
 
-			mockRepo.AssertExpectations(t)
-		})
-	}
-}
-
-func TestAuthorService_Delete(t *testing.T) {
-	ctx := context.Background()
-	authorID := uuid.New()
-
-	tests := []struct {
-		name          string
-		setupMocks    func(*authorrep.MockAuthorRep)
-		expectedError error
-	}{
-		{
-			name: "success",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("HasArtworks", ctx, authorID).Return(false, nil)
-				m.On("Delete", ctx, authorID).Return(nil)
-			},
-		},
-		{
-			name: "has linked artworks",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("HasArtworks", ctx, authorID).Return(true, nil)
-			},
-			expectedError: authorserv.ErrHasLinkedArtworks,
-		},
-		{
-			name: "has artworks check error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("HasArtworks", ctx, authorID).Return(false, assert.AnError)
-			},
-			expectedError: assert.AnError,
-		},
-		{
-			name: "delete error",
-			setupMocks: func(m *authorrep.MockAuthorRep) {
-				m.On("HasArtworks", ctx, authorID).Return(false, nil)
-				m.On("Delete", ctx, authorID).Return(assert.AnError)
-			},
-			expectedError: assert.AnError,
-		},
-	}
-
-	for _, tt := range tests {
-		t.Run(tt.name, func(t *testing.T) {
-			mockRepo := &authorrep.MockAuthorRep{}
-			tt.setupMocks(mockRepo)
-
-			service := authorserv.NewAuthorServ(mockRepo)
-			err := service.Delete(ctx, authorID)
-
-			if tt.expectedError != nil {
-				assert.ErrorIs(t, err, tt.expectedError)
-			} else {
-				assert.NoError(t, err)
-			}
-
-			mockRepo.AssertExpectations(t)
-		})
-	}
+		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
+		// ACT
+		err := authorServ.Delete(ctx, authorID)
+		require.ErrorIs(t, err, expectedErr)
+		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
+		mockAuthorRep.AssertCalled(t, "Delete", ctx, authorID)
+	})
 }

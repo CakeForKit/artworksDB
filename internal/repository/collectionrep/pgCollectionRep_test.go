@@ -69,9 +69,9 @@ func (th *testHelper) createTestCollection(num int) *models.Collection {
 	return &collection
 }
 
-func (th *testHelper) createAndAddCollection(t *testing.T, num int) *models.Collection {
+func (th *testHelper) createAndAdd(t *testing.T, num int) *models.Collection {
 	collection := th.createTestCollection(num)
-	err := th.crep.AddCollection(th.ctx, collection)
+	err := th.crep.Add(th.ctx, collection)
 	require.NoError(t, err)
 	return collection
 }
@@ -97,7 +97,7 @@ func TestPgCollectionRep_GetAll(t *testing.T) {
 			setup: func() []*models.Collection {
 				collections := make([]*models.Collection, 3)
 				for i := range collections {
-					collections[i] = th.createAndAddCollection(t, i)
+					collections[i] = th.createAndAdd(t, i)
 				}
 				return collections
 			},
@@ -109,7 +109,7 @@ func TestPgCollectionRep_GetAll(t *testing.T) {
 		t.Run(tt.name, func(t *testing.T) {
 			expectedCollections := tt.setup()
 
-			collections, err := th.crep.GetAllCollections(th.ctx)
+			collections, err := th.crep.GetAll(th.ctx)
 
 			if tt.expectedError != nil {
 				assert.ErrorIs(t, err, tt.expectedError)
@@ -132,7 +132,7 @@ func TestPgCollectionRep_GetAll(t *testing.T) {
 func TestPgCollectionRep_GetByID(t *testing.T) {
 	th := setupTestHelper(t)
 
-	collection := th.createAndAddCollection(t, 1)
+	collection := th.createAndAdd(t, 1)
 	nonExistentID := uuid.New()
 
 	tests := []struct {
@@ -155,7 +155,7 @@ func TestPgCollectionRep_GetByID(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := th.crep.GetCollectionByID(th.ctx, tt.id)
+			got, err := th.crep.GetByID(th.ctx, tt.id)
 
 			if tt.wantErr != nil {
 				assert.ErrorIs(t, err, tt.wantErr)
@@ -202,9 +202,9 @@ func TestPgCollectionRep_Update(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			collection := th.createAndAddCollection(t, 1)
+			collection := th.createAndAdd(t, 1)
 
-			err := th.crep.UpdateCollection(th.ctx, collection.GetID(), tt.updateFunc)
+			err := th.crep.Update(th.ctx, collection.GetID(), tt.updateFunc)
 
 			if tt.wantErr {
 				require.Error(t, err)
@@ -214,7 +214,7 @@ func TestPgCollectionRep_Update(t *testing.T) {
 			require.NoError(t, err)
 
 			// Verify changes were persisted
-			dbCollection, err := th.crep.GetCollectionByID(th.ctx, collection.GetID())
+			dbCollection, err := th.crep.GetByID(th.ctx, collection.GetID())
 			require.NoError(t, err)
 			tt.wantCheck(t, dbCollection)
 		})

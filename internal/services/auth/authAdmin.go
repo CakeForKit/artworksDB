@@ -46,17 +46,7 @@ type authAdmin struct {
 	hasher     hasher.Hasher
 }
 
-func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep) (AuthAdmin, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
-	}
-
-	hasher, err := hasher.NewHasher()
-	if err != nil {
-		return nil, err
-	}
-
+func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthAdmin, error) {
 	server := &authAdmin{
 		tokenMaker: tokenMaker,
 		config:     config,
@@ -70,9 +60,8 @@ func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep) (AuthAdmin, err
 func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (string, error) {
 	admin, err := s.adminrep.GetByLogin(ctx, lur.Login)
 	if err != nil {
-		return "", fmt.Errorf("LoginAdmin: %v", err)
+		return "", fmt.Errorf("LoginAdmin: %w", err)
 	}
-	fmt.Printf("LoginAdmin: %+v\n", admin)
 
 	if !admin.IsValid() {
 		return "", ErrAdminNotValid
@@ -80,7 +69,7 @@ func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (stri
 
 	err = s.hasher.CheckPassword(lur.Password, admin.GetHashedPassword())
 	if err != nil {
-		return "", fmt.Errorf("LoginAdmin: %v", err)
+		return "", fmt.Errorf("LoginAdmin: %w", err)
 	}
 
 	accessToken, err := s.tokenMaker.CreateToken(
@@ -89,7 +78,7 @@ func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (stri
 		s.config.AccessTokenDuration,
 	)
 	if err != nil {
-		return "", fmt.Errorf("LoginAdmin: %v", err)
+		return "", fmt.Errorf("LoginAdmin: %w", err)
 	}
 	return accessToken, nil
 }
@@ -97,7 +86,7 @@ func (s *authAdmin) LoginAdmin(ctx context.Context, lur LoginAdminRequest) (stri
 func (s *authAdmin) RegisterAdmin(ctx context.Context, rur RegisterAdminRequest) error {
 	hashedPassword, err := s.hasher.HashPassword(rur.Password)
 	if err != nil {
-		return fmt.Errorf("LoginAdmin: %v", err)
+		return fmt.Errorf("LoginAdmin: %w", err)
 	}
 	admin, err := models.NewAdmin(
 		uuid.New(),
@@ -112,7 +101,7 @@ func (s *authAdmin) RegisterAdmin(ctx context.Context, rur RegisterAdminRequest)
 	}
 	err = s.adminrep.Add(ctx, &admin)
 	if err != nil {
-		return fmt.Errorf("LoginAdmin: %v", err)
+		return fmt.Errorf("LoginAdmin: %w", err)
 	}
 	return nil
 }

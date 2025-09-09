@@ -12,15 +12,15 @@ import (
 
 var (
 	ErrCollectionNotFound = errors.New("the Collection was not found in the repository")
-	ErrUpdateCollection   = errors.New("err update Collection params")
+	ErrUpdate             = errors.New("err update Collection params")
 )
 
 type CollectionRep interface {
-	GetAllCollections(ctx context.Context) ([]*models.Collection, error)
-	GetCollectionByID(ctx context.Context, id uuid.UUID) (*models.Collection, error)
-	AddCollection(ctx context.Context, e *models.Collection) error
-	DeleteCollection(ctx context.Context, idCol uuid.UUID) error
-	UpdateCollection(ctx context.Context, idCol uuid.UUID, funcUpdate func(*models.Collection) (*models.Collection, error)) error
+	GetAll(ctx context.Context) ([]*models.Collection, error)
+	GetByID(ctx context.Context, id uuid.UUID) (*models.Collection, error)
+	Add(ctx context.Context, e *models.Collection) error
+	Delete(ctx context.Context, idCol uuid.UUID) error
+	Update(ctx context.Context, idCol uuid.UUID, funcUpdate func(*models.Collection) (*models.Collection, error)) error
 }
 
 func NewCollectionRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {

@@ -93,25 +93,25 @@ func (ch *CHCollectionRep) execSelectQuery(ctx context.Context, query string, ar
 	return res, nil
 }
 
-func (ch *CHCollectionRep) GetAllCollections(ctx context.Context) ([]*models.Collection, error) {
+func (ch *CHCollectionRep) GetAll(ctx context.Context) ([]*models.Collection, error) {
 	query := "SELECT id, title FROM Collection"
 	res, err := ch.execSelectQuery(ctx, query)
 	if err != nil {
-		return nil, fmt.Errorf("CHCollectionRep.GetAllCollections: %v", err)
+		return nil, fmt.Errorf("CHCollectionRep.GetAll: %v", err)
 	}
 	return res, nil
 }
 
-func (ch *CHCollectionRep) GetCollectionByID(ctx context.Context, id uuid.UUID) (*models.Collection, error) {
+func (ch *CHCollectionRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Collection, error) {
 	query := "SELECT id, title FROM Collection WHERE id = ?"
 	res, err := ch.execSelectQuery(ctx, query, id)
 	if err != nil {
-		return nil, fmt.Errorf("CHCollectionRep.GetCollectionByID: %v", err)
+		return nil, fmt.Errorf("CHCollectionRep.GetByID: %v", err)
 	}
 	if len(res) == 0 {
 		return nil, ErrCollectionNotFound
 	} else if len(res) > 1 {
-		return nil, fmt.Errorf("CHCollectionRep.GetCollectionByID: %w", ErrExpectedOneCollection)
+		return nil, fmt.Errorf("CHCollectionRep.GetByID: %w", ErrExpectedOneCollection)
 	}
 	return res[0], nil
 }
@@ -130,7 +130,7 @@ func (ch *CHCollectionRep) execChangeQuery(ctx context.Context, query string, ar
 	return nil
 }
 
-func (ch *CHCollectionRep) AddCollection(ctx context.Context, c *models.Collection) error {
+func (ch *CHCollectionRep) Add(ctx context.Context, c *models.Collection) error {
 	query := "INSERT INTO Collection (id, title) VALUES (?, ?)"
 
 	err := ch.execChangeQuery(ctx, query,
@@ -138,33 +138,33 @@ func (ch *CHCollectionRep) AddCollection(ctx context.Context, c *models.Collecti
 		c.GetTitle())
 
 	if err != nil {
-		return fmt.Errorf("CHCollectionRep.AddCollection: %w", err)
+		return fmt.Errorf("CHCollectionRep.Add: %w", err)
 	}
 	return nil
 }
 
-func (ch *CHCollectionRep) DeleteCollection(ctx context.Context, idCol uuid.UUID) error {
+func (ch *CHCollectionRep) Delete(ctx context.Context, idCol uuid.UUID) error {
 	query := "ALTER TABLE Collection DELETE WHERE id = ?"
 	err := ch.execChangeQuery(ctx, query, idCol)
 	if err != nil {
-		return fmt.Errorf("CHCollectionRep.DeleteCollection: %w", err)
+		return fmt.Errorf("CHCollectionRep.Delete: %w", err)
 	}
 	return nil
 }
 
-func (ch *CHCollectionRep) UpdateCollection(
+func (ch *CHCollectionRep) Update(
 	ctx context.Context,
 	idCol uuid.UUID,
 	funcUpdate func(*models.Collection) (*models.Collection, error),
 ) error {
-	col, err := ch.GetCollectionByID(ctx, idCol)
+	col, err := ch.GetByID(ctx, idCol)
 	if err != nil {
-		return fmt.Errorf("CHCollectionRep.UpdateCollection %w", err)
+		return fmt.Errorf("CHCollectionRep.Update %w", err)
 	}
 
 	updatedCollection, err := funcUpdate(col)
 	if err != nil {
-		return fmt.Errorf("CHCollectionRep.UpdateCollection: %w", ErrUpdateCollection)
+		return fmt.Errorf("CHCollectionRep.Update: %w", ErrUpdate)
 	}
 
 	query := "ALTER TABLE Collection UPDATE title = ? WHERE id = ?"
@@ -173,7 +173,7 @@ func (ch *CHCollectionRep) UpdateCollection(
 		idCol)
 
 	if err != nil {
-		return fmt.Errorf("CHCollectionRep.UpdateCollection: %w", err)
+		return fmt.Errorf("CHCollectionRep.Update: %w", err)
 	}
 	return nil
 }

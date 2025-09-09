@@ -12,7 +12,7 @@ import (
 
 type MailingService interface {
 	SendMailToAllUsers(ctx context.Context, events []*models.Event) (string, uuid.UUIDs, error)
-	GenerateMessageText(ctx context.Context, events []*models.Event) string
+	GenerateMessageText(ctx context.Context, events []*models.Event) string // должно быть rpivate
 }
 
 type mailingService struct {

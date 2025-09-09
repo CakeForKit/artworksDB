@@ -693,7 +693,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.UpdateCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.UpdateRequest"
                         }
                     }
                 ],
@@ -740,7 +740,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.AddCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.AddRequest"
                         }
                     }
                 ],
@@ -784,7 +784,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.DeleteCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.DeleteRequest"
                         }
                     }
                 ],
@@ -1672,7 +1672,7 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.AddCollectionRequest": {
+        "jsonreqresp.AddRequest": {
             "type": "object",
             "required": [
                 "title"
@@ -1876,7 +1876,7 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.DeleteCollectionRequest": {
+        "jsonreqresp.DeleteRequest": {
             "type": "object",
             "required": [
                 "id"
@@ -2110,7 +2110,7 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.UpdateCollectionRequest": {
+        "jsonreqresp.UpdateRequest": {
             "type": "object",
             "required": [
                 "id",

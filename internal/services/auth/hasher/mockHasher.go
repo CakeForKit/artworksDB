@@ -1,6 +1,6 @@
 package hasher
 
-import "github.com/stateio/testify/mock"
+import "github.com/stretchr/testify/mock"
 
 type MockHasher struct {
 	mock.Mock

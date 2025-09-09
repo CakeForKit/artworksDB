@@ -35,20 +35,36 @@ func NewCollection(id uuid.UUID, title string) (Collection, error) {
 	return collection, nil
 }
 
-func (c *Collection) validate() error {
+func (c1 *Collection) validate() error {
 	switch {
-	case c.title == "":
+	case c1.title == "":
 		return ErrCollectionEmptyTitle
-	case len(c.title) > 255:
+	case len(c1.title) > 255:
 		return ErrCollectionTitleTooLong
 	}
 	return nil
 }
 
-func (c *Collection) ToCollectionResponse() jsonreqresp.CollectionResponse {
+func (c1 *Collection) Equals(other interface{}) bool {
+	if c1 == nil {
+		return other == nil
+	}
+
+	c2, ok := other.(*Collection)
+	if !ok {
+		return false
+	}
+	if c2 == nil {
+		return false
+	}
+
+	return c1.title == c2.title
+}
+
+func (c1 *Collection) ToCollectionResponse() jsonreqresp.CollectionResponse {
 	return jsonreqresp.CollectionResponse{
-		ID:    c.id.String(),
-		Title: c.title,
+		ID:    c1.id.String(),
+		Title: c1.title,
 	}
 }
 
@@ -66,20 +82,20 @@ func (c *Collection) ToCollectionResponse() jsonreqresp.CollectionResponse {
 // 	return NewCollection(id, req.Title)
 // }
 
-func (c *Collection) GetID() uuid.UUID {
-	return c.id
+func (c1 *Collection) GetID() uuid.UUID {
+	return c1.id
 }
 
-func (c *Collection) GetTitle() string {
-	return c.title
+func (c1 *Collection) GetTitle() string {
+	return c1.title
 }
 
-func (c *Collection) Update(updateReq CollectionUpdateReq) error {
-	copyC := *c
+func (c1 *Collection) Update(updateReq CollectionUpdateReq) error {
+	copyC := *c1
 	copyC.title = updateReq.Title
 	if err := copyC.validate(); err != nil {
 		return err
 	}
-	*c = copyC
+	*c1 = copyC
 	return nil
 }

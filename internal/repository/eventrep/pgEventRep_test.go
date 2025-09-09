@@ -195,7 +195,7 @@ func (th *testHelper) createAndAddArtwork(t *testing.T, num int) (*models.Artwor
 	ctx := context.Background()
 	err := th.authorRep.Add(ctx, author)
 	require.NoError(t, err)
-	err = th.colRep.AddCollection(ctx, collection)
+	err = th.colRep.Add(ctx, collection)
 	require.NoError(t, err)
 	err = th.arep.Add(ctx, artwork)
 	require.NoError(t, err)

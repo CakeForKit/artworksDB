@@ -107,7 +107,7 @@ definitions:
     - birthYear
     - name
     type: object
-  jsonreqresp.AddCollectionRequest:
+  jsonreqresp.AddRequest:
     properties:
       title:
         description: Обязательное, 2-255 символов
@@ -253,7 +253,7 @@ definitions:
     required:
     - id
     type: object
-  jsonreqresp.DeleteCollectionRequest:
+  jsonreqresp.DeleteRequest:
     properties:
       id:
         example: cfd9ff5d-cb37-407c-b043-288a482e9239
@@ -422,7 +422,7 @@ definitions:
     - id
     - name
     type: object
-  jsonreqresp.UpdateCollectionRequest:
+  jsonreqresp.UpdateRequest:
     properties:
       id:
         example: cfd9ff5d-cb37-407c-b043-288a482e9239
@@ -892,7 +892,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/jsonreqresp.DeleteCollectionRequest'
+          $ref: '#/definitions/jsonreqresp.DeleteRequest'
       produces:
       - application/json
       responses:
@@ -944,7 +944,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/jsonreqresp.AddCollectionRequest'
+          $ref: '#/definitions/jsonreqresp.AddRequest'
       produces:
       - application/json
       responses:
@@ -972,7 +972,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/jsonreqresp.UpdateCollectionRequest'
+          $ref: '#/definitions/jsonreqresp.UpdateRequest'
       produces:
       - application/json
       responses:

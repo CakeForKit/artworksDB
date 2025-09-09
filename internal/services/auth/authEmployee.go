@@ -3,7 +3,6 @@ package auth
 import (
 	"context"
 	"errors"
-	"fmt"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -48,17 +47,7 @@ type authEmployee struct {
 	hasher      hasher.Hasher
 }
 
-func NewAuthEmployee(config cnfg.AppConfig, erep employeerep.EmployeeRep) (AuthEmployee, error) {
-	tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-	if err != nil {
-		return nil, fmt.Errorf("cannot create token maker: %w", err)
-	}
-
-	hasher, err := hasher.NewHasher()
-	if err != nil {
-		return nil, err
-	}
-
+func NewAuthEmployee(config cnfg.AppConfig, erep employeerep.EmployeeRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthEmployee, error) {
 	service := &authEmployee{
 		tokenMaker:  tokenMaker,
 		config:      config,
@@ -74,7 +63,6 @@ func (s *authEmployee) LoginEmployee(ctx context.Context, ler LoginEmployeeReque
 	if err != nil {
 		return "", err
 	}
-
 	if !employee.IsValid() {
 		return "", ErrEmployeeNotValid
 	}

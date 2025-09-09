@@ -43,15 +43,6 @@ type authUser struct {
 }
 
 func NewAuthUser(config cnfg.AppConfig, urep userrep.UserRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthUser, error) {
-	// tokenMaker, err := token.NewTokenMaker(config.TokenSymmetricKey)
-	// if err != nil {
-	// 	return nil, fmt.Errorf("cannot create token maker: %w", err)
-	// }
-	// hasher, err := hasher.NewHasher()
-	// if err != nil {
-	// 	return nil, err
-	// }
-
 	server := &authUser{
 		tokenMaker: tokenMaker,
 		config:     config,

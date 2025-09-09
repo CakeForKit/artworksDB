@@ -25,6 +25,7 @@ var (
 )
 
 var (
+	ErrPgEmployeeRep       = errors.New("PgEmployeeRep.Update")
 	ErrOpenConnect         = errors.New("open connect failed")
 	ErrPing                = errors.New("ping failed")
 	ErrQueryBuilds         = errors.New("query build failed")
@@ -215,6 +216,37 @@ func (pg *PgEmployeeRep) Delete(ctx context.Context, id uuid.UUID) error {
 		return fmt.Errorf("PgEmployeeRep.Delete %w: no employee with id %s", ErrRowsAffected, id)
 	}
 	return nil
+}
+
+func (pg *PgEmployeeRep) Update_(ctx context.Context, updatedEmployee *models.Employee) (*models.Employee, error) {
+	_, err := pg.GetByID(ctx, updatedEmployee.GetID())
+	if err != nil {
+		return nil, fmt.Errorf("%w: %w", ErrPgEmployeeRep, err)
+	}
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query, args, err := psql.Update("Employees").
+		Set("username", updatedEmployee.GetUsername()).
+		Set("login", updatedEmployee.GetLogin()).
+		Set("hashedPassword", updatedEmployee.GetHashedPassword()).
+		Set("valid", updatedEmployee.IsValid()).
+		Set("adminID", updatedEmployee.GetAdminID()).
+		Where(sq.Eq{"id": updatedEmployee.GetID()}).ToSql()
+	if err != nil {
+		return nil, fmt.Errorf("%w:  %w: %w", ErrPgEmployeeRep, ErrQueryBuilds, err)
+	}
+	result, err := pg.db.ExecContext(ctx, query, args...)
+	if err != nil {
+		return nil, fmt.Errorf("%w:  %w: %w", ErrPgEmployeeRep, ErrQueryExec, err)
+	}
+	// проверка количества затронутых строк
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("%w:  %w: %w", ErrPgEmployeeRep, ErrRowsAffected, err)
+	}
+	if rowsAffected == 0 {
+		return nil, fmt.Errorf("%w:  %w: no employee added", ErrPgEmployeeRep, ErrRowsAffected)
+	}
+	return updatedEmployee, nil
 }
 
 func (pg *PgEmployeeRep) Update(ctx context.Context,

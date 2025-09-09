@@ -7,8 +7,8 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
-	"github.com/stateio/testify/require"
-	"github.com/stretchr/testify/assert" // исправлено: было stateio -> stretchr
+	"github.com/stretchr/testify/assert" // исправлено: было stretchr -> stretchr
+	"github.com/stretchr/testify/require"
 )
 
 func TestAuthZ_Authz_GetUserID(t *testing.T) {

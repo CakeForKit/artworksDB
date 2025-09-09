@@ -98,6 +98,27 @@ func (a *Artwork) validate() error {
 	return nil
 }
 
+func (a1 *Artwork) Equals(other interface{}) bool {
+	if a1 == nil {
+		return other == nil
+	}
+
+	a2, ok := other.(*Artwork)
+	if !ok {
+		return false
+	}
+	if a2 == nil {
+		return false
+	}
+	return a1.title == a2.title &&
+		a1.creationYear == a2.creationYear &&
+		a1.technic == a2.technic &&
+		a1.material == a2.material &&
+		a1.size == a2.size &&
+		a1.author.Equals(a2.author) &&
+		a1.collection.Equals(a2.collection)
+}
+
 func (a *Artwork) ToArtworkResponse() jsonreqresp.ArtworkResponse {
 	return jsonreqresp.ArtworkResponse{
 		ID:           a.id.String(),

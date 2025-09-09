@@ -196,6 +196,46 @@ func (ch *CHEmployeeRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
+func (ch *CHEmployeeRep) Update_(ctx context.Context, updatedEmployee *models.Employee) (*models.Employee, error) {
+	_, err := ch.GetByID(ctx, updatedEmployee.GetID())
+	if err != nil {
+		return nil, fmt.Errorf("CHEmployeeRep.Update %w", err)
+	}
+	valid := uint8(0)
+	if updatedEmployee.IsValid() {
+		valid = 1
+	}
+
+	query := `
+		ALTER TABLE Employees UPDATE 
+		username = ?, 
+		login = ?, 
+		hashedPassword = ?, 
+		valid = ?, 
+		adminID = ? 
+		WHERE id = ?`
+
+	result, err := ch.db.ExecContext(ctx, query,
+		updatedEmployee.GetUsername(),
+		updatedEmployee.GetLogin(),
+		updatedEmployee.GetHashedPassword(),
+		valid,
+		updatedEmployee.GetAdminID(),
+		updatedEmployee.GetID(),
+	)
+
+	if err != nil {
+		return nil, fmt.Errorf("CHEmployeeRep.Update %w: %v", ErrQueryExec, err)
+	}
+
+	// ClickHouse has limited RowsAffected support
+	_, err = result.RowsAffected()
+	if err != nil {
+		return nil, fmt.Errorf("CHEmployeeRep.Update %w: %v", ErrRowsAffected, err)
+	}
+	return updatedEmployee, nil
+}
+
 func (ch *CHEmployeeRep) Update(
 	ctx context.Context,
 	id uuid.UUID,

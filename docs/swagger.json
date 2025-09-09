@@ -687,7 +687,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.UpdateCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.UpdateRequest"
                         }
                     }
                 ],
@@ -734,7 +734,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.AddCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.AddRequest"
                         }
                     }
                 ],
@@ -778,7 +778,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/jsonreqresp.DeleteCollectionRequest"
+                            "$ref": "#/definitions/jsonreqresp.DeleteRequest"
                         }
                     }
                 ],
@@ -1666,7 +1666,7 @@
                 }
             }
         },
-        "jsonreqresp.AddCollectionRequest": {
+        "jsonreqresp.AddRequest": {
             "type": "object",
             "required": [
                 "title"
@@ -1870,7 +1870,7 @@
                 }
             }
         },
-        "jsonreqresp.DeleteCollectionRequest": {
+        "jsonreqresp.DeleteRequest": {
             "type": "object",
             "required": [
                 "id"
@@ -2104,7 +2104,7 @@
                 }
             }
         },
-        "jsonreqresp.UpdateCollectionRequest": {
+        "jsonreqresp.UpdateRequest": {
             "type": "object",
             "required": [
                 "id",

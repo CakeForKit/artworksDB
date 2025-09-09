@@ -6,7 +6,6 @@ import (
 	"testing"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
@@ -15,34 +14,13 @@ import (
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
 
-	// "github.com/stateio/testify/mock"
-	"github.com/stateio/testify/require"
+	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/mock"
+	"github.com/stretchr/testify/require"
 )
 
-type AppConfigMother interface {
-	Default() cnfg.AppConfig
-}
-
-func NewAppConfigMother() AppConfigMother {
-	return &appConfigMother{}
-}
-
-type appConfigMother struct{}
-
-func (am *appConfigMother) Default() cnfg.AppConfig {
-	config := cnfg.AppConfig{
-		Datebase:                     cnfg.PostgresDB,
-		TokenSymmetricKey:            "01234567890123456789012345678912",
-		AccessTokenDuration:          time.Hour,
-		BuyTicketTransactionDuration: time.Hour,
-		Port:                         8000,
-	}
-	return config
-}
-
 func TestAuthUser_RegisterUser(t *testing.T) {
-	appConfigCreator := NewAppConfigMother()
+	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
 	tokenMaker, err := token.NewTokenMaker(appCnfg.TokenSymmetricKey)
@@ -131,7 +109,7 @@ func TestAuthUser_RegisterUser(t *testing.T) {
 }
 
 func TestAuthUser_LoginUser(t *testing.T) {
-	appConfigCreator := NewAppConfigMother()
+	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
 	userCreator := testobj.NewUserMother()
@@ -254,7 +232,7 @@ func TestAuthUser_LoginUser(t *testing.T) {
 }
 
 func TestAuthUser_VerifyByToken(t *testing.T) {
-	appConfigCreator := NewAppConfigMother()
+	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
 	t.Run("success", func(t *testing.T) {

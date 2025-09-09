@@ -105,9 +105,6 @@ func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 	if err != nil {
 		return nil, fmt.Errorf("PgUserRep.GetAll: %v", err)
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
 	return users, nil
 }
 
@@ -131,9 +128,7 @@ func (pg *PgUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, erro
 	if err != nil {
 		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %v", err)
 	}
-	if len(users) == 0 {
-		return nil, ErrUserNotFound
-	}
+
 	return users, nil
 }
 

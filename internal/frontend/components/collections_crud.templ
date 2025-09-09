@@ -62,7 +62,7 @@ templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionRespo
                                 >✏️</button>
                                 <button 
                                     class="delete-btn" 
-                                    onclick={ templ.JSFuncCall("confirmDeleteCollection", collection.ID) }
+                                    onclick={ templ.JSFuncCall("confirmDelete", collection.ID) }
                                 >🗑️</button>
                             </td>
                         </tr>
@@ -139,15 +139,15 @@ templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionRespo
 
                     if (isEditing) {
                         formData.id = collectionIdInput.value;
-                        await updateCollection(formData);
+                        await Update(formData);
                     } else {
-                        await addCollection(formData);
+                        await Add(formData);
                     }
                 }
 
-                async function confirmDeleteCollection(id) {
+                async function confirmDelete(id) {
                     if (!confirm('Удалить коллекцию? Это действие нельзя отменить.')) return;
-                    await deleteCollection(id);
+                    await Delete(id);
                 }
 
                 // API функции
@@ -165,7 +165,7 @@ templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionRespo
                     }
                 }
 
-                async function addCollection(data) {
+                async function Add(data) {
                     try {
                         const response = await fetch('/api/v1/employee/collections', {
                             method: 'POST',
@@ -184,7 +184,7 @@ templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionRespo
                     }
                 }
 
-                async function updateCollection(data) {
+                async function Update(data) {
                     try {
                         const response = await fetch('/api/v1/employee/collections', {
                             method: 'PUT',
@@ -203,7 +203,7 @@ templ CollectionsPage(tokenKey string, collections []jsonreqresp.CollectionRespo
                     }
                 }
 
-                async function deleteCollection(id) {
+                async function Delete(id) {
                     try {
                         const response = await fetch('/api/v1/employee/collections', {
                             method: 'DELETE',

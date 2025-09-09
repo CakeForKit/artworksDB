@@ -101,7 +101,7 @@ func (pg *PgCollectionRep) execSelectQuery(ctx context.Context, query sq.SelectB
 	return res, nil
 }
 
-func (pg *PgCollectionRep) GetAllCollections(ctx context.Context) ([]*models.Collection, error) {
+func (pg *PgCollectionRep) GetAll(ctx context.Context) ([]*models.Collection, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select("id", "title").
 		From("collection")
@@ -112,7 +112,7 @@ func (pg *PgCollectionRep) GetAllCollections(ctx context.Context) ([]*models.Col
 	return res, nil
 }
 
-func (pg *PgCollectionRep) GetCollectionByID(ctx context.Context, id uuid.UUID) (*models.Collection, error) {
+func (pg *PgCollectionRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Collection, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select("id", "title").
 		From("Collection").
@@ -149,7 +149,7 @@ func (pg *PgCollectionRep) execChangeQuery(ctx context.Context, query sq.Sqlizer
 	return nil
 }
 
-func (pg *PgCollectionRep) AddCollection(ctx context.Context, e *models.Collection) error {
+func (pg *PgCollectionRep) Add(ctx context.Context, e *models.Collection) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	query := psql.Insert("Collection").
@@ -162,7 +162,7 @@ func (pg *PgCollectionRep) AddCollection(ctx context.Context, e *models.Collecti
 	return nil
 }
 
-func (pg *PgCollectionRep) DeleteCollection(ctx context.Context, idCol uuid.UUID) error {
+func (pg *PgCollectionRep) Delete(ctx context.Context, idCol uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Delete("Collection").
 		Where(sq.Eq{"id": idCol})
@@ -173,12 +173,12 @@ func (pg *PgCollectionRep) DeleteCollection(ctx context.Context, idCol uuid.UUID
 	return nil
 }
 
-func (pg *PgCollectionRep) UpdateCollection(
+func (pg *PgCollectionRep) Update(
 	ctx context.Context,
 	idCol uuid.UUID,
 	funcUpdate func(*models.Collection) (*models.Collection, error),
 ) error {
-	col, err := pg.GetCollectionByID(ctx, idCol)
+	col, err := pg.GetByID(ctx, idCol)
 	if err != nil {
 		return fmt.Errorf("pgCollectionRep.Update %w", err)
 	}
@@ -186,7 +186,7 @@ func (pg *PgCollectionRep) UpdateCollection(
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEmployee, err := funcUpdate(col)
 	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update: %w", ErrUpdateCollection)
+		return fmt.Errorf("pgCollectionRep.Update: %w", ErrUpdate)
 	}
 	query := psql.Update("Collection").
 		Set("title", updatedEmployee.GetTitle()).

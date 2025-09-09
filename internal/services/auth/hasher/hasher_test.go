@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
-	"github.com/stateio/testify/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestPassword(t *testing.T) {

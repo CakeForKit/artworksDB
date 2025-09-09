@@ -24,6 +24,7 @@ type EmployeeRep interface {
 	Add(ctx context.Context, e *models.Employee) error
 	Delete(ctx context.Context, id uuid.UUID) error
 	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error)
+	Update_(ctx context.Context, updatedEmployee *models.Employee) (*models.Employee, error)
 	Ping(ctx context.Context) error
 	Close()
 }
