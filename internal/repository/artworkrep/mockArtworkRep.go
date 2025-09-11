@@ -20,6 +20,9 @@ func (m *MockArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqr
 
 func (m *MockArtworkRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Artwork, error) {
 	args := m.Called(ctx, id)
+	if args.Get(0) == nil {
+		return nil, args.Error(1)
+	}
 	return args.Get(0).(*models.Artwork), args.Error(1)
 }
 

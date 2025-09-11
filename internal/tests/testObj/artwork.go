@@ -9,8 +9,8 @@ import (
 type ArtworkMother interface {
 	ArtworkP(artworkID uuid.UUID) *models.Artwork
 	AddArtworkRequest(creationYear int, authorID uuid.UUID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest
-	ArtworkFilter() jsonreqresp.ArtworkFilter
-	ArtworkSortOps() jsonreqresp.ArtworkSortOps
+	ArtworkFilter() *jsonreqresp.ArtworkFilter
+	ArtworkSortOps() *jsonreqresp.ArtworkSortOps
 }
 
 func NewArtworkMother() ArtworkMother {
@@ -48,8 +48,8 @@ func (um *artworkMother) AddArtworkRequest(creationYear int, authorID uuid.UUID,
 	}
 }
 
-func (um *artworkMother) ArtworkFilter() jsonreqresp.ArtworkFilter {
-	return jsonreqresp.ArtworkFilter{
+func (um *artworkMother) ArtworkFilter() *jsonreqresp.ArtworkFilter {
+	return &jsonreqresp.ArtworkFilter{
 		Title:      "test-artwork-title",
 		AuthorName: "test-artwork-author",
 		Collection: "test-artwork-collection",
@@ -57,8 +57,8 @@ func (um *artworkMother) ArtworkFilter() jsonreqresp.ArtworkFilter {
 	}
 }
 
-func (um *artworkMother) ArtworkSortOps() jsonreqresp.ArtworkSortOps {
-	return jsonreqresp.ArtworkSortOps{
+func (um *artworkMother) ArtworkSortOps() *jsonreqresp.ArtworkSortOps {
+	return &jsonreqresp.ArtworkSortOps{
 		Field:     jsonreqresp.TitleSortFieldArtwork,
 		Direction: jsonreqresp.ASCDirection,
 	}

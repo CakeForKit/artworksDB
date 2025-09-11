@@ -48,7 +48,7 @@ templ EventsTable(events []jsonreqresp.EventResponse) {
             for _, event := range events {
                 <tr class="event-row">
                     <td class="event-title">
-                        <a href={ "/museum/events/" + templ.URL(event.ID) } class="event-link">
+                        <a href={ templ.URL("/museum/events/" + event.ID) } class="event-link">
                             <span class="event-link-content">
                                 { event.Title }
                                 <span class="event-link-icon">→</span>

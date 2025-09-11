@@ -93,6 +93,33 @@ func (e *Event) validate() error {
 	return nil
 }
 
+func (e1 *Event) Equals(other interface{}) bool {
+	if e1 == nil {
+		return other == nil
+	}
+
+	e2, ok := other.(*Event)
+	if !ok {
+		return false
+	}
+	if e2 == nil || len(e1.artworkIDs) != len(e2.artworkIDs) {
+		return false
+	}
+	for i := range e1.artworkIDs {
+		if e1.artworkIDs[i] != e2.artworkIDs[i] {
+			return false
+		}
+	}
+	return e1.title == e2.title &&
+		e1.dateBegin.Equal(e2.dateBegin) &&
+		e1.dateEnd.Equal(e2.dateEnd) &&
+		e1.address == e2.address &&
+		e1.canVisit == e2.canVisit &&
+		e1.employeeID == e2.employeeID &&
+		e1.cntTickets == e2.cntTickets &&
+		e1.valid == e2.valid
+}
+
 func HasDuplicateUUIDs(ids uuid.UUIDs) bool {
 	seen := make(map[uuid.UUID]struct{})
 	for _, id := range ids {

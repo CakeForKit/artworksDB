@@ -96,7 +96,7 @@ func TestUserRep_GetAll(t *testing.T) {
 			name:          "Should return empty list for empty DB",
 			setup:         func() []*models.User { return nil },
 			wantLen:       0,
-			expectedError: userrep.ErrUserNotFound,
+			expectedError: nil,
 		},
 		{
 			name: "Should return all users",

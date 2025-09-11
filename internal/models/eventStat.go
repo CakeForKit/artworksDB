@@ -37,6 +37,22 @@ func (s *StatCollections) validate() error {
 	}
 	return nil
 }
+func (s1 *StatCollections) Equals(other interface{}) bool {
+	if s1 == nil {
+		return other == nil
+	}
+
+	s2, ok := other.(*StatCollections)
+	if !ok {
+		return false
+	}
+	if s2 == nil {
+		return false
+	}
+	return s1.colID == s2.colID &&
+		s1.colTitle == s2.colTitle &&
+		s1.cntArtworks == s2.cntArtworks
+}
 
 func (s *StatCollections) ToResponse() jsonreqresp.StatCollectionsResponse {
 	return jsonreqresp.StatCollectionsResponse{
@@ -44,4 +60,16 @@ func (s *StatCollections) ToResponse() jsonreqresp.StatCollectionsResponse {
 		ColTitle:    s.colTitle,
 		CntArtworks: s.cntArtworks,
 	}
+}
+
+func (s *StatCollections) CollectionID() uuid.UUID {
+	return s.colID
+}
+
+func (s *StatCollections) CollectionTitle() string {
+	return s.colTitle
+}
+
+func (s *StatCollections) ArtworksCount() int {
+	return s.cntArtworks
 }

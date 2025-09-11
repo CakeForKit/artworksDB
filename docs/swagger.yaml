@@ -107,17 +107,6 @@ definitions:
     - birthYear
     - name
     type: object
-  jsonreqresp.AddRequest:
-    properties:
-      title:
-        description: Обязательное, 2-255 символов
-        example: Музей современного искусства
-        maxLength: 255
-        minLength: 2
-        type: string
-    required:
-    - title
-    type: object
   jsonreqresp.AddEventRequest:
     properties:
       address:
@@ -151,6 +140,17 @@ definitions:
     - cntTickets
     - dateBegin
     - dateEnd
+    - title
+    type: object
+  jsonreqresp.AddRequest:
+    properties:
+      title:
+        description: Обязательное, 2-255 символов
+        example: Музей современного искусства
+        maxLength: 255
+        minLength: 2
+        type: string
+    required:
     - title
     type: object
   jsonreqresp.ArtworkResponse:
@@ -253,17 +253,17 @@ definitions:
     required:
     - id
     type: object
-  jsonreqresp.DeleteRequest:
+  jsonreqresp.DeleteEventRequest:
     properties:
       id:
-        example: cfd9ff5d-cb37-407c-b043-288a482e9239
         type: string
     required:
     - id
     type: object
-  jsonreqresp.DeleteEventRequest:
+  jsonreqresp.DeleteRequest:
     properties:
       id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
         type: string
     required:
     - id
@@ -422,21 +422,6 @@ definitions:
     - id
     - name
     type: object
-  jsonreqresp.UpdateRequest:
-    properties:
-      id:
-        example: cfd9ff5d-cb37-407c-b043-288a482e9239
-        type: string
-      title:
-        description: Обязательное, 2-255 символов
-        example: Музей современного искусства
-        maxLength: 255
-        minLength: 2
-        type: string
-    required:
-    - id
-    - title
-    type: object
   jsonreqresp.UpdateEventRequest:
     properties:
       address:
@@ -469,6 +454,21 @@ definitions:
     - cntTickets
     - dateBegin
     - dateEnd
+    - id
+    - title
+    type: object
+  jsonreqresp.UpdateRequest:
+    properties:
+      id:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+      title:
+        description: Обязательное, 2-255 символов
+        example: Музей современного искусства
+        maxLength: 255
+        minLength: 2
+        type: string
+    required:
     - id
     - title
     type: object

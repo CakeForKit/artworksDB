@@ -65,15 +65,16 @@ func (b *buyTicketsServ) cntFreeTickets(ctx context.Context, eventID uuid.UUID) 
 	}
 	txCnt, err := b.txRep.GetCntTxByEventID(ctx, event.GetID())
 	if err != nil {
-		return 0, fmt.Errorf("checkCntTickets: %v", err)
+		return 0, fmt.Errorf("checkCntTickets: %w", err)
 	}
 	purchasesCnt, err := b.tPurchasesRep.GetCntTPurchasesForEvent(ctx, event.GetID())
 	if err != nil {
-		return 0, fmt.Errorf("checkCntTickets: %v", err)
+		return 0, fmt.Errorf("checkCntTickets: %w", err)
 	}
 	freeCnt := event.GetTicketCount() - txCnt - purchasesCnt
 	if freeCnt < 0 {
-		panic("checkCntTickets: negativ tickets count!?")
+
+		return 0, fmt.Errorf("checkCntTickets: %w", ErrNoFreeTicket)
 	}
 	return freeCnt, nil
 }
@@ -90,7 +91,7 @@ func (b *buyTicketsServ) BuyTicket(
 	var err error
 	ticketsFree, err := b.cntFreeTickets(ctx, eventID)
 	if err != nil {
-		return nil, fmt.Errorf("BuyTicket: %v", err)
+		return nil, fmt.Errorf("BuyTicket: %w", err)
 	}
 	if ticketsFree <= 0 {
 		return nil, fmt.Errorf("BuyTicket: %w", ErrNoFreeTicket)
@@ -146,14 +147,7 @@ func (b *buyTicketsServ) ConfirmBuyTicket(ctx context.Context, TxID uuid.UUID) e
 		return fmt.Errorf("ConfirmBuyTicket: %v", err)
 	}
 	ticketPurchase := tx.GetTicketPurchase()
-	// --
-	// fmt.Printf("TicketPurchase: %+v\n", ticketPurchase)
-	// cnt, err := b.txRep.GetCntTxByEventID(ctx, tx.GetTicketPurchase().GetEventID())
-	// if err != nil {
-	// 	return fmt.Errorf("ConfirmBuyTicket: %v", err)
-	// }
-	// fmt.Printf("CNT 1: %d\n", cnt)
-	// --
+
 	err = b.tPurchasesRep.Add(ctx, ticketPurchase)
 	if err != nil {
 		return fmt.Errorf("ConfirmBuyTicket: %v", err)
@@ -162,15 +156,6 @@ func (b *buyTicketsServ) ConfirmBuyTicket(ctx context.Context, TxID uuid.UUID) e
 	if err != nil {
 		return fmt.Errorf("ConfirmBuyTicket: %v", err)
 	}
-
-	// --
-	// cnt, err = b.txRep.GetCntTxByEventID(ctx, tx.GetTicketPurchase().GetEventID())
-	// if err != nil {
-	// 	return fmt.Errorf("ConfirmBuyTicket: %v", err)
-	// }
-	// fmt.Printf("CNT2: %d\n", cnt)
-	// --
-
 	return nil
 }
 

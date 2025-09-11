@@ -1,5 +1,5 @@
 # Стадия сборки (builder) - это "временный слой"
-FROM golang:1.24.2-alpine AS builder
+FROM golang:1.25.1-alpine AS builder
 
 # Устанавливаем зависимости (добавляем swag)
 RUN apk add --no-cache git bash && \
@@ -62,7 +62,7 @@ EXPOSE 8080
 CMD ["./artwork-app"]
 
 
-# FROM golang:1.24.2-alpine
+# FROM golang:1.25.1-alpine
 
 # RUN mkdir /build
 # WORKDIR /build

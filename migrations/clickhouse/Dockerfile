@@ -1,7 +1,7 @@
-FROM golang:1.24.2-alpine
+FROM golang:1.25.1-alpine
 
 # Устанавливаем зависимости
-RUN apk add --no-cache git bash curl 
+RUN apk add git bash curl 
 
 # Устанавливаем migrate с поддержкой ClickHouse
 RUN go install -tags 'clickhouse' github.com/golang-migrate/migrate/v4/cmd/migrate@latest

@@ -1672,21 +1672,6 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.AddRequest": {
-            "type": "object",
-            "required": [
-                "title"
-            ],
-            "properties": {
-                "title": {
-                    "description": "Обязательное, 2-255 символов",
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2,
-                    "example": "Музей современного искусства"
-                }
-            }
-        },
         "jsonreqresp.AddEventRequest": {
             "type": "object",
             "required": [
@@ -1730,6 +1715,21 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Ночная выставка"
+                }
+            }
+        },
+        "jsonreqresp.AddRequest": {
+            "type": "object",
+            "required": [
+                "title"
+            ],
+            "properties": {
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
                 }
             }
         },
@@ -1876,6 +1876,17 @@ const docTemplate = `{
                 }
             }
         },
+        "jsonreqresp.DeleteEventRequest": {
+            "type": "object",
+            "required": [
+                "id"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string"
+                }
+            }
+        },
         "jsonreqresp.DeleteRequest": {
             "type": "object",
             "required": [
@@ -1885,17 +1896,6 @@ const docTemplate = `{
                 "id": {
                     "type": "string",
                     "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
-                }
-            }
-        },
-        "jsonreqresp.DeleteEventRequest": {
-            "type": "object",
-            "required": [
-                "id"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string"
                 }
             }
         },
@@ -2110,26 +2110,6 @@ const docTemplate = `{
                 }
             }
         },
-        "jsonreqresp.UpdateRequest": {
-            "type": "object",
-            "required": [
-                "id",
-                "title"
-            ],
-            "properties": {
-                "id": {
-                    "type": "string",
-                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
-                },
-                "title": {
-                    "description": "Обязательное, 2-255 символов",
-                    "type": "string",
-                    "maxLength": 255,
-                    "minLength": 2,
-                    "example": "Музей современного искусства"
-                }
-            }
-        },
         "jsonreqresp.UpdateEventRequest": {
             "type": "object",
             "required": [
@@ -2172,6 +2152,26 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 255,
                     "example": "Ночная выставка"
+                }
+            }
+        },
+        "jsonreqresp.UpdateRequest": {
+            "type": "object",
+            "required": [
+                "id",
+                "title"
+            ],
+            "properties": {
+                "id": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                },
+                "title": {
+                    "description": "Обязательное, 2-255 символов",
+                    "type": "string",
+                    "maxLength": 255,
+                    "minLength": 2,
+                    "example": "Музей современного искусства"
                 }
             }
         },

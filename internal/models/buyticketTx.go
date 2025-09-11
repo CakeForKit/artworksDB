@@ -107,6 +107,23 @@ func (t *TicketPurchaseTx) ToTxTicketPurchaseResponse() jsonreqresp.TxTicketPurc
 	}
 }
 
+func (t1 *TicketPurchaseTx) Equals(other interface{}) bool {
+	if t1 == nil {
+		return other == nil
+	}
+
+	t2, ok := other.(*TicketPurchaseTx)
+	if !ok {
+		return false
+	}
+	if t2 == nil {
+		return false
+	}
+
+	return t1.ticketPurchase.Equals(&t2.ticketPurchase) &&
+		t1.cntTickets == t2.cntTickets
+}
+
 func (t *TicketPurchaseTx) GetID() uuid.UUID {
 	return t.ticketPurchase.GetID()
 }

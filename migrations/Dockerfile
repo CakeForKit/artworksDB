@@ -1,7 +1,7 @@
-FROM golang:1.24.2-alpine
+FROM golang:1.25.1-alpine
 
 # (git нужен для go install)
-RUN apk add --no-cache git && \
+RUN apk add git && \
     apk add bash
 
 RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest

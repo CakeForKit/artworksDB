@@ -17,7 +17,7 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestAuthorServ_GetAll(t *testing.T) {
+func TestArtworkServ_GetAll(t *testing.T) {
 	artworkCretor := testobj.NewArtworkMother()
 
 	t.Run("success return 2 authors", func(t *testing.T) {

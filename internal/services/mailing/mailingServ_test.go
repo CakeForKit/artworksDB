@@ -1,26 +1,134 @@
 package mailing_test
 
-// func TestMailingService_SendMailToAllUsers(t *testing.T) {
-// 	userCreator := testobj.NewUserMother()
-// 	user := userCreator.DefaultUser(uuid.New())
+import (
+	"context"
+	"errors"
+	"testing"
 
-// 	t.Run("success", func(t *testing.T) {
-// 		ctx := context.Background()
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/mailing"
+	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
+	"github.com/google/uuid"
+	"github.com/stretchr/testify/require"
+)
 
-// 		mockUserRep := new(userrep.MockUserRep)
-// 		mockUserRep.On("GetByID", ctx, user.GetID()).Return(&user, nil)
+func TestMailingService_SendMailToAllUsers(t *testing.T) {
+	eventCreator := testobj.NewEventMother()
+	userCreator := testobj.NewUserMother()
 
-// 		mailServ := mailing.NewGmailSender(mockUserRep, "name", "fromEmailAddress", "fromEmailPassword")
-// 		// ACT
-// 		resUser, err := mailServ.SendMailToAllUsers(ctx)
+	t.Run("success with subscribed users", func(t *testing.T) {
+		ctx := context.Background()
+		events := []*models.Event{
+			eventCreator.EventP(uuid.New()),
+			eventCreator.EventP(uuid.New()),
+		}
+		users := []*models.User{
+			userCreator.DefaultUserP(uuid.New()),
+			userCreator.DefaultUserP(uuid.New()),
+			userCreator.DefaultUserP(uuid.New()),
+		}
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("GetAllSubscribed", ctx).Return(users, nil)
 
-// 		require.Nil(t, err)
-// 		require.True(t, models.CmpUsers(&user, resUser))
-// 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
-// 		mockUserRep.AssertCalled(t, "GetByID", ctx, user.GetID())
-// 	})
+		mailServ := mailing.NewGmailSender(mockUserRep, "Gallery Name", "gallery@example.com", "password123")
+		// ACT
+		msgText, userIDs, err := mailServ.SendMailToAllUsers(ctx, events)
 
-// }
+		require.Nil(t, err)
+		require.NotEmpty(t, msgText)
+		require.True(t, len(users) == len(userIDs))
+		for i := range users {
+			require.True(t, users[i].GetID() == userIDs[i])
+		}
+		mockUserRep.AssertCalled(t, "GetAllSubscribed", ctx)
+	})
+
+	t.Run("success with no subscribed users", func(t *testing.T) {
+		ctx := context.Background()
+		events := []*models.Event{
+			eventCreator.EventP(uuid.New()),
+		}
+		users := []*models.User{}
+
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("GetAllSubscribed", ctx).Return(users, nil)
+
+		mailServ := mailing.NewGmailSender(mockUserRep, "Gallery Name", "gallery@example.com", "password123")
+		// ACT
+		msgText, userIDs, err := mailServ.SendMailToAllUsers(ctx, events)
+
+		require.Nil(t, err)
+		require.NotEmpty(t, msgText)
+		require.True(t, len(userIDs) == 0)
+		mockUserRep.AssertCalled(t, "GetAllSubscribed", ctx)
+	})
+
+	t.Run("success with empty events", func(t *testing.T) {
+		ctx := context.Background()
+		events := []*models.Event{}
+		users := []*models.User{
+			userCreator.DefaultUserP(uuid.New()),
+		}
+
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("GetAllSubscribed", ctx).Return(users, nil)
+
+		mailServ := mailing.NewGmailSender(mockUserRep, "Gallery Name", "gallery@example.com", "password123")
+		// ACT
+		msgText, userIDs, err := mailServ.SendMailToAllUsers(ctx, events)
+
+		require.Nil(t, err)
+		require.NotEmpty(t, msgText)
+		require.True(t, len(userIDs) == 1)
+		require.True(t, users[0].GetID() == userIDs[0])
+		mockUserRep.AssertCalled(t, "GetAllSubscribed", ctx)
+	})
+
+	t.Run("error getting subscribed users", func(t *testing.T) {
+		ctx := context.Background()
+		events := []*models.Event{
+			eventCreator.EventP(uuid.New()),
+		}
+		expectedErr := errors.New("database error")
+
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("GetAllSubscribed", ctx).Return(nil, expectedErr)
+
+		mailServ := mailing.NewGmailSender(mockUserRep, "Gallery Name", "gallery@example.com", "password123")
+		// ACT
+		msgText, userIDs, err := mailServ.SendMailToAllUsers(ctx, events)
+
+		require.Error(t, err)
+		require.Contains(t, err.Error(), "SendMailToAllUsers")
+		require.Empty(t, msgText)
+		require.Nil(t, userIDs)
+		mockUserRep.AssertCalled(t, "GetAllSubscribed", ctx)
+	})
+
+	t.Run("success with single user", func(t *testing.T) {
+		ctx := context.Background()
+		events := []*models.Event{
+			eventCreator.EventP(uuid.New()),
+		}
+		users := []*models.User{
+			userCreator.DefaultUserP(uuid.New()),
+		}
+
+		mockUserRep := new(userrep.MockUserRep)
+		mockUserRep.On("GetAllSubscribed", ctx).Return(users, nil)
+
+		mailServ := mailing.NewGmailSender(mockUserRep, "Gallery Name", "gallery@example.com", "password123")
+		// ACT
+		msgText, userIDs, err := mailServ.SendMailToAllUsers(ctx, events)
+
+		require.Nil(t, err)
+		require.NotEmpty(t, msgText)
+		require.True(t, len(userIDs) == 1)
+		require.True(t, users[0].GetID() == userIDs[0])
+		mockUserRep.AssertCalled(t, "GetAllSubscribed", ctx)
+	})
+}
 
 /*
 func createTestConfig() (string, string, string) {

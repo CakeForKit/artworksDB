@@ -78,6 +78,24 @@ func (tp *TicketPurchase) validate() error {
 	return nil
 }
 
+func (t1 *TicketPurchase) Equals(other interface{}) bool {
+	if t1 == nil {
+		return other == nil
+	}
+	t2, ok := other.(*TicketPurchase)
+	if !ok {
+		return false
+	}
+	if t2 == nil {
+		return false
+	}
+
+	return t1.customerName == t2.customerName &&
+		t1.customerEmail == t2.customerEmail &&
+		t1.eventID == t2.eventID &&
+		t1.userID == t2.userID
+}
+
 func (tp *TicketPurchase) GetID() uuid.UUID {
 	return tp.id
 }
@@ -112,53 +130,3 @@ func (t *TicketPurchase) ToTicketPurchaseResponse() jsonreqresp.TicketPurchaseRe
 		UserID:        t.userID,
 	}
 }
-
-// // SetCustomerName устанавливает имя покупателя
-// func (tp *TicketPurchase) SetCustomerName(name string) error {
-// 	name = strings.TrimSpace(name)
-// 	if name == "" {
-// 		return ErrTicketPurchaseEmptyName
-// 	}
-// 	if len(name) > 100 {
-// 		return ErrTicketPurchaseNameTooLong
-// 	}
-// 	tp.customerName = name
-// 	return nil
-// }
-
-// // SetCustomerEmail устанавливает email покупателя
-// func (tp *TicketPurchase) SetCustomerEmail(email string) error {
-// 	email = strings.TrimSpace(email)
-// 	if !isValidEmail(email) {
-// 		return ErrTicketPurchaseInvalidEmail
-// 	}
-// 	tp.customerEmail = email
-// 	return nil
-// }
-
-// // SetPurchaseDate устанавливает дату покупки
-// func (tp *TicketPurchase) SetPurchaseDate(date time.Time) error {
-// 	if date.IsZero() {
-// 		return ErrTicketPurchaseInvalidDate
-// 	}
-// 	tp.purchaseDate = date
-// 	return nil
-// }
-
-// // SetEventID устанавливает ID события
-// func (tp *TicketPurchase) SetEventID(eventID uuid.UUID) error {
-// 	if eventID == uuid.Nil {
-// 		return ErrTicketPurchaseEmptyEventID
-// 	}
-// 	tp.eventID = eventID
-// 	return nil
-// }
-
-// // SetUserID устанавливает ID пользователя
-// func (tp *TicketPurchase) SetUserID(userID uuid.UUID) error {
-// 	if userID == uuid.Nil {
-// 		return ErrTicketPurchaseEmptyUserID
-// 	}
-// 	tp.userID = userID
-// 	return nil
-// }

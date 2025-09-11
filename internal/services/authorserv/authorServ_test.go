@@ -106,13 +106,13 @@ func TestAuthorServ_Update(t *testing.T) {
 		updateReq := authorCreator.AuthorUpdateReq()
 
 		mockAuthorRep := new(authorrep.MockAuthorRep)
-		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).Return(nil)
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(nil)
 
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
 		require.Nil(t, err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	})
 
 	t.Run("error in rep", func(t *testing.T) {
@@ -124,13 +124,13 @@ func TestAuthorServ_Update(t *testing.T) {
 		expectedErr := errors.New("update error")
 
 		mockAuthorRep := new(authorrep.MockAuthorRep)
-		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).Return(expectedErr)
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(expectedErr)
 
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
 		require.ErrorIs(t, err, expectedErr)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	})
 
 	t.Run("error in update function", func(t *testing.T) {
@@ -139,14 +139,14 @@ func TestAuthorServ_Update(t *testing.T) {
 		updateReq := models.AuthorUpdateReq{}
 
 		mockAuthorRep := new(authorrep.MockAuthorRep)
-		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)")).
+		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).
 			Return(errors.New("validation error"))
 
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
 		require.Error(t, err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(a *models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	})
 
 }

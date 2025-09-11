@@ -16,6 +16,9 @@ prep:
 up:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up app
 
+down:
+	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) down $(SERVS)
+
 build_up:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) build --no-cache app
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up app
@@ -23,7 +26,7 @@ build_up:
 clickhouse:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) up --build clickhouse_artworks clickhouse_migrator_artworks
 
-down:
+down_clickhouse:
 	$(DOCKER_COMPOSE) -f $(PROD_FILE) -f $(DEV_FILE) down -v clickhouse_artworks clickhouse_migrator_artworks
 
 all:
