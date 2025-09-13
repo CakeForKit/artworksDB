@@ -10,14 +10,23 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestAuthorServ_GetAll(t *testing.T) {
+type CollectionServiceSuite struct {
+	suite.Suite
+}
+
+func TestCollectionService(t *testing.T) {
+	suite.RunSuite(t, new(CollectionServiceSuite))
+}
+
+func (s *CollectionServiceSuite) TestCollectionServ_GetAll(t provider.T) {
 	collectionCreator := testobj.NewCollectionMother()
 
-	t.Run("success return 2 collections", func(t *testing.T) {
+	t.WithNewStep("success return 2 collections", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collections := []*models.Collection{
 			collectionCreator.CollectionP(uuid.New()),
@@ -29,15 +38,15 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRes)
 		// ACT
 		resCols, err := collectionServ.GetAll(ctx)
-		require.Nil(t, err)
-		require.True(t, len(collections) == len(resCols))
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(collections) == len(resCols))
 		for i := range len(resCols) {
-			require.True(t, collections[i].Equals(resCols[i]))
+			sCtx.Require().True(collections[i].Equals(resCols[i]))
 		}
 		mockColRes.AssertCalled(t, "GetAll", ctx)
 	})
 
-	t.Run("success return 0 collections", func(t *testing.T) {
+	t.WithNewStep("success return 0 collections", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collections := []*models.Collection{}
 		mockColRep := new(collectionrep.MockCollectionRep)
@@ -46,12 +55,12 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		resCols, err := collectionServ.GetAll(ctx)
-		require.Nil(t, err)
-		require.True(t, len(resCols) == 0)
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(resCols) == 0)
 		mockColRep.AssertCalled(t, "GetAll", ctx)
 	})
 
-	t.Run("error in rep", func(t *testing.T) {
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collections := []*models.Collection{}
 		expectedErr := errors.New("collectionRep error")
@@ -61,15 +70,15 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		_, err := collectionServ.GetAll(ctx)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockColRep.AssertCalled(t, "GetAll", ctx)
 	})
 }
 
-func TestCollectionServ_Add(t *testing.T) {
+func (s *CollectionServiceSuite) TestCollectionServ_Add(t provider.T) {
 	collectionCreator := testobj.NewCollectionMother()
 
-	t.Run("success add collection", func(t *testing.T) {
+	t.WithNewStep("success add collection", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collection := collectionCreator.CollectionP(uuid.New())
 
@@ -79,11 +88,11 @@ func TestCollectionServ_Add(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Add(ctx, collection)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockColRep.AssertCalled(t, "Add", ctx, collection)
 	})
 
-	t.Run("error in rep", func(t *testing.T) {
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collection := collectionCreator.CollectionP(uuid.New())
 		expectedErr := errors.New("database error")
@@ -94,15 +103,15 @@ func TestCollectionServ_Add(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Add(ctx, collection)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockColRep.AssertCalled(t, "Add", ctx, collection)
 	})
 }
 
-func TestCollectionServ_Update(t *testing.T) {
+func (s *CollectionServiceSuite) TestCollectionServ_Update(t provider.T) {
 	collectionCreator := testobj.NewCollectionMother()
 
-	t.Run("success update collection", func(t *testing.T) {
+	t.WithNewStep("success update collection", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collectionID := uuid.New()
 		updateReq := collectionCreator.CollectionUpdateReq()
@@ -113,11 +122,11 @@ func TestCollectionServ_Update(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
-	t.Run("error in rep", func(t *testing.T) {
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collectionID := uuid.New()
 		updateReq := collectionCreator.CollectionUpdateReq()
@@ -129,11 +138,11 @@ func TestCollectionServ_Update(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
-	t.Run("error in update function", func(t *testing.T) {
+	t.WithNewStep("error in update function", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collectionID := uuid.New()
 		// Invalid update request that should cause error in Update method
@@ -147,15 +156,15 @@ func TestCollectionServ_Update(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
-		require.Error(t, err)
+		sCtx.Require().Error(err)
 		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
 }
 
-func TestCollectionServ_Delete(t *testing.T) {
+func (s *CollectionServiceSuite) TestCollectionServ_Delete(t provider.T) {
 
-	t.Run("success delete collection", func(t *testing.T) {
+	t.WithNewStep("success delete collection", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collectionID := uuid.New()
 
@@ -165,11 +174,11 @@ func TestCollectionServ_Delete(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Delete(ctx, collectionID)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockColRep.AssertCalled(t, "Delete", ctx, collectionID)
 	})
 
-	t.Run("error in delete", func(t *testing.T) {
+	t.WithNewStep("error in delete", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		collectionID := uuid.New()
 		expectedErr := errors.New("delete error")
@@ -180,7 +189,7 @@ func TestCollectionServ_Delete(t *testing.T) {
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Delete(ctx, collectionID)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockColRep.AssertCalled(t, "Delete", ctx, collectionID)
 	})
 }

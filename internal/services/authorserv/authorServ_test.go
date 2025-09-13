@@ -10,14 +10,24 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/allure"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestAuthorServ_GetAll(t *testing.T) {
+type AuthorServiceSuite struct {
+	suite.Suite
+}
+
+func TestAuthorService(t *testing.T) {
+	suite.RunSuite(t, new(AuthorServiceSuite))
+}
+
+func (s *AuthorServiceSuite) TestAuthorServ_GetAll(t provider.T) {
 	authorCreator := testobj.NewAuthorMother()
 
-	t.Run("success return 2 authors", func(t *testing.T) {
+	t.WithNewStep("success return 2 authors", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authors := []*models.Author{
 			authorCreator.AuthorP(uuid.New()),
@@ -29,14 +39,16 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		resAuthors, err := authorServ.GetAll(ctx)
-		require.Nil(t, err)
-		require.True(t, len(authors) == len(resAuthors))
-		for i := range len(resAuthors) {
-			require.True(t, authors[i].Equals(resAuthors[i]))
+
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().Equal(len(authors), len(resAuthors))
+		for i := range resAuthors {
+			sCtx.Assert().True(authors[i].Equals(resAuthors[i]))
 		}
 		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
-	})
-	t.Run("success return 0 authors", func(t *testing.T) {
+	}, allure.NewParameter("scenario", "success with 2 authors"))
+
+	t.WithNewStep("success return 0 authors", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authors := []*models.Author{}
 		mockAuthorRep := new(authorrep.MockAuthorRep)
@@ -45,11 +57,13 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		resAuthors, err := authorServ.GetAll(ctx)
-		require.Nil(t, err)
-		require.True(t, len(resAuthors) == 0)
+
+		sCtx.Assert().NoError(err)
+		sCtx.Assert().Empty(resAuthors)
 		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
-	})
-	t.Run("error in rep", func(t *testing.T) {
+	}, allure.NewParameter("scenario", "success with empty result"))
+
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authors := []*models.Author{}
 		expectedErr := errors.New("userRep error")
@@ -59,15 +73,16 @@ func TestAuthorServ_GetAll(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		_, err := authorServ.GetAll(ctx)
-		require.ErrorIs(t, err, expectedErr)
+
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
-	})
+	}, allure.NewParameter("scenario", "repository error"))
 }
 
-func TestAuthorServ_Add(t *testing.T) {
+func (s *AuthorServiceSuite) TestAuthorServ_Add(t provider.T) {
 	authorCreator := testobj.NewAuthorMother()
 
-	t.Run("success add author", func(t *testing.T) {
+	t.WithNewStep("success add author", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		author := authorCreator.AuthorP(uuid.New())
 
@@ -77,11 +92,12 @@ func TestAuthorServ_Add(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Add(ctx, author)
-		require.Nil(t, err)
-		mockAuthorRep.AssertCalled(t, "Add", ctx, author)
-	})
 
-	t.Run("error in rep", func(t *testing.T) {
+		sCtx.Assert().NoError(err)
+		mockAuthorRep.AssertCalled(t, "Add", ctx, author)
+	}, allure.NewParameter("scenario", "successful addition"))
+
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		author := authorCreator.AuthorP(uuid.New())
 		expectedErr := errors.New("database error")
@@ -92,15 +108,16 @@ func TestAuthorServ_Add(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Add(ctx, author)
-		require.ErrorIs(t, err, expectedErr)
+
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "Add", ctx, author)
-	})
+	}, allure.NewParameter("scenario", "repository error"))
 }
 
-func TestAuthorServ_Update(t *testing.T) {
+func (s *AuthorServiceSuite) TestAuthorServ_Update(t provider.T) {
 	authorCreator := testobj.NewAuthorMother()
 
-	t.Run("success update author", func(t *testing.T) {
+	t.WithNewStep("success update author", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		updateReq := authorCreator.AuthorUpdateReq()
@@ -111,11 +128,12 @@ func TestAuthorServ_Update(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
-		require.Nil(t, err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
-	})
 
-	t.Run("error in rep", func(t *testing.T) {
+		sCtx.Assert().NoError(err)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+	}, allure.NewParameter("scenario", "successful update"))
+
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		updateReq := models.AuthorUpdateReq{
@@ -129,11 +147,12 @@ func TestAuthorServ_Update(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
-		require.ErrorIs(t, err, expectedErr)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
-	})
 
-	t.Run("error in update function", func(t *testing.T) {
+		sCtx.Assert().ErrorIs(err, expectedErr)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+	}, allure.NewParameter("scenario", "repository error"))
+
+	t.WithNewStep("error in update function", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		updateReq := models.AuthorUpdateReq{}
@@ -145,14 +164,14 @@ func TestAuthorServ_Update(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
-		require.Error(t, err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
-	})
 
+		sCtx.Assert().Error(err)
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+	}, allure.NewParameter("scenario", "validation error"))
 }
 
-func TestAuthorServ_Delete(t *testing.T) {
-	t.Run("success delete author", func(t *testing.T) {
+func (s *AuthorServiceSuite) TestAuthorServ_Delete(t provider.T) {
+	t.WithNewStep("success delete author", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 
@@ -163,12 +182,13 @@ func TestAuthorServ_Delete(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Delete(ctx, authorID)
-		require.Nil(t, err)
+
+		sCtx.Assert().NoError(err)
 		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
 		mockAuthorRep.AssertCalled(t, "Delete", ctx, authorID)
-	})
+	}, allure.NewParameter("scenario", "successful deletion"))
 
-	t.Run("error author has linked artworks", func(t *testing.T) {
+	t.WithNewStep("error author has linked artworks", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 
@@ -178,12 +198,13 @@ func TestAuthorServ_Delete(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Delete(ctx, authorID)
-		require.ErrorIs(t, err, authorserv.ErrHasLinkedArtworks)
+
+		sCtx.Assert().ErrorIs(err, authorserv.ErrHasLinkedArtworks)
 		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
 		mockAuthorRep.AssertNotCalled(t, "Delete", ctx, authorID)
-	})
+	}, allure.NewParameter("scenario", "has linked artworks error"))
 
-	t.Run("error checking artworks", func(t *testing.T) {
+	t.WithNewStep("error checking artworks", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		expectedErr := errors.New("check artworks error")
@@ -194,13 +215,14 @@ func TestAuthorServ_Delete(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Delete(ctx, authorID)
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "authorServ.Delete")
+
+		sCtx.Assert().Error(err)
+		sCtx.Assert().Contains(err.Error(), "authorServ.Delete")
 		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
 		mockAuthorRep.AssertNotCalled(t, "Delete", ctx, authorID)
-	})
+	}, allure.NewParameter("scenario", "artworks check error"))
 
-	t.Run("error in delete", func(t *testing.T) {
+	t.WithNewStep("error in delete", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		expectedErr := errors.New("delete error")
@@ -212,8 +234,9 @@ func TestAuthorServ_Delete(t *testing.T) {
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Delete(ctx, authorID)
-		require.ErrorIs(t, err, expectedErr)
+
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "HasArtworks", ctx, authorID)
 		mockAuthorRep.AssertCalled(t, "Delete", ctx, authorID)
-	})
+	}, allure.NewParameter("scenario", "delete operation error"))
 }

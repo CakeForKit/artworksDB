@@ -13,16 +13,25 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestAuthAdmin_RegisterAdmin(t *testing.T) {
+type AuthAdminServiceSuite struct {
+	suite.Suite
+}
+
+func TestAuthAdminService(t *testing.T) {
+	suite.RunSuite(t, new(AuthAdminServiceSuite))
+}
+
+func (s *AuthAdminServiceSuite) TestAuthAdmin_RegisterAdmin(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
 	tokenMaker, err := token.NewTokenMaker(appCnfg.TokenSymmetricKey)
-	require.Nil(t, err)
+	t.Require().NoError(err, "Failed to create token maker")
 
 	adminCreator := testobj.NewAdminMother()
 	hashedPassword := "$2a$10$hashedpassword123"
@@ -34,7 +43,7 @@ func TestAuthAdmin_RegisterAdmin(t *testing.T) {
 		Password:  password,
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockHasher.On("HashPassword", password).Return(hashedPassword, nil)
@@ -48,16 +57,16 @@ func TestAuthAdmin_RegisterAdmin(t *testing.T) {
 		})).Return(nil)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// act
 		err = authAdminServ.RegisterAdmin(ctx, registerReq)
-		require.NoError(t, err)
+		sCtx.Require().NoError(err)
 		mockHasher.AssertCalled(t, "HashPassword", password)
 		mockAdminRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.Admin"))
 	})
 
-	t.Run("hasher error", func(t *testing.T) {
+	t.WithNewStep("hasher error", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		expectedErr := hasher.ErrHash
@@ -66,15 +75,15 @@ func TestAuthAdmin_RegisterAdmin(t *testing.T) {
 		mockAdminRep := new(adminrep.MockAdminRep)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		err = authAdminServ.RegisterAdmin(ctx, registerReq)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockHasher.AssertCalled(t, "HashPassword", password)
 		mockAdminRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
-	t.Run("admin repository error", func(t *testing.T) {
+	t.WithNewStep("admin repository error", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockHasher.On("HashPassword", password).Return(hashedPassword, nil)
@@ -85,16 +94,16 @@ func TestAuthAdmin_RegisterAdmin(t *testing.T) {
 
 		// act
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		err = authAdminServ.RegisterAdmin(ctx, registerReq)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockHasher.AssertCalled(t, "HashPassword", password)
 		mockAdminRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.Admin"))
 	})
 }
 
-func TestAuthAdmin_LoginAdmin(t *testing.T) {
+func (s *AuthAdminServiceSuite) TestAuthAdmin_LoginAdmin(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
@@ -108,7 +117,7 @@ func TestAuthAdmin_LoginAdmin(t *testing.T) {
 		Password: password,
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
@@ -122,18 +131,18 @@ func TestAuthAdmin_LoginAdmin(t *testing.T) {
 			Return(expectedToken, nil)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// act
 		tokenStr, err := authAdminServ.LoginAdmin(ctx, loginReq)
 
-		require.NoError(t, err)
-		require.Equal(t, expectedToken, tokenStr)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().Equal(expectedToken, tokenStr)
 		mockAdminRep.AssertCalled(t, "GetByLogin", ctx, admin.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", password, hashedPassword)
 		mockTokenMaker.AssertCalled(t, "CreateToken", admin.GetID(), token.AdminRole, appCnfg.AccessTokenDuration)
 	})
-	t.Run("error admin not found", func(t *testing.T) {
+	t.WithNewStep("error admin not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
@@ -143,18 +152,18 @@ func TestAuthAdmin_LoginAdmin(t *testing.T) {
 		mockAdminRep.On("GetByLogin", ctx, admin.GetLogin()).Return(nil, expectedErr)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// act
 		tokenStr, err := authAdminServ.LoginAdmin(ctx, loginReq)
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockAdminRep.AssertCalled(t, "GetByLogin", ctx, admin.GetLogin())
 		mockHasher.AssertNotCalled(t, "CheckPassword", mock.Anything, mock.Anything)
 	})
 
-	t.Run("error wrong password", func(t *testing.T) {
+	t.WithNewStep("error wrong password", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
@@ -165,17 +174,17 @@ func TestAuthAdmin_LoginAdmin(t *testing.T) {
 		mockHasher.On("CheckPassword", password, hashedPassword).Return(expectedErr)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		tokenStr, err := authAdminServ.LoginAdmin(ctx, loginReq)
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockAdminRep.AssertCalled(t, "GetByLogin", ctx, admin.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", password, hashedPassword)
 	})
 
-	t.Run("token creation failed", func(t *testing.T) {
+	t.WithNewStep("token creation failed", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
@@ -189,25 +198,25 @@ func TestAuthAdmin_LoginAdmin(t *testing.T) {
 			Return("", expectedErr)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// act
 		tokenStr, err := authAdminServ.LoginAdmin(ctx, loginReq)
 
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockAdminRep.AssertCalled(t, "GetByLogin", ctx, admin.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", password, hashedPassword)
 		mockTokenMaker.AssertCalled(t, "CreateToken", admin.GetID(), token.AdminRole, appCnfg.AccessTokenDuration)
 	})
 }
 
-func TestAuthAdmin_VerifyByToken(t *testing.T) {
+func (s *AuthAdminServiceSuite) TestAuthAdmin_VerifyByToken(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
 		mockTokenMaker := new(token.MockTokenMaker)
@@ -222,17 +231,17 @@ func TestAuthAdmin_VerifyByToken(t *testing.T) {
 		mockTokenMaker.On("VerifyToken", tokenString, token.AdminRole).Return(expectedPayload, nil)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// act
 		payload, err := authAdminServ.VerifyByToken(tokenString)
 
-		require.NoError(t, err)
-		require.Equal(t, expectedPayload, payload)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().Equal(expectedPayload, payload)
 		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.AdminRole)
 	})
 
-	t.Run("error invalid token", func(t *testing.T) {
+	t.WithNewStep("error invalid token", func(sCtx provider.StepCtx) {
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
 		mockTokenMaker := new(token.MockTokenMaker)
@@ -242,17 +251,17 @@ func TestAuthAdmin_VerifyByToken(t *testing.T) {
 		mockTokenMaker.On("VerifyToken", tokenString, token.AdminRole).Return(nil, expectedErr)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		// act
 		payload, err := authAdminServ.VerifyByToken(tokenString)
 
-		require.Error(t, err)
-		require.Nil(t, payload)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Nil(payload)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.AdminRole)
 	})
 
-	t.Run("error wrong role", func(t *testing.T) {
+	t.WithNewStep("error wrong role", func(sCtx provider.StepCtx) {
 		mockHasher := new(hasher.MockHasher)
 		mockAdminRep := new(adminrep.MockAdminRep)
 		mockTokenMaker := new(token.MockTokenMaker)
@@ -262,13 +271,13 @@ func TestAuthAdmin_VerifyByToken(t *testing.T) {
 		mockTokenMaker.On("VerifyToken", tokenString, token.AdminRole).Return(nil, expectedErr)
 
 		authAdminServ, err := auth.NewAuthAdmin(appCnfg, mockAdminRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		// act
 		payload, err := authAdminServ.VerifyByToken(tokenString)
 
-		require.Error(t, err)
-		require.Nil(t, payload)
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Nil(payload)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.AdminRole)
 	})
 }

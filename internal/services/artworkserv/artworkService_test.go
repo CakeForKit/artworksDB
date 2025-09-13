@@ -13,14 +13,23 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestArtworkServ_GetAll(t *testing.T) {
+type ArtworkServiceSuite struct {
+	suite.Suite
+}
+
+func TestArtworkService(t *testing.T) {
+	suite.RunSuite(t, new(ArtworkServiceSuite))
+}
+
+func (s *ArtworkServiceSuite) TestArtworkServ_GetAll(t provider.T) {
 	artworkCretor := testobj.NewArtworkMother()
 
-	t.Run("success return 2 authors", func(t *testing.T) {
+	t.WithNewStep("success return 2 authors", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworks := []*models.Artwork{
 			artworkCretor.ArtworkP(uuid.New()),
@@ -40,17 +49,17 @@ func TestArtworkServ_GetAll(t *testing.T) {
 		// ACT
 		resArtworks, err := artworkService.GetAll(ctx)
 
-		require.Nil(t, err)
-		require.True(t, len(artworks) == len(resArtworks))
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			require.True(t, artworks[i].Equals(resArtworks[i]))
+			sCtx.Require().True(artworks[i].Equals(resArtworks[i]))
 		}
 		mockArtworkRep.AssertCalled(t, "GetAllArtworks", ctx,
 			mock.AnythingOfType("*jsonreqresp.ArtworkFilter"),
 			mock.AnythingOfType("*jsonreqresp.ArtworkSortOps"))
 	})
 
-	t.Run("success return 0 artworks", func(t *testing.T) {
+	t.WithNewStep("success return 0 artworks", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworks := []*models.Artwork{}
 		mockAuthorRep := new(authorrep.MockAuthorRep)
@@ -67,14 +76,14 @@ func TestArtworkServ_GetAll(t *testing.T) {
 		// ACT
 		resArtworks, err := artworkService.GetAll(ctx)
 
-		require.Nil(t, err)
-		require.True(t, len(resArtworks) == 0)
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(resArtworks) == 0)
 		mockArtworkRep.AssertCalled(t, "GetAllArtworks", ctx,
 			mock.AnythingOfType("*jsonreqresp.ArtworkFilter"),
 			mock.AnythingOfType("*jsonreqresp.ArtworkSortOps"))
 	})
 
-	t.Run("error in rep", func(t *testing.T) {
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworks := []*models.Artwork{}
 		expectedErr := errors.New("artworkRep error")
@@ -92,19 +101,19 @@ func TestArtworkServ_GetAll(t *testing.T) {
 		// ACT
 		_, err := artworkService.GetAll(ctx)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockArtworkRep.AssertCalled(t, "GetAllArtworks", ctx,
 			mock.AnythingOfType("*jsonreqresp.ArtworkFilter"),
 			mock.AnythingOfType("*jsonreqresp.ArtworkSortOps"))
 	})
 }
 
-func TestArtworkService_Add(t *testing.T) {
+func (s *ArtworkServiceSuite) TestArtworkService_Add(t provider.T) {
 	artworkCreator := testobj.NewArtworkMother()
 	authorCreator := testobj.NewAuthorMother()
 	collectionCreator := testobj.NewCollectionMother()
 
-	t.Run("success add artwork", func(t *testing.T) {
+	t.WithNewStep("success add artwork", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		author := authorCreator.AuthorP(uuid.New())
 		collection := collectionCreator.CollectionP(uuid.New())
@@ -123,13 +132,13 @@ func TestArtworkService_Add(t *testing.T) {
 		// ACT
 		err := artworkService.Add(ctx, artworkReq)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
 		mockArtworkRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.Artwork"))
 	})
 
-	t.Run("error author not found", func(t *testing.T) {
+	t.WithNewStep("error author not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		authorID := uuid.New()
 		collection := collectionCreator.CollectionP(uuid.New())
@@ -147,14 +156,14 @@ func TestArtworkService_Add(t *testing.T) {
 		// ACT
 		err := artworkService.Add(ctx, artworkReq)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "artworkService.Add")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, authorID)
 		mockCollectionRep.AssertNotCalled(t, "GetByID", mock.Anything, mock.Anything)
 		mockArtworkRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
-	t.Run("error collection not found", func(t *testing.T) {
+	t.WithNewStep("error collection not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		author := authorCreator.AuthorP(uuid.New())
 		collectionID := uuid.New()
@@ -173,14 +182,14 @@ func TestArtworkService_Add(t *testing.T) {
 		// ACT
 		err := artworkService.Add(ctx, artworkReq)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "artworkService.Add")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collectionID)
 		mockArtworkRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
-	t.Run("error in artwork rep", func(t *testing.T) {
+	t.WithNewStep("error in artwork rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		author := authorCreator.AuthorP(uuid.New())
 		collection := collectionCreator.CollectionP(uuid.New())
@@ -200,8 +209,8 @@ func TestArtworkService_Add(t *testing.T) {
 		// ACT
 		err := artworkService.Add(ctx, artworkReq)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "artworkService.Add")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
 		mockArtworkRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.Artwork"))
@@ -209,8 +218,8 @@ func TestArtworkService_Add(t *testing.T) {
 
 }
 
-func TestArtworkService_Delete(t *testing.T) {
-	t.Run("success delete artwork", func(t *testing.T) {
+func (s *ArtworkServiceSuite) TestArtworkService_Delete(t provider.T) {
+	t.WithNewStep("success delete artwork", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworkID := uuid.New()
 
@@ -225,11 +234,11 @@ func TestArtworkService_Delete(t *testing.T) {
 		// ACT
 		err := artworkService.Delete(ctx, artworkID)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockArtworkRep.AssertCalled(t, "Delete", ctx, artworkID)
 	})
 
-	t.Run("error in delete", func(t *testing.T) {
+	t.WithNewStep("error in delete", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworkID := uuid.New()
 
@@ -245,16 +254,16 @@ func TestArtworkService_Delete(t *testing.T) {
 		// ACT
 		err := artworkService.Delete(ctx, artworkID)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockArtworkRep.AssertCalled(t, "Delete", ctx, artworkID)
 	})
 }
 
-func TestArtworkService_Update(t *testing.T) {
+func (s *ArtworkServiceSuite) TestArtworkService_Update(t provider.T) {
 	authorCreator := testobj.NewAuthorMother()
 	collectionCreator := testobj.NewCollectionMother()
 
-	t.Run("success update artwork", func(t *testing.T) {
+	t.WithNewStep("success update artwork", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworkID := uuid.New()
 		author := authorCreator.AuthorP(uuid.New())
@@ -278,13 +287,13 @@ func TestArtworkService_Update(t *testing.T) {
 		// ACT
 		err := artworkService.Update(ctx, artworkID, updateFields)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
 		mockArtworkRep.AssertCalled(t, "Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))
 	})
 
-	t.Run("error author not found in update", func(t *testing.T) {
+	t.WithNewStep("error author not found in update", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworkID := uuid.New()
 		authorID := uuid.New()
@@ -304,14 +313,14 @@ func TestArtworkService_Update(t *testing.T) {
 		// ACT
 		err := artworkService.Update(ctx, artworkID, updateFields)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "artworkService.Add")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, authorID)
 		mockCollectionRep.AssertNotCalled(t, "GetByID", mock.Anything, mock.Anything)
 		mockArtworkRep.AssertNotCalled(t, "Update", mock.Anything, mock.Anything, mock.Anything)
 	})
 
-	t.Run("error in artwork rep update", func(t *testing.T) {
+	t.WithNewStep("error in artwork rep update", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworkID := uuid.New()
 		author := authorCreator.AuthorP(uuid.New())
@@ -335,7 +344,7 @@ func TestArtworkService_Update(t *testing.T) {
 		// ACT
 		err := artworkService.Update(ctx, artworkID, updateFields)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
 		mockArtworkRep.AssertCalled(t, "Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))

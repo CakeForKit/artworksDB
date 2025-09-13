@@ -7,16 +7,25 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/assert" // исправлено: было stretchr -> stretchr
-	"github.com/stretchr/testify/require"
 )
 
-func TestAuthZ_Authz_GetUserID(t *testing.T) {
+type AuthZServiceSuite struct {
+	suite.Suite
+}
+
+func TestAuthZService(t *testing.T) {
+	suite.RunSuite(t, new(AuthZServiceSuite))
+}
+
+func (s *AuthZServiceSuite) TestAuthZ_Authz_GetUserID(t provider.T) {
 	payloadMother := testobj.NewPayloadMother()
 	authzServ, err := auth.NewAuthZ()
-	require.Nil(t, err)
+	t.Require().NoError(err, "Failed to create authzServ")
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		userID := uuid.New()
 		payload := payloadMother.UserPayload(userID)
@@ -24,10 +33,10 @@ func TestAuthZ_Authz_GetUserID(t *testing.T) {
 		ctx = authzServ.Authorize(ctx, payload)
 
 		resUserID, err := authzServ.UserIDFromContext(ctx)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		assert.Equal(t, userID, resUserID)
 	})
-	t.Run("not found userID", func(t *testing.T) {
+	t.WithNewStep("not found userID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		_, err := authzServ.UserIDFromContext(ctx)
@@ -36,12 +45,11 @@ func TestAuthZ_Authz_GetUserID(t *testing.T) {
 	})
 }
 
-func TestAuthZ_Authz_GetEmployeeID(t *testing.T) {
+func (s *AuthZServiceSuite) TestAuthZ_Authz_GetEmployeeID(t provider.T) {
 	payloadMother := testobj.NewPayloadMother()
 	authzServ, err := auth.NewAuthZ()
-	require.Nil(t, err)
-
-	t.Run("success", func(t *testing.T) {
+	t.Require().NoError(err, "Failed to create authzServ")
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		userID := uuid.New()
 		payload := payloadMother.EmployeePayload(userID)
@@ -49,10 +57,10 @@ func TestAuthZ_Authz_GetEmployeeID(t *testing.T) {
 		ctx = authzServ.Authorize(ctx, payload)
 
 		resUserID, err := authzServ.EmployeeIDFromContext(ctx)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		assert.Equal(t, userID, resUserID)
 	})
-	t.Run("not found userID", func(t *testing.T) {
+	t.WithNewStep("not found userID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		_, err := authzServ.EmployeeIDFromContext(ctx)
@@ -61,12 +69,12 @@ func TestAuthZ_Authz_GetEmployeeID(t *testing.T) {
 	})
 }
 
-func TestAuthZ_Authz_GetAdminID(t *testing.T) {
+func (s *AuthZServiceSuite) TestAuthZ_Authz_GetAdminID(t provider.T) {
 	payloadMother := testobj.NewPayloadMother()
 	authzServ, err := auth.NewAuthZ()
-	require.Nil(t, err)
+	t.Require().NoError(err, "Failed to create authzServ")
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		userID := uuid.New()
 		payload := payloadMother.AdminPayload(userID)
@@ -74,10 +82,10 @@ func TestAuthZ_Authz_GetAdminID(t *testing.T) {
 		ctx = authzServ.Authorize(ctx, payload)
 
 		resUserID, err := authzServ.AdminIDFromContext(ctx)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		assert.Equal(t, userID, resUserID)
 	})
-	t.Run("not found userID", func(t *testing.T) {
+	t.WithNewStep("not found userID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		_, err := authzServ.AdminIDFromContext(ctx)

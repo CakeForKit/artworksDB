@@ -12,14 +12,23 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestEventServ_GetAll(t *testing.T) {
+type EventServiceSuite struct {
+	suite.Suite
+}
+
+func TestEventService(t *testing.T) {
+	suite.RunSuite(t, new(EventServiceSuite))
+}
+
+func (s *EventServiceSuite) TestEventServ_GetAll(t provider.T) {
 	eventCreator := testobj.NewEventMother()
 
-	t.Run("success return 2 events", func(t *testing.T) {
+	t.WithNewStep("success return 2 events", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		events := []*models.Event{
 			eventCreator.EventP(uuid.New()),
@@ -38,16 +47,16 @@ func TestEventServ_GetAll(t *testing.T) {
 		// ACT
 		resEvents, err := eventServ.GetAll(ctx)
 
-		require.Nil(t, err)
-		require.True(t, len(events) == len(resEvents))
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(events) == len(resEvents))
 		for i := range len(resEvents) {
-			require.True(t, events[i].Equals(resEvents[i]))
+			sCtx.Assert().True(events[i].Equals(resEvents[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetAll", ctx,
 			mock.AnythingOfType("*jsonreqresp.EventFilter"))
 	})
 
-	t.Run("success return 0 events", func(t *testing.T) {
+	t.WithNewStep("success return 0 events", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		events := []*models.Event{}
 
@@ -63,13 +72,13 @@ func TestEventServ_GetAll(t *testing.T) {
 		// ACT
 		resEvents, err := eventServ.GetAll(ctx)
 
-		require.Nil(t, err)
-		require.True(t, len(resEvents) == 0)
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(resEvents) == 0)
 		mockEventRep.AssertCalled(t, "GetAll", ctx,
 			mock.AnythingOfType("*jsonreqresp.EventFilter"))
 	})
 
-	t.Run("error in rep", func(t *testing.T) {
+	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		events := []*models.Event{}
 		expectedErr := errors.New("eventRep error")
@@ -86,17 +95,17 @@ func TestEventServ_GetAll(t *testing.T) {
 		// ACT
 		_, err := eventServ.GetAll(ctx)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "GetAll", ctx,
 			mock.AnythingOfType("*jsonreqresp.EventFilter"))
 	})
 }
 
-func TestEventService_GetArtworksFromEvent(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_GetArtworksFromEvent(t provider.T) {
 	artworkCreator := testobj.NewArtworkMother()
 	// eventCreator := testobj.NewEventMother()
 
-	t.Run("success get artworks from event", func(t *testing.T) {
+	t.WithNewStep("success get artworks from event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkIDs := uuid.UUIDs{uuid.New(), uuid.New()}
@@ -117,17 +126,17 @@ func TestEventService_GetArtworksFromEvent(t *testing.T) {
 		// ACT
 		resArtworks, err := eventServ.GetArtworksFromEvent(ctx, eventID)
 
-		require.Nil(t, err)
-		require.True(t, len(artworks) == len(resArtworks))
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			require.True(t, artworks[i].Equals(resArtworks[i]))
+			sCtx.Require().True(artworks[i].Equals(resArtworks[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockArtworkRep.AssertCalled(t, "GetByID", ctx, artworkIDs[0])
 		mockArtworkRep.AssertCalled(t, "GetByID", ctx, artworkIDs[1])
 	})
 
-	t.Run("error getting artwork IDs", func(t *testing.T) {
+	t.WithNewStep("error getting artwork IDs", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		expectedErr := errors.New("get artwork IDs error")
@@ -142,13 +151,13 @@ func TestEventService_GetArtworksFromEvent(t *testing.T) {
 		// ACT
 		_, err := eventServ.GetArtworksFromEvent(ctx, eventID)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "eventService.GetArtworkFromEvent")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockArtworkRep.AssertNotCalled(t, "GetByID", mock.Anything, mock.Anything)
 	})
 
-	t.Run("error getting artwork by ID", func(t *testing.T) {
+	t.WithNewStep("error getting artwork by ID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkIDs := uuid.UUIDs{uuid.New()}
@@ -165,18 +174,18 @@ func TestEventService_GetArtworksFromEvent(t *testing.T) {
 		// ACT
 		_, err := eventServ.GetArtworksFromEvent(ctx, eventID)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "eventService.GetArtworkFromEvent")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockArtworkRep.AssertCalled(t, "GetByID", ctx, artworkIDs[0])
 	})
 
 }
 
-func TestEventService_Add(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_Add(t provider.T) {
 	eventCreator := testobj.NewEventMother()
 
-	t.Run("success add event", func(t *testing.T) {
+	t.WithNewStep("success add event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		employeeID := uuid.New()
 		eventReq := eventCreator.EventAdd(employeeID)
@@ -195,13 +204,13 @@ func TestEventService_Add(t *testing.T) {
 		// ACT
 		err := eventServ.Add(ctx, eventReq)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "CheckEmployeeByID", ctx, employeeID)
 		mockEventRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.Event"))
 		mockEventRep.AssertCalled(t, "AddArtworksToEvent", ctx, mock.Anything, mock.Anything)
 	})
 
-	t.Run("error employee not found", func(t *testing.T) {
+	t.WithNewStep("error employee not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		employeeID := uuid.New()
 		eventReq := eventCreator.EventAdd(employeeID)
@@ -216,12 +225,12 @@ func TestEventService_Add(t *testing.T) {
 		// ACT
 		err := eventServ.Add(ctx, eventReq)
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, eventrep.ErrAddNoEmployee)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, eventrep.ErrAddNoEmployee)
 		mockEventRep.AssertCalled(t, "CheckEmployeeByID", ctx, employeeID)
 	})
 
-	t.Run("error artwork busy", func(t *testing.T) {
+	t.WithNewStep("error artwork busy", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		employeeID := uuid.New()
 		eventReq := eventCreator.EventAdd(employeeID)
@@ -238,16 +247,16 @@ func TestEventService_Add(t *testing.T) {
 		// ACT
 		err := eventServ.Add(ctx, eventReq)
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, eventserv.ErrArtworkBusy)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, eventserv.ErrArtworkBusy)
 		mockEventRep.AssertCalled(t, "CheckEmployeeByID", ctx, employeeID)
 		mockEventRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
 }
 
-func TestEventService_Delete(t *testing.T) {
-	t.Run("success delete event", func(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_Delete(t provider.T) {
+	t.WithNewStep("success delete event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 
@@ -261,11 +270,11 @@ func TestEventService_Delete(t *testing.T) {
 		// ACT
 		err := eventServ.Delete(ctx, eventID)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "Delete", ctx, eventID)
 	})
 
-	t.Run("error in delete", func(t *testing.T) {
+	t.WithNewStep("error in delete", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		expectedErr := errors.New("delete error")
@@ -280,15 +289,15 @@ func TestEventService_Delete(t *testing.T) {
 		// ACT
 		err := eventServ.Delete(ctx, eventID)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "Delete", ctx, eventID)
 	})
 }
 
-func TestEventService_Update(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_Update(t provider.T) {
 	eventCreator := testobj.NewEventMother()
 
-	t.Run("success update event", func(t *testing.T) {
+	t.WithNewStep("success update event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		updateFields := &jsonreqresp.EventUpdate{
@@ -307,12 +316,12 @@ func TestEventService_Update(t *testing.T) {
 		// ACT
 		err := eventServ.Update(ctx, eventID, updateFields)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
 		mockEventRep.AssertCalled(t, "Update", ctx, eventID, mock.AnythingOfType("func(*models.Event) (*models.Event, error)"))
 	})
 
-	t.Run("error event not found", func(t *testing.T) {
+	t.WithNewStep("error event not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		updateFields := &jsonreqresp.EventUpdate{}
@@ -328,16 +337,16 @@ func TestEventService_Update(t *testing.T) {
 		// ACT
 		err := eventServ.Update(ctx, eventID, updateFields)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "eventService.Update")
+		sCtx.Require().Error(err)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
 		mockEventRep.AssertNotCalled(t, "Update", mock.Anything, mock.Anything, mock.Anything)
 	})
 
 }
 
-func TestEventService_AddArtworksToEvent(t *testing.T) {
-	t.Run("success add artworks to event", func(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_AddArtworksToEvent(t provider.T) {
+	t.WithNewStep("success add artworks to event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkIDs := uuid.UUIDs{uuid.New(), uuid.New()}
@@ -356,13 +365,13 @@ func TestEventService_AddArtworksToEvent(t *testing.T) {
 		// ACT
 		err := eventServ.AddArtworksToEvent(ctx, eventID, artworkIDs)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockEventRep.AssertCalled(t, "AddArtworksToEvent", ctx, eventID, artworkIDs)
 	})
 
-	t.Run("error duplicate artwork IDs", func(t *testing.T) {
+	t.WithNewStep("error duplicate artwork IDs", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkIDs := uuid.UUIDs{uuid.New(), uuid.New()}
@@ -380,8 +389,8 @@ func TestEventService_AddArtworksToEvent(t *testing.T) {
 		// ACT
 		err := eventServ.AddArtworksToEvent(ctx, eventID, artworkIDs)
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, models.ErrAddArtwork)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, models.ErrAddArtwork)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockEventRep.AssertNotCalled(t, "AddArtworksToEvent", mock.Anything, mock.Anything, mock.Anything)
@@ -389,8 +398,8 @@ func TestEventService_AddArtworksToEvent(t *testing.T) {
 
 }
 
-func TestEventService_DeleteArtworkFromEvent(t *testing.T) {
-	t.Run("success delete artwork from event", func(t *testing.T) {
+func (s *EventServiceSuite) TestEventService_DeleteArtworkFromEvent(t provider.T) {
+	t.WithNewStep("success delete artwork from event", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkID := uuid.New()
@@ -405,11 +414,11 @@ func TestEventService_DeleteArtworkFromEvent(t *testing.T) {
 		// ACT
 		err := eventServ.DeleteArtworkFromEvent(ctx, eventID, artworkID)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "DeleteArtworkFromEvent", ctx, eventID, artworkID)
 	})
 
-	t.Run("error in delete artwork", func(t *testing.T) {
+	t.WithNewStep("error in delete artwork", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		eventID := uuid.New()
 		artworkID := uuid.New()
@@ -425,7 +434,7 @@ func TestEventService_DeleteArtworkFromEvent(t *testing.T) {
 		// ACT
 		err := eventServ.DeleteArtworkFromEvent(ctx, eventID, artworkID)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockEventRep.AssertCalled(t, "DeleteArtworkFromEvent", ctx, eventID, artworkID)
 	})
 }

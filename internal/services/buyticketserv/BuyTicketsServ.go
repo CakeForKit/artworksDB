@@ -61,7 +61,7 @@ func NewBuyTicketsServ(
 func (b *buyTicketsServ) cntFreeTickets(ctx context.Context, eventID uuid.UUID) (int, error) {
 	event, err := b.eventRep.GetByID(ctx, eventID)
 	if err != nil {
-		return 0, fmt.Errorf("checkCntTickets: %v", err)
+		return 0, fmt.Errorf("checkCntTickets: %w", err)
 	}
 	txCnt, err := b.txRep.GetCntTxByEventID(ctx, event.GetID())
 	if err != nil {
@@ -136,7 +136,7 @@ func (b *buyTicketsServ) BuyTicket(
 
 	err = b.txRep.Add(ctx, tx)
 	if err != nil {
-		return nil, fmt.Errorf("BuyTicket: %v", err)
+		return nil, fmt.Errorf("BuyTicket: %w", err)
 	}
 	return &tx, nil
 }
@@ -144,17 +144,17 @@ func (b *buyTicketsServ) BuyTicket(
 func (b *buyTicketsServ) ConfirmBuyTicket(ctx context.Context, TxID uuid.UUID) error {
 	tx, err := b.txRep.GetByID(ctx, TxID)
 	if err != nil {
-		return fmt.Errorf("ConfirmBuyTicket: %v", err)
+		return fmt.Errorf("ConfirmBuyTicket: %w", err)
 	}
 	ticketPurchase := tx.GetTicketPurchase()
 
 	err = b.tPurchasesRep.Add(ctx, ticketPurchase)
 	if err != nil {
-		return fmt.Errorf("ConfirmBuyTicket: %v", err)
+		return fmt.Errorf("ConfirmBuyTicket: %w", err)
 	}
 	err = b.txRep.Delete(ctx, TxID)
 	if err != nil {
-		return fmt.Errorf("ConfirmBuyTicket: %v", err)
+		return fmt.Errorf("ConfirmBuyTicket: %w", err)
 	}
 	return nil
 }

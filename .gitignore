@@ -1,2 +1,4 @@
 *.drawio.bkp
 *:Zone.Identifier
+allure-results
+allure-report

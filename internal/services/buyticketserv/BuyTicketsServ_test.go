@@ -15,18 +15,27 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestBuyTicketsServ_BuyTicket(t *testing.T) {
+type BuyTicketsServiceSuite struct {
+	suite.Suite
+}
+
+func TestBuyTicketsService(t *testing.T) {
+	suite.RunSuite(t, new(BuyTicketsServiceSuite))
+}
+
+func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 	t.Parallel()
 	appCnfgCreator := testobj.NewAppConfigMother()
 	eventCreator := testobj.NewEventMother()
 	userCreator := testobj.NewUserMother()
 	tptxCreator := testobj.NewTicketPurchaseTxMother()
 
-	t.Run("success with authenticated user", func(t *testing.T) {
+	t.WithNewStep("success with authenticated user", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := appCnfgCreator.Default()
 		event := eventCreator.EventCntTicketsP(uuid.New(), 100)
@@ -56,20 +65,20 @@ func TestBuyTicketsServ_BuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tx, err := buyTicketsServ.BuyTicket(ctx, event.GetID(), purchasesCnt, "cn", "ce")
 
-		require.Nil(t, err)
-		require.NotNil(t, tx)
-		require.True(t, expectedTX.Equals(tx))
+		sCtx.Require().NoError(err)
+		sCtx.Assert().NotNil(tx)
+		sCtx.Require().True(expectedTX.Equals(tx))
 		mockEventRep.AssertCalled(t, "GetByID", ctx, event.GetID())
 		mockAuthZ.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUsrRep.AssertCalled(t, "GetByID", ctx, user.GetID())
 		mockTXRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("models.TicketPurchaseTx"))
 	})
-	t.Run("success with unauthenticated user", func(t *testing.T) {
+	t.WithNewStep("success with unauthenticated user", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := appCnfgCreator.Default()
 		event := eventCreator.EventCntTicketsP(uuid.New(), 100)
@@ -98,20 +107,20 @@ func TestBuyTicketsServ_BuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tx, err := buyTicketsServ.BuyTicket(ctx, event.GetID(), purchasesCnt, customerName, customerEmail)
 
-		require.Nil(t, err)
-		require.NotNil(t, tx)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().NotNil(tx)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, event.GetID())
 		mockAuthZ.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUsrRep.AssertNotCalled(t, "GetByID", mock.Anything, mock.Anything)
 		mockTXRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("models.TicketPurchaseTx"))
 	})
 
-	t.Run("error no free tickets", func(t *testing.T) {
+	t.WithNewStep("error no free tickets", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := appCnfgCreator.Default()
 		event := eventCreator.EventCntTicketsP(uuid.New(), 5)
@@ -136,18 +145,18 @@ func TestBuyTicketsServ_BuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		_, err = buyTicketsServ.BuyTicket(ctx, event.GetID(), 1, "cn", "ce")
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, buyticketserv.ErrNoFreeTicket)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, buyticketserv.ErrNoFreeTicket)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, event.GetID())
 		mockAuthZ.AssertNotCalled(t, "UserIDFromContext", mock.Anything)
 	})
 
-	t.Run("error no user data for unauthenticated user", func(t *testing.T) {
+	t.WithNewStep("error no user data for unauthenticated user", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := appCnfgCreator.Default()
 		event := eventCreator.EventCntTicketsP(uuid.New(), 100)
@@ -173,23 +182,23 @@ func TestBuyTicketsServ_BuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		_, err = buyTicketsServ.BuyTicket(ctx, event.GetID(), 1, "", "")
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, buyticketserv.ErrNoUserData)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, buyticketserv.ErrNoUserData)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, event.GetID())
 		mockAuthZ.AssertCalled(t, "UserIDFromContext", ctx)
 	})
 }
 
-func TestBuyTicketsServ_ConfirmBuyTicket(t *testing.T) {
+func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_ConfirmBuyTicket(t provider.T) {
 	t.Parallel()
 	tptxCreator := testobj.NewTicketPurchaseTxMother()
 
-	t.Run("success confirm buy ticket", func(t *testing.T) {
+	t.WithNewStep("success confirm buy ticket", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		txID := uuid.New()
@@ -213,18 +222,18 @@ func TestBuyTicketsServ_ConfirmBuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = buyTicketsServ.ConfirmBuyTicket(ctx, txID)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockTXRep.AssertCalled(t, "GetByID", ctx, txID)
 		mockTPurchasesRep.AssertCalled(t, "Add", ctx, tx.GetTicketPurchase())
 		mockTXRep.AssertCalled(t, "Delete", ctx, txID)
 	})
 
-	t.Run("error transaction not found", func(t *testing.T) {
+	t.WithNewStep("error transaction not found", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		txID := uuid.New()
@@ -246,22 +255,22 @@ func TestBuyTicketsServ_ConfirmBuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = buyTicketsServ.ConfirmBuyTicket(ctx, txID)
 
-		require.Error(t, err)
-		require.Contains(t, err.Error(), "ConfirmBuyTicket")
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockTXRep.AssertCalled(t, "GetByID", ctx, txID)
 		mockTPurchasesRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
 }
 
-func TestBuyTicketsServ_CancelBuyTicket(t *testing.T) {
+func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_CancelBuyTicket(t provider.T) {
 	t.Parallel()
-	t.Run("success cancel buy ticket", func(t *testing.T) {
+	t.WithNewStep("success cancel buy ticket", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		txID := uuid.New()
@@ -282,16 +291,16 @@ func TestBuyTicketsServ_CancelBuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = buyTicketsServ.CancelBuyTicket(ctx, txID)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockTXRep.AssertCalled(t, "Delete", ctx, txID)
 	})
 
-	t.Run("error in cancel buy ticket", func(t *testing.T) {
+	t.WithNewStep("error in cancel buy ticket", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		txID := uuid.New()
@@ -313,21 +322,21 @@ func TestBuyTicketsServ_CancelBuyTicket(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = buyTicketsServ.CancelBuyTicket(ctx, txID)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Require().ErrorIs(err, expectedErr)
 		mockTXRep.AssertCalled(t, "Delete", ctx, txID)
 	})
 }
 
-func TestBuyTicketsServ_GetAllTicketPurchasesOfUser(t *testing.T) {
+func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_GetAllTicketPurchasesOfUser(t provider.T) {
 	t.Parallel()
 	ticketPurchaseCreator := testobj.NewTicketPurchaseMother()
 
-	t.Run("success get all ticket purchases of user", func(t *testing.T) {
+	t.WithNewStep("success get all ticket purchases of user", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		userID := uuid.New()
@@ -353,21 +362,21 @@ func TestBuyTicketsServ_GetAllTicketPurchasesOfUser(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		resPurchases, err := buyTicketsServ.GetAllTicketPurchasesOfUser(ctx)
 
-		require.Nil(t, err)
-		require.True(t, len(tPurchases) == len(resPurchases))
+		sCtx.Require().NoError(err)
+		sCtx.Require().True(len(tPurchases) == len(resPurchases))
 		for i := range len(resPurchases) {
-			require.True(t, tPurchases[i].Equals(resPurchases[i]))
+			sCtx.Require().True(tPurchases[i].Equals(resPurchases[i]))
 		}
 		mockAuthZ.AssertCalled(t, "UserIDFromContext", ctx)
 		mockTPurchasesRep.AssertCalled(t, "GetTPurchasesOfUserID", ctx, userID)
 	})
 
-	t.Run("error user not authenticated", func(t *testing.T) {
+	t.WithNewStep("error user not authenticated", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
 		expectedErr := auth.ErrNotAuthZ
@@ -388,21 +397,21 @@ func TestBuyTicketsServ_GetAllTicketPurchasesOfUser(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		_, err = buyTicketsServ.GetAllTicketPurchasesOfUser(ctx)
 
-		require.Error(t, err)
-		require.ErrorIs(t, err, buyticketserv.ErrBuyTicketsServ)
+		sCtx.Require().Error(err)
+		sCtx.Require().ErrorIs(err, buyticketserv.ErrBuyTicketsServ)
 		mockAuthZ.AssertCalled(t, "UserIDFromContext", ctx)
 		mockTPurchasesRep.AssertNotCalled(t, "GetTPurchasesOfUserID", mock.Anything, mock.Anything)
 	})
 }
 
-func TestBuyTicketsServ_GetBuyTicketTransactionDuration(t *testing.T) {
+func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_GetBuyTicketTransactionDuration(t provider.T) {
 	t.Parallel()
-	t.Run("success get transaction duration", func(t *testing.T) {
+	t.WithNewStep("success get transaction duration", func(sCtx provider.StepCtx) {
 		appCnfg := testobj.NewAppConfigMother().Default()
 		expectedDuration := 10 * time.Minute
 		appCnfg.BuyTicketTransactionDuration = expectedDuration
@@ -421,11 +430,11 @@ func TestBuyTicketsServ_GetBuyTicketTransactionDuration(t *testing.T) {
 			mockUsrRep,
 			mockEventRep,
 		)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		duration := buyTicketsServ.GetBuyTicketTransactionDuration()
 
-		require.Equal(t, expectedDuration, duration)
+		sCtx.Assert().Equal(expectedDuration, duration)
 	})
 }

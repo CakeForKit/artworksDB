@@ -37,7 +37,7 @@ func (m *mailingService) SendMailToAllUsers(ctx context.Context, events []*model
 
 	users, err := m.userRep.GetAllSubscribed(ctx)
 	if err != nil {
-		return "", nil, fmt.Errorf("SendMailToAllUsers: %v", err)
+		return "", nil, fmt.Errorf("SendMailToAllUsers: %w", err)
 	}
 	if len(users) == 0 {
 		return msgText, nil, nil

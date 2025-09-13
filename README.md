@@ -33,6 +33,12 @@ make prep
 make up
 ```
 
+## Тестирование
+```bash
+make allure
+```
+
+
 ## Сайт
 
 [http://localhost:8080/museum/events](http://localhost:8080/museum/events)

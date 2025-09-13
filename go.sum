@@ -240,6 +240,12 @@ github.com/opencontainers/go-digest v1.0.0 h1:apOUWs51W5PlhuyGyz9FCeeBIOUDA/6nW8
 github.com/opencontainers/go-digest v1.0.0/go.mod h1:0JzlMkj0TRzQZfJkVvzbP0HBR3IKzErnv2BNG4W4MAM=
 github.com/opencontainers/image-spec v1.1.1 h1:y0fUlFfIZhPF1W537XOLg0/fcx6zcHCJwooC2xJA040=
 github.com/opencontainers/image-spec v1.1.1/go.mod h1:qpqAh3Dmcf36wStyyWU+kCeDgrGnAve2nCC8+7h8Q0M=
+github.com/ozontech/allure-go v0.7.4 h1:O4BGFix3vSxMq6D0h+Du4pYWLoiFyTpCQKLbqZgSQDA=
+github.com/ozontech/allure-go v0.7.4/go.mod h1:99aiGx2yrxqypk9DhqqaiGn93bKKmsoL586+ctTvM2c=
+github.com/ozontech/allure-go/pkg/allure v0.7.4 h1:BepWbZOmuHKOenmIbhc3iRryg1l21c4R1vs2GzC2374=
+github.com/ozontech/allure-go/pkg/allure v0.7.4/go.mod h1:kM/K/js8tPzl9huIsmgnK1kM6XeqOr7WQu87BBno7ZE=
+github.com/ozontech/allure-go/pkg/framework v0.7.4 h1:GjW8NN2qY4P1KoQ1Teh+IEfBsTf4RijAVtmorwHRep8=
+github.com/ozontech/allure-go/pkg/framework v0.7.4/go.mod h1:6BqD6m6ch2PQb6SjxTlfbtftndV/upv6cOeQH8/RMX8=
 github.com/paulmach/orb v0.11.1 h1:3koVegMC4X/WeiXYz9iswopaTwMem53NzTJuTF20JzU=
 github.com/paulmach/orb v0.11.1/go.mod h1:5mULz1xQfs3bmQm63QEJA6lNGujuRafwA5S/EnuLaLU=
 github.com/paulmach/protoscan v0.2.1/go.mod h1:SpcSwydNLrxUGSDvXvO0P7g7AuhJ7lcKfDlhJCDw2gY=

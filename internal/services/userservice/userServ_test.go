@@ -11,14 +11,23 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
-	"github.com/stretchr/testify/require"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 )
 
-func TestUserService_GetSelf(t *testing.T) {
+type UserServiceSuite struct {
+	suite.Suite
+}
+
+func TestUserService(t *testing.T) {
+	suite.RunSuite(t, new(UserServiceSuite))
+}
+
+func (s *UserServiceSuite) TestUserService_GetSelf(t provider.T) {
 	userCreator := testobj.NewUserMother()
 	user := userCreator.DefaultUser(uuid.New())
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("WithNewStep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		mockAuthZRep := new(auth.MockAuthZ)
@@ -31,12 +40,12 @@ func TestUserService_GetSelf(t *testing.T) {
 		// ACT
 		resUser, err := userServ.GetSelf(ctx)
 
-		require.Nil(t, err)
-		require.True(t, models.CmpUsers(&user, resUser))
+		sCtx.Require().NoError(err)
+		sCtx.Assert().True(models.CmpUsers(&user, resUser))
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUserRep.AssertCalled(t, "GetByID", ctx, user.GetID())
 	})
-	t.Run("error UserID from context", func(t *testing.T) {
+	t.WithNewStep("error UserID from context", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		mockAuthZRep := new(auth.MockAuthZ)
@@ -49,11 +58,11 @@ func TestUserService_GetSelf(t *testing.T) {
 		// ACT
 		resUser, err := userServ.GetSelf(ctx)
 
-		require.ErrorIs(t, err, expectedErr)
-		require.Nil(t, resUser)
+		sCtx.Assert().ErrorIs(err, expectedErr)
+		sCtx.Assert().True(resUser == nil)
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 	})
-	t.Run("error no userID", func(t *testing.T) {
+	t.WithNewStep("error no userID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
 		mockAuthZRep := new(auth.MockAuthZ)
@@ -67,18 +76,18 @@ func TestUserService_GetSelf(t *testing.T) {
 		// ACT
 		resUser, err := userServ.GetSelf(ctx)
 
-		require.ErrorIs(t, err, expectedErr)
-		require.Nil(t, resUser)
+		sCtx.Assert().ErrorIs(err, expectedErr)
+		sCtx.Assert().True(resUser == nil)
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUserRep.AssertCalled(t, "GetByID", ctx, user.GetID())
 	})
 }
 
-func TestUserService_ChangeSubscribeToMailing(t *testing.T) {
+func (s *UserServiceSuite) TestUserService_ChangeSubscribeToMailing(t provider.T) {
 	userCreator := testobj.NewUserMother()
 	user := userCreator.DefaultUser(uuid.New())
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		subscr := false
 
@@ -92,11 +101,11 @@ func TestUserService_ChangeSubscribeToMailing(t *testing.T) {
 		// ACT
 		err := userServ.ChangeSubscribeToMailing(ctx, subscr)
 
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUserRep.AssertCalled(t, "UpdateSubscribeToMailing", ctx, user.GetID(), subscr)
 	})
-	t.Run("error subscribe in rep", func(t *testing.T) {
+	t.WithNewStep("error subscribe in rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		subscr := false
 
@@ -111,7 +120,7 @@ func TestUserService_ChangeSubscribeToMailing(t *testing.T) {
 		// ACT
 		err := userServ.ChangeSubscribeToMailing(ctx, subscr)
 
-		require.ErrorIs(t, err, expectedErr)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUserRep.AssertCalled(t, "UpdateSubscribeToMailing", ctx, user.GetID(), subscr)
 	})

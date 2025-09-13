@@ -13,18 +13,27 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
 	"github.com/google/uuid"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+	"github.com/ozontech/allure-go/pkg/framework/suite"
 
 	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/mock"
-	"github.com/stretchr/testify/require"
 )
 
-func TestAuthUser_RegisterUser(t *testing.T) {
+type AuthUserServiceSuite struct {
+	suite.Suite
+}
+
+func TestAuthUserService(t *testing.T) {
+	suite.RunSuite(t, new(AuthUserServiceSuite))
+}
+
+func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
 	tokenMaker, err := token.NewTokenMaker(appCnfg.TokenSymmetricKey)
-	require.Nil(t, err)
+	t.Require().NoError(err, "Failed to create token maker")
 
 	userCreator := testobj.NewUserMother()
 	hashedPassword := "$2a$10$hashedpassword123"
@@ -38,7 +47,7 @@ func TestAuthUser_RegisterUser(t *testing.T) {
 		SubscribeEmail: user.IsSubscribedToMail(),
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
 
@@ -54,15 +63,15 @@ func TestAuthUser_RegisterUser(t *testing.T) {
 		})).Return(nil)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 		// act
 		err = authUserServ.RegisterUser(ctx, registerReq)
 
-		require.NoError(t, err)
+		sCtx.Require().NoError(err)
 		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
 		mockUserRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.User"))
 	})
-	t.Run("hasher error", func(t *testing.T) {
+	t.WithNewStep("hasher error", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -72,19 +81,19 @@ func TestAuthUser_RegisterUser(t *testing.T) {
 		mockUserRep := new(userrep.MockUserRep)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = authUserServ.RegisterUser(ctx, registerReq)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
 		mockUserRep.AssertNotCalled(t, "Add", mock.Anything, mock.Anything)
 	})
 
-	t.Run("user repository error", func(t *testing.T) {
+	t.WithNewStep("user repository error", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -95,20 +104,20 @@ func TestAuthUser_RegisterUser(t *testing.T) {
 		mockUserRep.On("Add", ctx, mock.AnythingOfType("*models.User")).Return(expectedErr)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		err = authUserServ.RegisterUser(ctx, registerReq)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockHasher.AssertCalled(t, "HashPassword", passwordUser)
 		mockUserRep.AssertCalled(t, "Add", ctx, mock.AnythingOfType("*models.User"))
 	})
 }
 
-func TestAuthUser_LoginUser(t *testing.T) {
+func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
@@ -122,7 +131,7 @@ func TestAuthUser_LoginUser(t *testing.T) {
 		Password: passwordUser,
 	}
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -138,20 +147,20 @@ func TestAuthUser_LoginUser(t *testing.T) {
 			Return(expectedToken, nil)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
-		require.NoError(t, err)
-		require.Equal(t, expectedToken, tokenStr)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().Equal(expectedToken, tokenStr)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
 		mockTokenMaker.AssertCalled(t, "CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration)
 	})
 
-	t.Run("error user not found", func(t *testing.T) {
+	t.WithNewStep("error user not found", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -162,20 +171,20 @@ func TestAuthUser_LoginUser(t *testing.T) {
 		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(nil, expectedErr)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertNotCalled(t, "CheckPassword", mock.Anything, mock.Anything)
 	})
 
-	t.Run("error wrong password", func(t *testing.T) {
+	t.WithNewStep("error wrong password", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -188,20 +197,20 @@ func TestAuthUser_LoginUser(t *testing.T) {
 		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(expectedErr)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
 	})
 
-	t.Run("token creation failed", func(t *testing.T) {
+	t.WithNewStep("token creation failed", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
@@ -216,26 +225,26 @@ func TestAuthUser_LoginUser(t *testing.T) {
 			Return("", expectedErr)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Empty(t, tokenStr)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Empty(tokenStr)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
 		mockTokenMaker.AssertCalled(t, "CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration)
 	})
 }
 
-func TestAuthUser_VerifyByToken(t *testing.T) {
+func (s *AuthUserServiceSuite) TestAuthUser_VerifyByToken(t provider.T) {
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
-	t.Run("success", func(t *testing.T) {
+	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
@@ -251,18 +260,18 @@ func TestAuthUser_VerifyByToken(t *testing.T) {
 		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(expectedPayload, nil)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		payload, err := authUserServ.VerifyByToken(tokenString)
 
 		// ASSERT
-		require.NoError(t, err)
-		require.Equal(t, expectedPayload, payload)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().Equal(expectedPayload, payload)
 		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.UserRole)
 	})
 
-	t.Run("error", func(t *testing.T) {
+	t.WithNewStep("error", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
@@ -273,15 +282,15 @@ func TestAuthUser_VerifyByToken(t *testing.T) {
 		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(nil, expectedErr)
 
 		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
-		require.Nil(t, err)
+		sCtx.Require().NoError(err)
 
 		// ACT
 		payload, err := authUserServ.VerifyByToken(tokenString)
 
 		// ASSERT
-		require.Error(t, err)
-		require.Nil(t, payload)
-		require.Equal(t, expectedErr, err)
+		sCtx.Require().Error(err)
+		sCtx.Assert().Nil(payload)
+		sCtx.Assert().Equal(expectedErr, err)
 		mockTokenMaker.AssertCalled(t, "VerifyToken", tokenString, token.UserRole)
 	})
 }

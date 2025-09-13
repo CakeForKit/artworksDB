@@ -113,7 +113,7 @@ func (e *eventService) Delete(ctx context.Context, id uuid.UUID) error {
 func (e *eventService) Update(ctx context.Context, eventID uuid.UUID, updateFields *jsonreqresp.EventUpdate) error {
 	_, err := e.eventRep.GetByID(ctx, eventID)
 	if err != nil {
-		return fmt.Errorf("eventService.Update: %v", err)
+		return fmt.Errorf("eventService.Update: %w", err)
 	}
 
 	return e.eventRep.Update(
