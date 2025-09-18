@@ -19,14 +19,17 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Current directory: $(pwd)"
-          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env build
+          docker compose -f ./deployment/docker-compose.ci.yml \
+            --env-file ./configs/db.env build
           docker ps
 
       - name: Run Integration Tests
         run: |
           echo "Current directory: $(pwd)"
-          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env config
-          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env run --rm test-runner go test  ./... 
+          docker compose -f ./deployment/docker-compose.ci.yml \
+            --env-file ./configs/db.env \
+            run --rm test-runner \
+            go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
 
       - name: Cleanup
         if: always()
