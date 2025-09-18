@@ -28,11 +28,6 @@ RUN /go/bin/swag init -g ./cmd/app/main.go --output ./docs && \
     -ldflags="-s -w" \
     -o /build/bin/artwork-app \
     ./cmd/app/main.go
-# RUN CGO_ENABLED=0 GOOS=linux go build \
-#     -ldflags="-s -w" \                  
-#     -o /build/bin/artwork-app \
-#     ./cmd/app/main.go
-
 
 # Финальная стадия - Новый базовый слой
 FROM alpine:latest  

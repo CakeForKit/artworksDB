@@ -26,9 +26,11 @@ type AuthUserServiceSuite struct {
 
 func TestAuthUserService(t *testing.T) {
 	suite.RunSuite(t, new(AuthUserServiceSuite))
+
 }
 
 func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
+
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 

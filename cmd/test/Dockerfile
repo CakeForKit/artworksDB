@@ -13,7 +13,7 @@ FROM golang:1.25.1-alpine AS test-runner
 # Для healthcheck или скриптов
 RUN apk add --no-cache postgresql-client
 WORKDIR /app
-COPY . ./
+COPY . .
 # Копируем скомпилированное приложение из стадии builder (для E2E тестов) --ПОТОМ
 # COPY --from=builder /app/my-app ./my-app
 RUN go mod download

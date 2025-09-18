@@ -16,20 +16,17 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
 
-      - name: Debug working directory
-        run: |
-          echo "Current directory: $(pwd)"
-          ls -la deployment/
-
       - name: Build Docker images
         run: |
           echo "Current directory: $(pwd)"
           docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env build
+          docker ps
 
       - name: Run Integration Tests
         run: |
           echo "Current directory: $(pwd)"
-          docker compose -f ./deployment/docker-compose.ci.yml --env-file ../configs/db.env run --rm test-runner go test  ./... 
+          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env config
+          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env run --rm test-runner go test  ./... 
 
       - name: Cleanup
         if: always()
