@@ -28,7 +28,9 @@ jobs:
 
       - name: Run Integration Tests
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml run --rm test-runner go test  ./... 
+          docker compose -f ./deployment/docker-compose.ci.yml \
+            --env-file ./configs/db.env \
+            run --rm test-runner go test  ./... 
 
       - name: Cleanup
         if: always()
