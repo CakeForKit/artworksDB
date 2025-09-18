@@ -2,10 +2,10 @@ services:
   test-runner:
     container_name: test_runner_artworks
     build:
-      context: ./
+      context: ../
       dockerfile: ./cmd/test/Dockerfile
     env_file:
-      - ../configs/db.env
+      - ./configs/db.env
     # environment:
     #   - POSTGRES_HOST=${POSTGRES_HOST}
     #   - POSTGRES_DB=${POSTGRES_DB}
