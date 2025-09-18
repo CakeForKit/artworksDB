@@ -1,0 +1,49 @@
+services:
+  postgres:
+    container_name: postgres_artworks
+    hostname: postgres
+    image: postgres:14.8-alpine3.18
+    env_file:
+      - ../configs/db.env
+    environment:
+      # Явно указываем, какие переменные из .env использует этот контейнер
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - data-volume:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+      start_period: 60s
+    networks:
+      - test-network
+
+  test-runner:
+    container_name: test_runner_artworks
+    build:
+      context: ../
+      dockerfile: ./cmd/test/Dockerfile
+    env_file:
+      - ./configs/db.env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /app
+    command: tail -f /dev/null # Просто держим контейнер alive
+    networks:
+      - test-network
+
+
+networks:
+  test-network:
+    driver: bridge
