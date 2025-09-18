@@ -18,14 +18,12 @@ jobs:
 
       - name: Build Docker images
         run: |
-          echo "Current directory: $(pwd)"
           docker compose -f ./deployment/docker-compose.ci.yml \
             --env-file ./configs/db.env build
           docker ps
 
       - name: Run Integration Tests
         run: |
-          echo "Current directory: $(pwd)"
           docker compose -f ./deployment/docker-compose.ci.yml \
             --env-file ./configs/db.env \
             run --rm test-runner \
@@ -33,6 +31,7 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker compose down -v --remove-orphans
+        run: docker compose -f ./deployment/docker-compose.ci.yml \
+          down -v --remove-orphans
 
         
