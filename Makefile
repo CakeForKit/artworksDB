@@ -11,7 +11,7 @@ test-allure:
 	ALLURE_LAUNCH_END=$(date +%s000) \
 	ALLURE_OUTPUT_PATH=$(shell pwd) \
 	ALLURE_LAUNCH_NAME="build-$(shell date +%Y%m%d-%H%M%S)" \
-	go test -v -p=16 -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
+	go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
 
 
 allure-copy-history:
