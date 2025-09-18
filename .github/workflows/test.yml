@@ -24,15 +24,12 @@ jobs:
       - name: Build Docker images
         run: |
           echo "Current directory: $(pwd)"
-          docker compose -f ./deployment/docker-compose.ci.yml \ 
-            --env-file ./configs/db.env build
+          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env build
 
       - name: Run Integration Tests
         run: |
           echo "Current directory: $(pwd)"
-          docker compose -f ./deployment/docker-compose.ci.yml \ 
-            --env-file ../configs/db.env \
-            run --rm test-runner go test  ./... 
+          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/db.env run --rm test-runner go test  ./... 
 
       - name: Cleanup
         if: always()
