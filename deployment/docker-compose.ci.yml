@@ -1,4 +1,24 @@
 services:
+  test-runner:
+    container_name: test_runner_artworks
+    build:
+      context: /
+      dockerfile: ./cmd/test/Dockerfile
+    env_file:
+      - ../configs/db.env
+    environment:
+      - POSTGRES_HOST=${POSTGRES_HOST}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    working_dir: /app
+    command: tail -f /dev/null # Просто держим контейнер alive
+    networks:
+      - test-network
+
   postgres:
     container_name: postgres_artworks
     hostname: postgres
@@ -13,7 +33,7 @@ services:
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - data-volume:/var/lib/postgresql/data
+      - pg-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -23,26 +43,10 @@ services:
     networks:
       - test-network
 
-  test-runner:
-    container_name: test_runner_artworks
-    build:
-      context: ../
-      dockerfile: ./cmd/test/Dockerfile
-    env_file:
-      - ./configs/db.env
-    environment:
-      - POSTGRES_HOST=${POSTGRES_HOST}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    depends_on:
-      postgres:
-        condition: service_healthy
-    working_dir: /app
-    command: tail -f /dev/null # Просто держим контейнер alive
-    networks:
-      - test-network
 
+volumes:
+  pg-db-volume:
+    driver: local
 
 networks:
   test-network:
