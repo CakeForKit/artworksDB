@@ -31,7 +31,8 @@ jobs:
 
       - name: Cleanup
         if: always()
-        run: docker compose -f ./deployment/docker-compose.ci.yml \
-          down -v --remove-orphans
+        run: |
+          docker compose -f ./deployment/docker-compose.ci.yml \
+            down -v --remove-orphans
 
         
