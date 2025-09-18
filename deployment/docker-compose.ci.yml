@@ -15,7 +15,7 @@ services:
       - test-network
 
   postgres:
-    container_name: postgres_artworks
+    container_name: test_postgres_artworks
     hostname: postgres
     image: postgres:14.8-alpine3.18
     env_file:
@@ -30,6 +30,19 @@ services:
       timeout: 5s
       retries: 10
       start_period: 60s
+    networks:
+      - test-network
+  
+  migrator:
+    container_name: test_migrator_artworks
+    depends_on:
+      postgres:
+        condition: service_started
+    env_file:
+      - ../configs/db.env
+    build:
+      context: ../migrations
+      dockerfile: Dockerfile
     networks:
       - test-network
 
