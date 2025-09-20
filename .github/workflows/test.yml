@@ -62,7 +62,7 @@ jobs:
           docker compose -f ./deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d postgres migrator
           docker ps
-          docker logs -f migrator
+          docker logs -f test_migrator_artworks
 
       - name: Run Integration Tests
         run: |
