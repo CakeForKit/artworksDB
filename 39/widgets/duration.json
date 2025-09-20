@@ -1,0 +1,1 @@
+[{"uid":"dcd02a89a2e07a38","name":"TestUserService_ChangeSubscribeToMailing","time":{"start":1758391935763,"stop":1758391935764,"duration":1},"status":"passed","severity":"normal"},{"uid":"2394b859290be06d","name":"TestUserService_GetSelf","time":{"start":1758391935765,"stop":1758391935765,"duration":0},"status":"failed","severity":"normal"}]
