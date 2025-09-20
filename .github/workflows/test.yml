@@ -95,37 +95,37 @@ jobs:
             down -v --remove-orphans
 
       
-  allure-report:
-    if: always() 
-    needs: [ unit-tests, integration-tests ]
-    runs-on: ubuntu-latest
+  # allure-report:
+  #   if: always() 
+  #   needs: [ unit-tests, integration-tests ]
+  #   runs-on: ubuntu-latest
     
-    steps:
-      - name: Check out repository  # Клонируем репозиторий, включая ветку gh-pages
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages  # Операции будем выполнять в ветке gh-pages
-          path: gh-pages  # Клонируем файлы в папку gh-pages
+  #   steps:
+  #     - name: Check out repository  # Клонируем репозиторий, включая ветку gh-pages
+  #       uses: actions/checkout@v4
+  #       with:
+  #         ref: gh-pages  # Операции будем выполнять в ветке gh-pages
+  #         path: gh-pages  # Клонируем файлы в папку gh-pages
 
-      - name: Download Allure results  # Загружаем ранее сохраненные результаты тестов
-        uses: actions/download-artifact@v4
-        with:
-          name: allure-results  # Название артефакта
-          path: allure-results  # Путь для скачивания
+  #     - name: Download Allure results  # Загружаем ранее сохраненные результаты тестов
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: allure-results  # Название артефакта
+  #         path: allure-results  # Путь для скачивания
 
-      - name: Allure Report action from marketplace  # Генерация отчета Allure
-        uses: simple-elf/allure-report-action@v1.12
-        if: always()
-        with:
-          allure_results: allure-results  # Папка с результатами тестов
-          allure_history: allure-history  # Папка для хранения истории отчетов
+  #     - name: Allure Report action from marketplace  # Генерация отчета Allure
+  #       uses: simple-elf/allure-report-action@v1.12
+  #       if: always()
+  #       with:
+  #         allure_results: allure-results  # Папка с результатами тестов
+  #         allure_history: allure-history  # Папка для хранения истории отчетов
 
-      - name: Deploy report to Github Pages  # Публикация отчета на GitHub Pages
-        if: always()
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}  # Токен для доступа к репозиторию
-          publish_branch: gh-pages  # Публикуем отчет в ветку gh-pages
-          publish_dir: allure-history  # Папка, где находится сгенерированный отчет
+  #     - name: Deploy report to Github Pages  # Публикация отчета на GitHub Pages
+  #       if: always()
+  #       uses: peaceiris/actions-gh-pages@v4
+  #       with:
+  #         github_token: ${{ secrets.GITHUB_TOKEN }}  # Токен для доступа к репозиторию
+  #         publish_branch: gh-pages  # Публикуем отчет в ветку gh-pages
+  #         publish_dir: allure-history  # Папка, где находится сгенерированный отчет
 
         
