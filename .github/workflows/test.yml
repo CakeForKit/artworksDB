@@ -81,6 +81,7 @@ jobs:
       
   allure-report:
     if: always() 
+    needs: [ unit-tests, integration-tests ]
     runs-on: ubuntu-latest
     
     steps:
