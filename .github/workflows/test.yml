@@ -122,4 +122,9 @@ jobs:
           publish_branch: gh-pages  # Публикуем отчет в ветку gh-pages
           publish_dir: allure-history  # Папка, где находится сгенерированный отчет
 
+  conclusion:
+    needs: [ unit-tests, integration-tests, allure-report ]
+    runs-on: ubuntu-latest
+    
+
         

@@ -40,8 +40,8 @@ func (s *UserServiceSuite) TestUserService_GetSelf(t provider.T) {
 		// ACT
 		resUser, err := userServ.GetSelf(ctx)
 
-		sCtx.Require().NoError(err)
-		// sCtx.Require().Error(err)
+		// sCtx.Require().NoError(err)
+		sCtx.Require().Error(err)
 		sCtx.Assert().True(models.CmpUsers(&user, resUser))
 		mockAuthZRep.AssertCalled(t, "UserIDFromContext", ctx)
 		mockUserRep.AssertCalled(t, "GetByID", ctx, user.GetID())
