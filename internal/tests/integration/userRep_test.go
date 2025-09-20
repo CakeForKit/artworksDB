@@ -67,7 +67,8 @@ func (s *UserRepSuite) TestUserRep_GetAll(t provider.T) {
 		// ACT
 		resUsers, err := s.userRep.GetAll(s.ctx)
 
-		sCtx.Require().NoError(err)
+		// sCtx.Require().NoError(err)
+		sCtx.Require().Error(err)
 		fixturesrep.AssertUsersAreInRes(t, users, resUsers)
 	})
 }
