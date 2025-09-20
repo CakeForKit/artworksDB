@@ -36,6 +36,11 @@ jobs:
         run: |
           docker compose -f ./deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env build
+
+      - name: Up db and migrator containers
+        run: |
+          docker compose -f ./deployment/docker-compose.ci.yml \
+            --env-file ./configs/test_db.env up -d postgres migrator
           docker ps
 
       - name: Run Integration Tests
