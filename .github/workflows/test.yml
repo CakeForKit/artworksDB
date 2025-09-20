@@ -19,7 +19,19 @@ jobs:
         go-version: '1.25'
         cache-dependency-path: go.sum
     - name: Run Unit Tests
-      run: go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
+      run: |
+        go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice;
+      env:
+        ALLURE_OUTPUT_DIR: allure-results
+        ALLURE_OUTPUT_PATH: ${{ github.workspace }}
+      # go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
+
+    - name: Upload Allure results
+      if: always()
+      uses: actions/upload-artifact@v4
+      with:
+        name: allure-results  # Название артефакта
+        path: allure-results  # Путь к файлам отчета
 
   integration-tests:
     runs-on: ubuntu-latest
@@ -49,11 +61,54 @@ jobs:
             --env-file ./configs/test_db.env \
             run --rm test-runner \
             go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
+        env:
+          ALLURE_OUTPUT_DIR: allure-results
+          ALLURE_OUTPUT_PATH: ${{ github.workspace }}
+
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results  # Название артефакта
+          path: allure-results  # Путь к файлам отчета
 
       - name: Cleanup
         if: always()
         run: |
           docker compose -f ./deployment/docker-compose.ci.yml \
             down -v --remove-orphans
+
+      
+  allure-report:
+    if: always() 
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out repository  # Клонируем репозиторий, включая ветку gh-pages
+        uses: actions/checkout@v4
+        with:
+          ref: gh-pages  # Операции будем выполнять в ветке gh-pages
+          path: gh-pages  # Клонируем файлы в папку gh-pages
+
+      - name: Download Allure results  # Загружаем ранее сохраненные результаты тестов
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results  # Название артефакта
+          path: allure-results  # Путь для скачивания
+
+      - name: Allure Report action from marketplace  # Генерация отчета Allure
+        uses: simple-elf/allure-report-action@v1.12
+        if: always()
+        with:
+          allure_results: allure-results  # Папка с результатами тестов
+          allure_history: allure-history  # Папка для хранения истории отчетов
+
+      - name: Deploy report to Github Pages  # Публикация отчета на GitHub Pages
+        if: always()
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}  # Токен для доступа к репозиторию
+          publish_branch: gh-pages  # Публикуем отчет в ветку gh-pages
+          publish_dir: allure-history  # Папка, где находится сгенерированный отчет
 
         
