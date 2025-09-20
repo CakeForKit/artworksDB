@@ -51,6 +51,8 @@ services:
         condition: service_healthy  
     env_file:
       - ../configs/test_db.env
+    environment:
+      - POSTGRES_HOST=test_postgres_artworks
     build:
       context: ../migrations
       dockerfile: Dockerfile

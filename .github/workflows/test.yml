@@ -46,7 +46,7 @@ jobs:
 
       - name: Create test_db.env file
         run: |
-          echo "POSTGRES_HOST=localhost" > ./configs/test_db.env
+          echo "POSTGRES_HOST=test_postgres_artworks" > ./configs/test_db.env
           echo "POSTGRES_DB=artworks" >> ./configs/test_db.env
           echo "POSTGRES_PORT=5432" >> ./configs/test_db.env
           echo "POSTGRES_USER=puser" >> ./configs/test_db.env
@@ -63,6 +63,8 @@ jobs:
             --env-file ./configs/test_db.env up --build -d postgres migrator
           docker ps
           docker logs -f test_migrator_artworks
+        env:
+          POSTGRES_HOST: localhost
 
       - name: Run Integration Tests
         run: |
