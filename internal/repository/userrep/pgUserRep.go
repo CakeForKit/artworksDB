@@ -33,7 +33,6 @@ var (
 	ErrRowsAffected    = errors.New("no rows affected")
 )
 
-// func NewPgUserRep(ctx context.Context) (UserRep, error) {
 func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
 	var resErr error
 	pgOnce.Do(func() {

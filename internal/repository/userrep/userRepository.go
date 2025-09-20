@@ -31,12 +31,13 @@ type UserRep interface {
 }
 
 func NewUserRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
-	if datebaseType == cnfg.PostgresDB {
+	switch datebaseType {
+	case cnfg.PostgresDB:
 		return NewPgUserRep(ctx, pgCreds, dbConf)
-	} else if datebaseType == cnfg.ClickHouseDB {
+	case cnfg.ClickHouseDB:
 		return NewCHUserRep(ctx, (*cnfg.ClickHouseCredentials)(pgCreds), dbConf)
-	} else {
+	default:
 		return nil, fmt.Errorf("NewUserRep: %w", cnfg.ErrUnknownDB)
 	}
-	// return &MockAdminRep{}, nil
+
 }

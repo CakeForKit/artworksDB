@@ -62,12 +62,13 @@ var (
 	ErrUnknownDB     = errors.New("unknown datebase")
 )
 
-func LoadAppConfig() (config *AppConfig, err error) {
+// v.AddConfigPath("./configs/", "config", "yaml")
+func LoadAppConfig(pathConfig, nameConfig, typeConfig string) (config *AppConfig, err error) {
 	config = &AppConfig{}
 	v := viper.New()
-	v.AddConfigPath("./configs/")
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
+	v.AddConfigPath(pathConfig)
+	v.SetConfigName(nameConfig)
+	v.SetConfigType(typeConfig)
 	if err = v.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
@@ -81,12 +82,12 @@ func LoadAppConfig() (config *AppConfig, err error) {
 	return config, nil
 }
 
-func LoadDatebaseConfig(path string) (config *DatebaseConfig, err error) {
+func LoadDatebaseConfig(pathConfig, nameConfig, typeConfig string) (config *DatebaseConfig, err error) {
 	config = &DatebaseConfig{}
 	v := viper.New()
-	v.AddConfigPath(path) // "./configs/"
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
+	v.AddConfigPath(pathConfig) // "./configs/"
+	v.SetConfigName(nameConfig)
+	v.SetConfigType(typeConfig)
 	if err = v.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
 	}
@@ -105,10 +106,10 @@ type PostgresCredentials struct {
 	Password string `mapstructure:"POSTGRES_PASSWORD"`
 }
 
-func LoadPgCredentials(path string) (*DatebaseCredentials, error) {
-	viper.AddConfigPath(path) // расположение файла с настройками
-	viper.SetConfigName("db")
-	viper.SetConfigType("env")
+func LoadPgCredentials(pathConfig, nameConfig, typeConfig string) (*DatebaseCredentials, error) {
+	viper.AddConfigPath(pathConfig) // расположение файла с настройками
+	viper.SetConfigName(nameConfig)
+	viper.SetConfigType(typeConfig)
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
@@ -126,12 +127,13 @@ func LoadPgCredentials(path string) (*DatebaseCredentials, error) {
 	}, nil
 }
 
-func LoadPgTestConfig() (config *PostgresTestConfig, err error) {
+// "./configs/", "db_test_config", "yaml"
+func LoadPgTestConfig(pathConfig, nameConfig, typeConfig string) (config *PostgresTestConfig, err error) {
 	config = &PostgresTestConfig{}
 	v := viper.New()
-	v.AddConfigPath("./configs/") // расположение файла с настройками
-	v.SetConfigName("db_test_config")
-	v.SetConfigType("yaml")
+	v.AddConfigPath(pathConfig) // расположение файла с настройками
+	v.SetConfigName(nameConfig)
+	v.SetConfigType(typeConfig)
 	if err = v.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
 			return nil, fmt.Errorf("config file not found: %w", err)
@@ -146,10 +148,10 @@ func LoadPgTestConfig() (config *PostgresTestConfig, err error) {
 	return config, nil
 }
 
-func LoadRedisCredentials() (config *RedisCredentials, err error) {
-	viper.AddConfigPath("./configs/") // расположение файла с настройками
-	viper.SetConfigName("redis")
-	viper.SetConfigType("env")
+func LoadRedisCredentials(pathConfig, nameConfig, typeConfig string) (config *RedisCredentials, err error) {
+	viper.AddConfigPath(pathConfig)
+	viper.SetConfigName(nameConfig)
+	viper.SetConfigType(typeConfig)
 	viper.AutomaticEnv()
 	if err = viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)
@@ -169,10 +171,10 @@ type ClickHouseCredentials struct {
 	Password string `mapstructure:"CLICKHOUSE_PASSWORD"`
 }
 
-func LoadClickHouseCredentials() (*DatebaseCredentials, error) {
-	viper.AddConfigPath("./configs/") // расположение файла с настройками
-	viper.SetConfigName("clickhouse")
-	viper.SetConfigType("env")
+func LoadClickHouseCredentials(pathConfig, nameConfig, typeConfig string) (*DatebaseCredentials, error) {
+	viper.AddConfigPath(pathConfig)
+	viper.SetConfigName(nameConfig)
+	viper.SetConfigType(typeConfig)
 	viper.AutomaticEnv()
 	if err := viper.ReadInConfig(); err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrConfigRead, err)

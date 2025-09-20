@@ -50,11 +50,9 @@ func AuthMiddleware(authServ TokenVerifier, authZ auth.AuthZ, mandatory bool) gi
 	return func(c *gin.Context) {
 
 		accessToken, err := tokenFromHeader(c)
-		// fmt.Printf("\ntokenFromHeader: %s\n", accessToken)
 		if accessToken == "" {
 			var errCookie error
 			accessToken, errCookie = c.Cookie(frontend.TokenLocalstorage)
-			// fmt.Printf("\ntokenFromCookie: %s\n", accessToken)
 			if errCookie != nil {
 				if !mandatory {
 					c.Next()

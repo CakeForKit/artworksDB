@@ -46,15 +46,15 @@ import (
 
 func main2() {
 	ctx := context.Background()
-	clhCreds, err := cnfg.LoadClickHouseCredentials()
+	clhCreds, err := cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
 	if err != nil {
 		panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
 	}
-	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
+	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/", "config", "yaml")
 	if err != nil {
 		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
 	}
-	appCnfg, err := cnfg.LoadAppConfig()
+	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
 	if err != nil {
 		panic(fmt.Errorf("cannot load AppConfig: %v", err))
 	}
@@ -110,29 +110,29 @@ func main() {
 	engine.Use(gin.Recovery())
 
 	// ----- Config ------
-	appCnfg, err := cnfg.LoadAppConfig()
+	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
 	if err != nil {
 		panic(fmt.Errorf("cannot load AppConfig: %v", err))
 	}
 	var dbCreds *cnfg.DatebaseCredentials
 	if appCnfg.Datebase == cnfg.PostgresDB {
-		pgCreds, err := cnfg.LoadPgCredentials("./configs/")
+		pgCreds, err := cnfg.LoadPgCredentials("./configs/", "db", "env")
 		if err != nil {
 			panic(fmt.Errorf("cannot load PgCredentials: %v", err))
 		}
 		dbCreds = pgCreds
 	} else if appCnfg.Datebase == cnfg.ClickHouseDB {
-		clhCreds, err := cnfg.LoadClickHouseCredentials()
+		clhCreds, err := cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
 		if err != nil {
 			panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
 		}
 		dbCreds = clhCreds
 	}
-	redisCreds, err := cnfg.LoadRedisCredentials()
+	redisCreds, err := cnfg.LoadRedisCredentials("./configs/", "redis", "env")
 	if err != nil {
 		panic(fmt.Errorf("cannot load RedisCredentials: %v", err))
 	}
-	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/")
+	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/", "config", "yaml")
 	if err != nil {
 		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
 	}

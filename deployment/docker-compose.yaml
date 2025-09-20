@@ -47,7 +47,7 @@ services:
     container_name: migrator_artworks
     depends_on:
       postgres:
-        condition: service_started
+        condition: service_healthy  
     env_file:
       - ../configs/db.env
     build:

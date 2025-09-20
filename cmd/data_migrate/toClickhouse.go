@@ -19,11 +19,11 @@ type Config struct {
 
 func main() {
 	// ----- Config ------
-	pgCreds, err := cnfg.LoadPgCredentials("../../configs/")
+	pgCreds, err := cnfg.LoadPgCredentials("../../configs/", "db", "env")
 	if err != nil {
 		panic(fmt.Errorf("cannot load PgCredentials: %v", err))
 	}
-	clhCreds, err := cnfg.LoadClickHouseCredentials()
+	clhCreds, err := cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
 	if err != nil {
 		panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
 	}
