@@ -35,6 +35,7 @@ var (
 
 func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
 	var resErr error
+	pgInstance = nil
 	pgOnce.Do(func() {
 		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
@@ -44,8 +45,9 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf
 			resErr = fmt.Errorf("NewPgUserRep: %w: %v", ErrOpenConnect, err)
 			return
 		}
+
 		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("NewPgUserRep: %w: %v", ErrPing, err)
+			resErr = fmt.Errorf("NewPgUserRep: %w: %w", ErrPing, err)
 			db.Close()
 			return
 		}
@@ -304,5 +306,7 @@ func (pg *PgUserRep) Ping(ctx context.Context) error {
 }
 
 func (pg *PgUserRep) Close() {
-	pg.db.Close()
+	if pg.db != nil {
+		pg.db.Close()
+	}
 }

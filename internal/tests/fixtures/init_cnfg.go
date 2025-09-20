@@ -32,7 +32,7 @@ func InitTestConfig(dirConfig string) (*cnfg.AppConfig, *cnfg.DatebaseCredential
 
 		switch appCnfg.Datebase {
 		case cnfg.PostgresDB:
-			pgCreds, err := cnfg.LoadPgCredentials(dirConfig, "db", "env")
+			pgCreds, err := cnfg.LoadPgCredentials(dirConfig, "test_db", "env")
 			if err != nil {
 				initError = fmt.Errorf("%w: %w", ErrInitTestConfig, err)
 				return

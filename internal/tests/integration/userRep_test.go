@@ -32,9 +32,9 @@ func (s *UserRepSuite) BeforeAll(t provider.T) {
 	s.userCreator = testobj.NewUserMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error
+		var err error = nil
 		s.userRep, err = userrep.NewUserRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
-		sCtx.Require().NoError(err, "Cannot create UserRep")
+		sCtx.Require().NoError(err)
 	})
 }
 
