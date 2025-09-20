@@ -2,28 +2,28 @@
 # go test -v git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration
 # docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env run --rm test-runner go test -v git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration
 services:
-  test-runner:
-    container_name: test_runner_artworks
-    build:
-      context: ../
-      dockerfile: ./cmd/test/Dockerfile
-    env_file:
-      - ../configs/test_db.env
-    depends_on:
-      postgres:
-        condition: service_healthy
+  # test-runner:
+  #   container_name: test_runner_artworks
+  #   build:
+  #     context: ../
+  #     dockerfile: ./cmd/test/Dockerfile
+  #   env_file:
+  #     - ../configs/test_db.env
+  #   depends_on:
+  #     postgres:
+  #       condition: service_healthy
 
-    # command: tail -f /dev/null # Просто держим контейнер alive
-    environment:
-      - AIR_WATCH=.  # Следить за изменениями во всей директории
-    volumes:
-      - ../:/app          # Монтируем весь проект в контейнер
-      - /app/go/pkg/mod   # Кэш для модулей Go
-      - /app/bin          # Для бинарников (если нужно)
-    command: air -c .air.toml  # Заменяем стандартную команду на air
+  #   # command: tail -f /dev/null # Просто держим контейнер alive
+  #   environment:
+  #     - AIR_WATCH=.  # Следить за изменениями во всей директории
+  #   volumes:
+  #     - ../:/app          # Монтируем весь проект в контейнер
+  #     - /app/go/pkg/mod   # Кэш для модулей Go
+  #     - /app/bin          # Для бинарников (если нужно)
+  #   command: air -c .air.toml  # Заменяем стандартную команду на air
 
-    networks:
-      - test-network
+  #   networks:
+  #     - test-network
 
   postgres:
     container_name: test_postgres_artworks

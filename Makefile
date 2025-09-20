@@ -37,7 +37,7 @@ open_allure:
 
 .PHONY: run_serv
 run_serv:
-	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) up -d postgres migrator test-runner
+	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) up -d 
 
 .PHONY: build
 build:
