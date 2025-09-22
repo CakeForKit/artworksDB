@@ -9,8 +9,6 @@ services:
       dockerfile: ./cmd/test/Dockerfile
     ports:
       - "8080:8080"
-    # env_file:
-    #   - ../configs/test_db.env
     depends_on:
       postgres:
         condition: service_healthy
@@ -19,15 +17,16 @@ services:
     environment:
       - POSTGRES_HOST=test_postgres_artworks
       - GIN_MODE=debug
-      - AIR_WATCH=.  # Следить за изменениями во всей директории
-    volumes:
-      - ../:/app          # Монтируем весь проект в контейнер
-      - /app/go/pkg/mod   # Кэш для модулей Go
-      - /app/bin          # Для бинарников (если нужно)
-    command: air -c .air.toml  # Заменяем стандартную команду на air
+      # - AIR_WATCH=.  # Следить за изменениями во всей директории
+    # volumes:
+    #   - ../:/app          # Монтируем весь проект в контейнер
+    #   - /app/go/pkg/mod   # Кэш для модулей Go
+    #   - /app/bin          # Для бинарников (если нужно)
+    # command: air -c .air.toml  # Заменяем стандартную команду на air
 
     networks:
       - test-network
+      - redis_artworks
 
   postgres:
     container_name: test_postgres_artworks

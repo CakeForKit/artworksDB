@@ -23,8 +23,8 @@ func (um *employeeMother) DefaultEmployee(employeeID uuid.UUID, adminID uuid.UUI
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login",
-		"hashedpassword",
+		"test-login"+uuid.NewString(),
+		"hashed-password",
 		time.Now(),
 		true,
 		adminID,
@@ -36,7 +36,7 @@ func (um *employeeMother) EmployeeWithPswdHash(employeeID uuid.UUID, adminID uui
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login",
+		"test-login"+uuid.NewString(),
 		hashedPassword,
 		time.Now(),
 		true,
@@ -48,7 +48,7 @@ func (um *employeeMother) DefaultEmployeeP(employeeID uuid.UUID, adminID uuid.UU
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login",
+		"test-login"+uuid.NewString(),
 		"hashedpassword",
 		time.Now(),
 		true,

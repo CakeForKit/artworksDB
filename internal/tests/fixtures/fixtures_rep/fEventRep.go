@@ -2,6 +2,7 @@ package fixturesrep
 
 import (
 	"context"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -97,6 +98,9 @@ func DelTestEvent(
 }
 
 func AssertEventResponsesAreInRes(t provider.T, eventResp, resEventResp []jsonreqresp.EventResponse) {
+	fmt.Println("AssertEventResponsesAreInRes")
+	fmt.Println(eventResp)
+	fmt.Println(resEventResp)
 	t.WithNewStep("Check eventResp sre in the result", func(sCtx provider.StepCtx) {
 		foundAll := make([]bool, len(eventResp))
 		for _, ru := range resEventResp {

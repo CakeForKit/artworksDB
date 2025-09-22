@@ -6,5 +6,5 @@
 *.png
 *.svg
 tmp/
-test/
+# test/
 docs/

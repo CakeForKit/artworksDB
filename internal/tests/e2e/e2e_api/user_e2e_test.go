@@ -42,10 +42,13 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 	// var accessToken string
 	registerUserReqCreator := testobj.NewRegisterUserRequestMother()
 	registerReq := registerUserReqCreator.RegisterDefault()
+	fmt.Print(registerReq)
 	t.WithNewStep("Register new user", func(sCtx provider.StepCtx) {
 		resp, err := s.client.DoRequest("POST", "/auth-user/register", registerReq)
-		fmt.Print("END FISRT REQ \n\n")
 		sCtx.Require().NoError(err)
+		// body, err := io.ReadAll(resp.Body)
+		// sCtx.Require().NoError(err)
+		// fmt.Print(body)
 		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
 	})
 	fmt.Print("---- 1 \n")

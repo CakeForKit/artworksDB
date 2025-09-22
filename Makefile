@@ -41,7 +41,8 @@ open_allure:
 
 .PHONY: run_app
 run_app:
-	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) build --no-cache --progress=plain test-runner
+# --no-cache
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) build --progress=plain test-runner
 	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) up  test-runner
 
 .PHONY: down_app
@@ -60,6 +61,23 @@ down_serv:
 .PHONY: build
 build:
 	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) build
+
+
+.PHONY: clear_docker
+clear_docker:
+# Остановите все контейнеры
+	docker-compose -f ./deployment/docker-compose.ci.yml down
+# Удалите старые образы
+	docker rmi deployment-test-runner
+# Очистите builder кеш
+	docker builder prune -f
+# Удалите все старые версии
+	docker rmi deployment-test-runner:latest
+# Полная очистка
+	docker system prune -a -f
+
+
+
 
 
 # .PHONY: test-allure report open clean

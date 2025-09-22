@@ -2,6 +2,7 @@ package api
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
@@ -38,6 +39,7 @@ func (r *AuthUserRouter) Register(c *gin.Context) {
 
 	var req auth.RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
+		fmt.Printf("Error %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
