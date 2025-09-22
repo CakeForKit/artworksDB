@@ -17,12 +17,12 @@ services:
     environment:
       - POSTGRES_HOST=test_postgres_artworks
       - GIN_MODE=debug
-      # - AIR_WATCH=.  # Следить за изменениями во всей директории
-    # volumes:
-    #   - ../:/app          # Монтируем весь проект в контейнер
-    #   - /app/go/pkg/mod   # Кэш для модулей Go
-    #   - /app/bin          # Для бинарников (если нужно)
-    # command: air -c .air.toml  # Заменяем стандартную команду на air
+      - AIR_WATCH=.  # Следить за изменениями во всей директории
+    volumes:
+      - ../:/app          # Монтируем весь проект в контейнер
+      - /app/go/pkg/mod   # Кэш для модулей Go
+      - /app/bin          # Для бинарников (если нужно)
+    command: air -c ./cmd/test/.air.toml  # Заменяем стандартную команду на air
 
     networks:
       - test-network
