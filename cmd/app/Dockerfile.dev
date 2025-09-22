@@ -21,6 +21,6 @@ RUN go mod download
 RUN go install github.com/air-verse/air@latest
 
 # Копируем конфиг air с настройкой для swag
-COPY .air.toml .
+COPY ./cmd/app/.air.toml .
 
 CMD ["air", "-c", ".air.toml"]

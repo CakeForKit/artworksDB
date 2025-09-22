@@ -20,8 +20,13 @@ unit_test : clear_allure
 integration_test: clear_allure
 	$(SCRIPTS)/integration_tests.sh
 
+.PHONY: e2e_test
+e2e_test: clear_allure
+	$(SCRIPTS)/e2e_test.sh
+
 .PHONY: report_allure
 report_allure:
+	mkdir -p $(ALLURE_REPORT_DIR)/history
 	cp -r $(ALLURE_REPORT_DIR)/history $(ALLURE_RESULTS_DIR)
 	allure generate $(ALLURE_RESULTS_DIR) -o $(ALLURE_REPORT_DIR) --clean
 
@@ -34,20 +39,27 @@ open_allure:
 	allure open $(ALLURE_REPORT_DIR)
 	
 
+.PHONY: run_app
+run_app:
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) build --no-cache --progress=plain test-runner
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) up  test-runner
+
+.PHONY: down_app
+down_app:
+	docker compose -f $(DC_CI) down -v test-runner
+
 
 .PHONY: run_serv
 run_serv:
-	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) up -d 
+	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) up -d postgres migrator redis_artworks
+
+.PHONY: down_serv
+down_serv:
+	docker compose -f $(DC_CI) down -v postgres migrator redis_artworks
 
 .PHONY: build
 build:
 	docker compose -f $(DC_CI) --env-file $(TEST_DB_ENV) build
-
-.PHONY: down_serv
-down_serv:
-	docker compose -f $(DC_CI) down -v
-
-
 
 
 # .PHONY: test-allure report open clean

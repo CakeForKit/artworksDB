@@ -68,3 +68,36 @@ type DeleteEventRequest struct {
 type ConArtworkEventRequest struct {
 	ArtworkID string `json:"artworkID" binding:"required,uuid"`
 }
+
+func (er *EventResponse) Equal(other *EventResponse) bool {
+	if er == other {
+		return true
+	}
+	if er == nil || other == nil {
+		return false
+	}
+
+	return er.ID == other.ID &&
+		er.Title == other.Title &&
+		er.DateBegin.Equal(other.DateBegin) &&
+		er.DateEnd.Equal(other.DateEnd) &&
+		er.Address == other.Address &&
+		er.CanVisit == other.CanVisit &&
+		er.EmployeeID == other.EmployeeID &&
+		er.CntTickets == other.CntTickets &&
+		er.Valid == other.Valid &&
+		slicesEqual(er.ArtworkIDs, other.ArtworkIDs)
+}
+
+// Вспомогательная функция для сравнения слайсов
+func slicesEqual(a, b []string) bool {
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i] != b[i] {
+			return false
+		}
+	}
+	return true
+}

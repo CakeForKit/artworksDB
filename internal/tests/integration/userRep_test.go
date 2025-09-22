@@ -43,17 +43,6 @@ func (s *UserRepSuite) AfterAll(t provider.T) {
 		s.userRep.Close()
 	}
 }
-
-// func (s *UserRepSuite) cleanupTestData() {
-
-// 	users, err := s.userRep.GetAll(s.ctx)
-// 	if err == nil {
-// 		for _, user := range users {
-// 			s.userRep.Delete(s.ctx, user.GetID())
-// 		}
-// 	}
-// }
-
 func (s *UserRepSuite) TestUserRep_GetAll(t provider.T) {
 
 	t.WithNewStep("Success", func(sCtx provider.StepCtx) {
@@ -67,8 +56,8 @@ func (s *UserRepSuite) TestUserRep_GetAll(t provider.T) {
 		// ACT
 		resUsers, err := s.userRep.GetAll(s.ctx)
 
-		// sCtx.Require().NoError(err)
-		sCtx.Require().Error(err)
+		sCtx.Require().NoError(err)
+		// sCtx.Require().Error(err)
 		fixturesrep.AssertUsersAreInRes(t, users, resUsers)
 	})
 }
