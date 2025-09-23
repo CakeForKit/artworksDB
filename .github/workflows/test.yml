@@ -86,22 +86,17 @@ jobs:
           docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env \
             exec \
             -e ALLURE_OUTPUT_PATH=/app \
+            -e ALLURE_OUTPUT_DIR=allure-results-e2e
             -T test-runner \
             go test ./internal/tests/e2e/e2e_api
-          docker exec test_runner_artworks ls -la /app/allure-results
-          docker cp test_runner_artworks:/app/allure-results ${{ github.workspace }}/allure-results-e2e || true
-          ls -la ${{ github.workspace }}/allure-results-e2e
-        env:
-          ALLURE_OUTPUT_DIR: allure-results
-          ALLURE_OUTPUT_PATH: /app
-
-      - name: Check directories
-        if: always()
-        run: |
-          echo "=== Directory structure ==="
-          ls -la
-          ls -la ./allure-results
-          ls -la ./allure-results-e2e
+          docker cp test_runner_artworks:/app/allure-results-e2e ${{ github.workspace }}/allure-results-e2e || true
+          
+          docker exec test_runner_artworks ls -la
+          docker exec test_runner_artworks ls -la /app/allure-results-e2e
+# ls -la ${{ github.workspace }}/allure-results-e2e
+        # env:
+        #   ALLURE_OUTPUT_DIR: allure-results-e2e
+        #   ALLURE_OUTPUT_PATH: /app
 
       - name: Upload E2E Allure results
         if: always()
@@ -129,16 +124,6 @@ jobs:
         with:
           ref: gh-pages  # Операции будем выполнять в ветке gh-pages
           path: gh-pages  # Клонируем файлы в папку gh-pages
-
-      - name: Check directories
-        if: always()
-        run: |
-          echo "=== Directory structure ==="
-          ls -la
-          echo "=== allure-results-integration ==="
-          ls -la allure-results-integration/ || echo "Not found"
-          echo "=== allure-results-e2e ==="
-          ls -la allure-results-e2e/ || echo "Not found"
 
       - name: Download all test results
         uses: actions/download-artifact@v4
