@@ -31,7 +31,7 @@ func AssertUsersAreInRes(t provider.T, users, resUsers []*models.User) {
 		foundAll := make([]bool, len(users))
 		for _, ru := range resUsers {
 			for i, u := range users {
-				if models.CmpUsers(ru, u) {
+				if ru.Equal(u) {
 					foundAll[i] = true
 				}
 			}

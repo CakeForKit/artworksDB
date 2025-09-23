@@ -73,6 +73,22 @@ func CmpUsers(u1, u2 *User) bool {
 		u1.subscribeMail == u2.subscribeMail
 }
 
+func (u *User) Equal(other *User) bool {
+	if u == nil && other == nil {
+		return true
+	}
+	if u == nil || other == nil {
+		return false
+	}
+
+	return u.id == other.id &&
+		u.username == other.username &&
+		u.login == other.login &&
+		u.hashedPassword == other.hashedPassword &&
+		u.email == other.email &&
+		u.subscribeMail == other.subscribeMail
+}
+
 func (u *User) GetID() uuid.UUID {
 	return u.id
 }

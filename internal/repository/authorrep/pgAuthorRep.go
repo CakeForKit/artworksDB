@@ -233,3 +233,9 @@ func (pg *PgAuthorRep) HasArtworks(ctx context.Context, authorID uuid.UUID) (boo
 	defer rows.Close()
 	return rows.Next(), nil
 }
+
+func (pg *PgAuthorRep) Close() {
+	if pg.db != nil {
+		pg.db.Close()
+	}
+}

@@ -25,12 +25,9 @@ var (
 )
 
 var (
-	ErrOpenConnect      = errors.New("open connect failed")
-	ErrPing             = errors.New("ping failed")
-	ErrQueryBuilds      = errors.New("query build failed")
-	ErrQueryExec        = errors.New("query execution failed")
-	ErrExpectedOneAdmin = errors.New("expected one admin")
-	ErrRowsAffected     = errors.New("no rows affected")
+	ErrOpenConnect = errors.New("open connect failed")
+	ErrPing        = errors.New("ping failed")
+	ErrQueryBuilds = errors.New("query build failed")
 )
 
 func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
@@ -174,7 +171,7 @@ func (pg *PgAdminRep) Add(ctx context.Context, e *models.Admin) error {
 	if err == nil {
 		return ErrDuplicateLoginAdm
 	} else if err != ErrAdminNotFound {
-		return fmt.Errorf("PgAdminRep.Add %v", err)
+		return fmt.Errorf("PgAdminRep.Add %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

@@ -12,6 +12,8 @@ type UserMother interface {
 	DefaultUser(userID uuid.UUID) models.User
 	UserWithPswdHash(userID uuid.UUID, hashedPassword string) models.User
 	DefaultUserP(userID uuid.UUID) *models.User
+	UserWithLoginP(userID uuid.UUID, login string) *models.User
+	UserWithSubscribeP(userID uuid.UUID, subscr bool) *models.User
 }
 
 func NewUserMother() UserMother {
@@ -55,6 +57,32 @@ func (um *userMother) DefaultUserP(userID uuid.UUID) *models.User {
 		time.Now(),
 		fmt.Sprintf("user%s@test.com", uuid.New().String()),
 		true,
+	)
+	return &user
+}
+
+func (um *userMother) UserWithLoginP(userID uuid.UUID, login string) *models.User {
+	user, _ := models.NewUser(
+		userID,
+		"test-user",
+		login,
+		"hashed-password",
+		time.Now(),
+		fmt.Sprintf("user%s@test.com", uuid.New().String()),
+		true,
+	)
+	return &user
+}
+
+func (um *userMother) UserWithSubscribeP(userID uuid.UUID, subscr bool) *models.User {
+	user, _ := models.NewUser(
+		userID,
+		"test-user",
+		"test-login-"+uuid.New().String(),
+		"hashed-password",
+		time.Now(),
+		fmt.Sprintf("user%s@test.com", uuid.New().String()),
+		subscr,
 	)
 	return &user
 }

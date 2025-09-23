@@ -9,6 +9,7 @@ import (
 
 type AdminMother interface {
 	DefaultAdmin(adminID uuid.UUID) models.Admin
+	DefaultAdminP(adminID uuid.UUID) *models.Admin
 	AdminWithPswdHash(adminID uuid.UUID, hashedPassword string) models.Admin
 }
 
@@ -28,6 +29,11 @@ func (um *adminMother) DefaultAdmin(adminID uuid.UUID) models.Admin {
 		true,
 	)
 	return admin
+}
+
+func (um *adminMother) DefaultAdminP(adminID uuid.UUID) *models.Admin {
+	a := um.DefaultAdmin(adminID)
+	return &a
 }
 
 func (um *adminMother) AdminWithPswdHash(adminID uuid.UUID, hashedPassword string) models.Admin {

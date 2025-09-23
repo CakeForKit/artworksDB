@@ -22,6 +22,7 @@ type AuthorRep interface {
 	Delete(ctx context.Context, idAuthor uuid.UUID) error
 	Update(ctx context.Context, idAuthor uuid.UUID, funcUpdate func(*models.Author) (*models.Author, error)) error
 	HasArtworks(ctx context.Context, authorID uuid.UUID) (bool, error)
+	Close()
 }
 
 func NewAuthorRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {

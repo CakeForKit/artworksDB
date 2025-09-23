@@ -25,12 +25,8 @@ var (
 )
 
 var (
-	ErrOpenConnect     = errors.New("open connect failed")
-	ErrPing            = errors.New("ping failed")
-	ErrQueryBuilds     = errors.New("query build failed")
-	ErrQueryExec       = errors.New("query execution failed")
-	ErrExpectedOneUser = errors.New("expected one user")
-	ErrRowsAffected    = errors.New("no rows affected")
+	ErrOpenConnect = errors.New("open connect failed")
+	ErrPing        = errors.New("ping failed")
 )
 
 func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
@@ -42,7 +38,7 @@ func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf
 			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 		db, err := sql.Open("pgx", connStr)
 		if err != nil {
-			resErr = fmt.Errorf("NewPgUserRep: %w: %v", ErrOpenConnect, err)
+			resErr = fmt.Errorf("NewPgUserRep: %w: %w", ErrOpenConnect, err)
 			return
 		}
 
@@ -73,16 +69,16 @@ func (pg *PgUserRep) parseUsersRows(rows *sql.Rows) ([]*models.User, error) {
 		var createdAt time.Time
 		var subscribeMail bool
 		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
-			return nil, fmt.Errorf("parseUsersRows scan error: %v", err)
+			return nil, fmt.Errorf("parseUsersRows scan error: %w", err)
 		}
 		user, err := models.NewUser(id, username, login, hashedPassword, createdAt, email, subscribeMail)
 		if err != nil {
-			return nil, fmt.Errorf("parseUsersRows: %v", err)
+			return nil, fmt.Errorf("parseUsersRows: %w", err)
 		}
 		resUsers = append(resUsers, &user)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("parseUsersRows rows iteration error: %v", err)
+		return nil, fmt.Errorf("parseUsersRows rows iteration error: %w", err)
 	}
 	return resUsers, nil
 }
@@ -93,18 +89,18 @@ func (pg *PgUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 		From("users").
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAll: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgUserRep.GetAll: %w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAll: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgUserRep.GetAll: %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	users, err := pg.parseUsersRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAll: %v", err)
+		return nil, fmt.Errorf("PgUserRep.GetAll: %w", err)
 	}
 	return users, nil
 }
@@ -116,18 +112,18 @@ func (pg *PgUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, erro
 		Where(sq.Eq{"subscribeMail": true}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	users, err := pg.parseUsersRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %v", err)
+		return nil, fmt.Errorf("PgUserRep.GetAllSubscribed: %w", err)
 	}
 
 	return users, nil
@@ -140,22 +136,22 @@ func (pg *PgUserRep) GetByID(ctx context.Context, id uuid.UUID) (*models.User, e
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	users, err := pg.parseUsersRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByID: %v", err)
+		return nil, fmt.Errorf("PgUserRep.GetByID: %w", err)
 	}
 	if len(users) == 0 {
 		return nil, ErrUserNotFound
 	} else if len(users) > 1 {
-		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %v", ErrExpectedOneUser, err)
+		return nil, fmt.Errorf("PgUserRep.GetByID: %w: %w", ErrExpectedOneUser, err)
 	}
 	return users[0], nil
 }
@@ -167,22 +163,22 @@ func (pg *PgUserRep) GetByLogin(ctx context.Context, login string) (*models.User
 		Where(sq.Eq{"login": login}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	users, err := pg.parseUsersRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.GetByLogin: %v", err)
+		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w", err)
 	}
 	if len(users) == 0 {
 		return nil, ErrUserNotFound
 	} else if len(users) > 1 {
-		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %v", ErrExpectedOneUser, err)
+		return nil, fmt.Errorf("PgUserRep.GetByLogin: %w: %w", ErrExpectedOneUser, err)
 	}
 	return users[0], nil
 }
@@ -192,7 +188,7 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 	if err == nil {
 		return ErrDuplicateLoginUser
 	} else if err != ErrUserNotFound {
-		return fmt.Errorf("PgUserRep.Add %v", err)
+		return fmt.Errorf("PgUserRep.Add %w", err)
 	}
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Insert("Users").
@@ -200,16 +196,16 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Add %w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgUserRep.Add %w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Add %w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgUserRep.Add %w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Add %w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgUserRep.Add %w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("PgUserRep.Add %w: no user added", ErrRowsAffected)
@@ -223,16 +219,16 @@ func (pg *PgUserRep) Delete(ctx context.Context, id uuid.UUID) error {
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Delete %w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgUserRep.Delete %w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Delete %w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgUserRep.Delete %w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Delete %w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgUserRep.Delete %w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("PgUserRep.Delete %w: no user with id %s", ErrRowsAffected, id)
@@ -245,13 +241,13 @@ func (pg *PgUserRep) Update(ctx context.Context,
 	funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
 	user, err := pg.GetByID(ctx, id)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.Update: %v", err)
+		return nil, fmt.Errorf("PgUserRep.Update: %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedUser, err := funcUpdate(user)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.Update funcUpdate: %v", err)
+		return nil, fmt.Errorf("PgUserRep.Update funcUpdate: %w", err)
 	}
 	query, args, err := psql.Update("Users").
 		Set("username", updatedUser.GetUsername()).
@@ -261,16 +257,16 @@ func (pg *PgUserRep) Update(ctx context.Context,
 		Set("subscribeMail", updatedUser.IsSubscribedToMail()).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.Update: %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgUserRep.Update: %w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.Update: %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgUserRep.Update: %w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return nil, fmt.Errorf("PgUserRep.Update: %w: %v", ErrRowsAffected, err)
+		return nil, fmt.Errorf("PgUserRep.Update: %w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return nil, fmt.Errorf("PgUserRep.Update: %w: no user updated", ErrRowsAffected)
@@ -279,21 +275,26 @@ func (pg *PgUserRep) Update(ctx context.Context,
 }
 
 func (pg *PgUserRep) UpdateSubscribeToMailing(ctx context.Context, id uuid.UUID, newSubscribeMail bool) error {
+	_, err := pg.GetByID(ctx, id)
+	if err != nil {
+		return fmt.Errorf("PgUserRep.Update: %w", err)
+	}
+
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Update("Users").
 		Set("subscribeMail", newSubscribeMail).
 		Where(sq.Eq{"id": id}).ToSql()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Update: %w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("PgUserRep.Update: %w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, query, args...)
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Update: %w: %v", ErrQueryExec, err)
+		return fmt.Errorf("PgUserRep.Update: %w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("PgUserRep.Update: %w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("PgUserRep.Update: %w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("PgUserRep.Update: %w: no user updated", ErrRowsAffected)

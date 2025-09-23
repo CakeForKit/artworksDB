@@ -53,6 +53,21 @@ func (a *Admin) validate() error {
 	return nil
 }
 
+func (a *Admin) Equal(other *Admin) bool {
+	if a == nil && other == nil {
+		return true
+	}
+	if a == nil || other == nil {
+		return false
+	}
+
+	return a.id == other.id &&
+		a.username == other.username &&
+		a.login == other.login &&
+		a.hashedPassword == other.hashedPassword &&
+		a.valid == other.valid
+}
+
 // GetID возвращает идентификатор администратора
 func (a *Admin) GetID() uuid.UUID {
 	return a.id

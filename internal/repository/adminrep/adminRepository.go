@@ -15,6 +15,9 @@ var (
 	// ErrFailedToAddAdmin  = errors.New("failed to add the Admin to the repository")
 	ErrDuplicateLoginAdm = errors.New("an admin with this login already exists")
 	ErrUpdateAdmin       = errors.New("failed to update the Admin in the repository")
+	ErrQueryExec         = errors.New("query execution failed")
+	ErrExpectedOneAdmin  = errors.New("expected one admin")
+	ErrRowsAffected      = errors.New("no rows affected")
 )
 
 type AdminRep interface {

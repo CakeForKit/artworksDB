@@ -70,7 +70,7 @@ func (th *testHelper) createTestUser(num int, subscribed bool) *models.User {
 		subscribed,
 	)
 	if err != nil {
-		panic(fmt.Sprintf("createTestUser failed: %v", err))
+		panic(fmt.Sprintf("createTestUser failed: %w", err))
 	}
 	return &user
 }

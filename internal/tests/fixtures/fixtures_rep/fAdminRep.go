@@ -26,18 +26,18 @@ func DelTestAdmin(t provider.T, ctx context.Context, adminRep adminrep.AdminRep,
 	})
 }
 
-// func AssertAdminsAreInRes(t provider.T, admins, resAdmins []*models.Admin) {
-// 	t.WithNewStep("Check admins sre in the result", func(sCtx provider.StepCtx) {
-// 		foundAll := make([]bool, len(admins))
-// 		for _, ru := range resAdmins {
-// 			for i, u := range admins {
-// 				if models.CmpAdmins(ru, u) {
-// 					foundAll[i] = true
-// 				}
-// 			}
-// 		}
-// 		for _, v := range foundAll {
-// 			sCtx.Assert().True(v)
-// 		}
-// 	})
-// }
+func AssertAdminsAreInRes(t provider.T, admins, resAdmins []*models.Admin) {
+	t.WithNewStep("Check admins are in the result", func(sCtx provider.StepCtx) {
+		foundAll := make([]bool, len(admins))
+		for _, ru := range resAdmins {
+			for i, u := range admins {
+				if ru.Equal(u) {
+					foundAll[i] = true
+				}
+			}
+		}
+		for _, v := range foundAll {
+			sCtx.Assert().True(v)
+		}
+	})
+}
