@@ -1,0 +1,4 @@
+"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
+"","58","TestUserRep_GetAll","","Tue Sep 23 09:59:02 GMT 2025","passed","Tue Sep 23 09:59:03 GMT 2025","","UserRepSuite","",""
+"","0","TestUserService_ChangeSubscribeToMailing","","Tue Sep 23 09:57:32 GMT 2025","passed","Tue Sep 23 09:57:32 GMT 2025","","UserServiceSuite","",""
+"","0","TestUserService_GetSelf","","Tue Sep 23 09:57:32 GMT 2025","passed","Tue Sep 23 09:57:32 GMT 2025","","UserServiceSuite","",""
