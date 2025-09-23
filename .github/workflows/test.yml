@@ -86,7 +86,7 @@ jobs:
           docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env \
             exec -T test-runner \
             go test ./internal/tests/e2e/e2e_api
-          docker cp test_runner_artworks:/app/allure-results ./allure-results-e2e || true
+          docker cp test_runner_artworks:/app/allure-results ${{ github.workspace }}/allure-results-e2e || true
         env:
           ALLURE_OUTPUT_DIR: allure-results
           ALLURE_OUTPUT_PATH: /app

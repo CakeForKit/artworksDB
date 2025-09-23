@@ -10,7 +10,7 @@ DC_CI := ./deployment/docker-compose.ci.yml
 TEST_DB_ENV := ./configs/test_db.env
 
 .PHONY: allure
-allure: unit_test integration_test report_allure open_allure
+allure: unit_test integration_test e2e_test report_allure open_allure
 
 .PHONY: unit_test
 unit_test : clear_allure
