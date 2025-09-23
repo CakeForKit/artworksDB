@@ -87,9 +87,20 @@ jobs:
             exec -T test-runner \
             go test ./internal/tests/e2e/e2e_api
           docker cp test_runner_artworks:/app/allure-results ${{ github.workspace }}/allure-results-e2e || true
+          ls -la ${{ github.workspace }}/allure-results-e2e
         env:
           ALLURE_OUTPUT_DIR: allure-results
           ALLURE_OUTPUT_PATH: /app
+
+      - name: Check directories
+        if: always()
+        run: |
+          echo "=== Directory structure ==="
+          ls -la
+          echo "=== allure-results-integration ==="
+          ls -la allure-results-integration/ || echo "Not found"
+          echo "=== allure-results-e2e ==="
+          ls -la allure-results-e2e/ || echo "Not found"
 
       - name: Upload E2E Allure results
         if: always()
@@ -97,8 +108,6 @@ jobs:
         with:
           name: allure-results-e2e  # Название артефакта
           path: allure-results-e2e  # Путь к файлам отчета
-
-
 
       - name: Cleanup
         if: always()
@@ -119,6 +128,16 @@ jobs:
         with:
           ref: gh-pages  # Операции будем выполнять в ветке gh-pages
           path: gh-pages  # Клонируем файлы в папку gh-pages
+
+      - name: Check directories
+        if: always()
+        run: |
+          echo "=== Directory structure ==="
+          ls -la
+          echo "=== allure-results-integration ==="
+          ls -la allure-results-integration/ || echo "Not found"
+          echo "=== allure-results-e2e ==="
+          ls -la allure-results-e2e/ || echo "Not found"
 
       - name: Download all test results
         uses: actions/download-artifact@v4
