@@ -66,6 +66,13 @@ jobs:
           ALLURE_OUTPUT_DIR: allure-results-integration
           ALLURE_OUTPUT_PATH: ${{ github.workspace }}
 
+      - name: Upload Allure results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results-integration  # Название артефакта
+          path: allure-results-integration  # Путь к файлам отчета
+
       - name: Build and up test-runner container
         id: test-runner-up
         if: steps.integration-tests.outcome == 'success'
@@ -91,12 +98,7 @@ jobs:
           name: allure-results-e2e  # Название артефакта
           path: allure-results-e2e  # Путь к файлам отчета
 
-      - name: Upload Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-integration  # Название артефакта
-          path: allure-results-integration  # Путь к файлам отчета
+
 
       - name: Cleanup
         if: always()
