@@ -33,7 +33,7 @@ jobs:
         name: allure-results-unit  # Название артефакта
         path: allure-results  # Путь к файлам отчета
 
-  integration-tests:
+  integration-e2e-tests:
     runs-on: ubuntu-latest
     needs: unit-tests 
     if: success()
@@ -61,30 +61,25 @@ jobs:
 
       - name: Run Integration Tests
         id: integration-tests
-        run: |
-          go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
-
+        run: go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
         env:
           ALLURE_OUTPUT_DIR: allure-results
           ALLURE_OUTPUT_PATH: ${{ github.workspace }}
-      # docker compose -f ./deployment/docker-compose.ci.yml \
-      #   --env-file ./configs/test_db.env \
-      #   run --rm test-runner \
-      #   go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
-      #   ls -la
-      #   tree
 
       - name: Build and up test-runner container
+        id: test-runner-up
         if: steps.integration-tests.outcome == 'success'
         run: |
           docker compose -f ./deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d test-runner
       
       - name: Run E2E Tests
-        if: steps.integration-tests.outcome == 'success'
-        run: |
-          ./scripts/e2e_tests.sh
-          
+        if: steps.test-runner-up.outcome == 'success'
+        run: go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/e2e/e2e_api
+        env:
+          ALLURE_OUTPUT_DIR: allure-results
+          ALLURE_OUTPUT_PATH: ${{ github.workspace }}
+
       - name: Upload Allure results
         if: always()
         uses: actions/upload-artifact@v4
