@@ -92,6 +92,7 @@ jobs:
           docker cp test_runner_artworks:/app/allure-results-e2e ${{ github.workspace }}/allure-results-e2e || true
           
           docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app || true
+          docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app/allure-results || true
           docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app/allure-results-e2e || true
 # ls -la ${{ github.workspace }}/allure-results-e2e
         env:
