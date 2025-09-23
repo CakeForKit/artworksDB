@@ -26,8 +26,8 @@ func (um *eventMother) EventP(eventID uuid.UUID) *models.Event {
 	event, _ := models.NewEvent(
 		eventID,
 		"test-event-title",
-		time.Now(),
-		time.Now().Add(time.Hour*60),
+		time.Date(2023, time.October, 1, 15, 30, 0, 0, time.UTC),
+		time.Date(2023, time.October, 10, 15, 30, 0, 0, time.UTC),
 		"test-adress",
 		true,
 		uuid.New(),
@@ -42,8 +42,8 @@ func (um *eventMother) EventCntTicketsP(eventID uuid.UUID, cntTickets int) *mode
 	event, _ := models.NewEvent(
 		eventID,
 		"test-event-title",
-		time.Now(),
-		time.Now().Add(time.Hour*60),
+		time.Date(2023, time.October, 1, 15, 30, 0, 0, time.UTC),
+		time.Date(2023, time.October, 10, 15, 30, 0, 0, time.UTC),
 		"test-adress",
 		true,
 		uuid.New(),
@@ -57,8 +57,8 @@ func (um *eventMother) EventCntTicketsP(eventID uuid.UUID, cntTickets int) *mode
 func (um *eventMother) EventAdd(employeeID uuid.UUID) *jsonreqresp.EventAdd {
 	return &jsonreqresp.EventAdd{
 		Title:      "test-event-title-2",
-		DateBegin:  time.Now(),
-		DateEnd:    time.Now().Add(time.Hour * 60),
+		DateBegin:  time.Date(2023, time.October, 1, 15, 30, 0, 0, time.UTC),
+		DateEnd:    time.Date(2023, time.October, 10, 15, 30, 0, 0, time.UTC),
 		Address:    "test-adress-2",
 		CanVisit:   false,
 		EmployeeID: employeeID,

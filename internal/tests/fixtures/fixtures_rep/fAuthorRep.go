@@ -1,0 +1,33 @@
+package fixturesrep
+
+import (
+	"context"
+
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"github.com/ozontech/allure-go/pkg/framework/provider"
+)
+
+func AddTestAuthors(
+	t provider.T, ctx context.Context, authors []*models.Author,
+	authorRep authorrep.AuthorRep,
+) {
+	t.WithNewStep("Add Test Authors", func(sCtx provider.StepCtx) {
+		for _, u := range authors {
+			err := authorRep.Add(ctx, u)
+			sCtx.Require().NoError(err)
+		}
+	})
+}
+
+func DelTestAuthors(
+	t provider.T, ctx context.Context, authors []*models.Author,
+	authorRep authorrep.AuthorRep,
+) {
+	t.WithNewStep("Del Test Authors", func(sCtx provider.StepCtx) {
+		for _, u := range authors {
+			err := authorRep.Delete(ctx, u.GetID())
+			sCtx.Require().NoError(err)
+		}
+	})
+}

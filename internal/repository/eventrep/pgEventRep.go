@@ -187,6 +187,7 @@ func (pg *PgEventRep) GetAll(ctx context.Context, filterOps *jsonreqresp.EventFi
 		From("events")
 
 	query = pg.addFilterParams(query, filterOps)
+
 	events, err := pg.execQuery(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("PgEventRep.GetAll %w", err)

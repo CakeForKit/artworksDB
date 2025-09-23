@@ -9,6 +9,9 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
@@ -79,12 +82,18 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 		sCtx.Require().NoError(err)
 		adminRep, err := adminrep.NewAdminRep(ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
-		fixturesrep.AddTestEvents(t, ctx, events, eventRep, employeeRep, adminRep)
+		artworkRep, err := artworkrep.NewArtworkRep(ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)
+		sCtx.Require().NoError(err)
+		authorRep, err := authorrep.NewAuthorRep(ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)
+		sCtx.Require().NoError(err)
+		collectionRep, err := collectionrep.NewCollectionRep(ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)
+		sCtx.Require().NoError(err)
+		fixturesrep.AddTestEvents(t, ctx, events, eventRep, employeeRep, adminRep, artworkRep, authorRep, collectionRep)
 	})
-
+	fmt.Print("---- 3 \n")
 	t.WithNewStep("Search events", func(sCtx provider.StepCtx) {
 		resp, err := s.client.DoRequest("GET", "/museum/events", nil)
-
+		fmt.Print("---- 4 \n")
 		sCtx.Require().NoError(err)
 		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
 		var eventResp []jsonreqresp.EventResponse

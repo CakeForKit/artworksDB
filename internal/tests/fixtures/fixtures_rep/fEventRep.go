@@ -2,11 +2,13 @@ package fixturesrep
 
 import (
 	"context"
-	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
 	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
@@ -19,6 +21,9 @@ func AddTestEvents(
 	eventRep eventrep.EventRep,
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
+	artworkRep artworkrep.ArtworkRep,
+	authorRep authorrep.AuthorRep,
+	collectionRep collectionrep.CollectionRep,
 ) {
 	adminCreator := testobj.NewAdminMother()
 	admin := adminCreator.DefaultAdmin(uuid.New())
@@ -36,9 +41,27 @@ func AddTestEvents(
 		}
 	})
 
+	t.WithNewStep("Add Test Artowrks for Events", func(sCtx provider.StepCtx) {
+		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
+		artworks := make([]*models.Artwork, 0)
+		artworkCreator := testobj.NewArtworkMother()
+		for _, e := range events {
+			for _, ids := range e.GetArtworkIDs() {
+				if _, ok := artworksMap[ids]; !ok {
+					a := artworkCreator.ArtworkP(ids)
+					artworksMap[ids] = a
+					artworks = append(artworks, a)
+				}
+			}
+		}
+		AddTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
+	})
+
 	t.WithNewStep("Add Test Events", func(sCtx provider.StepCtx) {
 		for _, u := range events {
 			err := eventRep.Add(ctx, u)
+			sCtx.Require().NoError(err)
+			err = eventRep.AddArtworksToEvent(ctx, u.GetID(), u.GetArtworkIDs())
 			sCtx.Require().NoError(err)
 		}
 	})
@@ -49,6 +72,9 @@ func DelTestEvent(
 	eventRep eventrep.EventRep,
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
+	artworkRep artworkrep.ArtworkRep,
+	authorRep authorrep.AuthorRep,
+	collectionRep collectionrep.CollectionRep,
 ) {
 	admins := make(map[uuid.UUID]*models.Admin, 0)
 	employees := make(map[uuid.UUID]*models.Employee, 0)
@@ -78,6 +104,22 @@ func DelTestEvent(
 		}
 	})
 
+	t.WithNewStep("Delete Test Artowrks for Events", func(sCtx provider.StepCtx) {
+		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
+		artworks := make([]*models.Artwork, 0)
+		artworkCreator := testobj.NewArtworkMother()
+		for _, e := range events {
+			for _, ids := range e.GetArtworkIDs() {
+				if _, ok := artworksMap[ids]; !ok {
+					a := artworkCreator.ArtworkP(ids)
+					artworksMap[ids] = a
+					artworks = append(artworks, a)
+				}
+			}
+		}
+		DelTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
+	})
+
 	t.WithNewStep("Delete Test Events", func(sCtx provider.StepCtx) {
 		for _, u := range events {
 			err := eventRep.Delete(ctx, u.GetID())
@@ -97,14 +139,11 @@ func DelTestEvent(
 	DelTestAdmin(t, ctx, adminRep, adminToDel)
 }
 
-func AssertEventResponsesAreInRes(t provider.T, eventResp, resEventResp []jsonreqresp.EventResponse) {
-	fmt.Println("AssertEventResponsesAreInRes")
-	fmt.Println(eventResp)
-	fmt.Println(resEventResp)
+func AssertEventResponsesAreInRes(t provider.T, eventResp, expectedEventResp []jsonreqresp.EventResponse) {
 	t.WithNewStep("Check eventResp sre in the result", func(sCtx provider.StepCtx) {
-		foundAll := make([]bool, len(eventResp))
-		for _, ru := range resEventResp {
-			for i, u := range eventResp {
+		foundAll := make([]bool, len(expectedEventResp))
+		for i, ru := range expectedEventResp {
+			for _, u := range eventResp {
 				if ru.Equal(&u) {
 					foundAll[i] = true
 				}
