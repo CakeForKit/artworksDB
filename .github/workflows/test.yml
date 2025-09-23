@@ -91,12 +91,12 @@ jobs:
             go test ./internal/tests/e2e/e2e_api
           docker cp test_runner_artworks:/app/allure-results-e2e ${{ github.workspace }}/allure-results-e2e || true
           
-          docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app
-          docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app/allure-results-e2e
+          docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app || true
+          docker compose -f ./deployment/docker-compose.ci.yml exec -T test-runner ls -la /app/allure-results-e2e || true
 # ls -la ${{ github.workspace }}/allure-results-e2e
-        # env:
-        #   ALLURE_OUTPUT_DIR: allure-results-e2e
-        #   ALLURE_OUTPUT_PATH: /app
+        env:
+          ALLURE_OUTPUT_DIR: allure-results-e2e
+          ALLURE_OUTPUT_PATH: /app
 
       - name: Upload E2E Allure results
         if: always()
