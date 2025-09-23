@@ -63,15 +63,15 @@ jobs:
         id: integration-tests
         run: go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
         env:
-          ALLURE_OUTPUT_DIR: allure-results-integration
+          ALLURE_OUTPUT_DIR: allure-results
           ALLURE_OUTPUT_PATH: ${{ github.workspace }}
 
-      - name: Upload Allure results
+      - name: Upload Integration Allure results
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: allure-results-integration  # Название артефакта
-          path: allure-results-integration  # Путь к файлам отчета
+          path: allure-results  # Путь к файлам отчета
 
       - name: Build and up test-runner container
         id: test-runner-up
