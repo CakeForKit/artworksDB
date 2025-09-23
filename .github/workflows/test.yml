@@ -76,6 +76,7 @@ jobs:
         if: steps.test-runner-up.outcome == 'success'
         run: go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/e2e/e2e_api
         env:
+          APP_HOST: test_runner_artworks
           ALLURE_OUTPUT_DIR: allure-results
           ALLURE_OUTPUT_PATH: ${{ github.workspace }}
 
