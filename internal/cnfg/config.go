@@ -3,7 +3,6 @@ package cnfg
 import (
 	"errors"
 	"fmt"
-	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -81,11 +80,10 @@ func LoadAppConfig(pathConfig, nameConfig, typeConfig string) (config *AppConfig
 		return nil, ErrUnknownDB
 	}
 
-	if appHost := os.Getenv("APP_HOST"); appHost != "" {
-		config.AppHost = appHost
-	} else {
-		config.AppHost = "localhost"
-	}
+	config.AppHost = "localhost"
+	// if appHost := os.Getenv("APP_HOST"); appHost != "" {
+	// 	config.AppHost = appHost
+	// }
 
 	return config, nil
 }

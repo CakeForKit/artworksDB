@@ -12,6 +12,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
+      # redis_artworks:
+      #   condition: service_healthy
 
     # command: tail -f /dev/null # Просто держим контейнер alive
     environment:
