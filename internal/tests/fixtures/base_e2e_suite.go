@@ -25,6 +25,6 @@ func (s *BaseE2ESuite) BeforeAll(t provider.T) {
 		s.DBCreds = dbCreds
 		s.DBCnfg = dbCnfg
 		s.RedisCreds = redisCreds
-		s.BaseURL = fmt.Sprintf("http://localhost:%d/api/v1", appCnfg.Port)
+		s.BaseURL = fmt.Sprintf("http://%s:%d/api/v1", appCnfg.AppHost, appCnfg.Port)
 	})
 }

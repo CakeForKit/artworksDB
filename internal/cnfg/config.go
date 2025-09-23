@@ -3,6 +3,7 @@ package cnfg
 import (
 	"errors"
 	"fmt"
+	"os"
 	"path/filepath"
 	"runtime"
 	"time"
@@ -23,6 +24,7 @@ type AppConfig struct {
 	AccessTokenDuration          time.Duration `mapstructure:"access_token_duration"`
 	BuyTicketTransactionDuration time.Duration `mapstructure:"buy_ticket_transaction_duration"`
 	Port                         int           `mapstructure:"port"`
+	AppHost                      string
 }
 
 type DatebaseConfig struct {
@@ -77,6 +79,12 @@ func LoadAppConfig(pathConfig, nameConfig, typeConfig string) (config *AppConfig
 	}
 	if config.Datebase != PostgresDB && config.Datebase != ClickHouseDB {
 		return nil, ErrUnknownDB
+	}
+
+	if appHost := os.Getenv("APP_HOST"); appHost != "" {
+		config.AppHost = appHost
+	} else {
+		config.AppHost = "localhost"
 	}
 
 	return config, nil
