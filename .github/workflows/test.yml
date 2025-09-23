@@ -99,10 +99,8 @@ jobs:
         run: |
           echo "=== Directory structure ==="
           ls -la
-          echo "=== allure-results-integration ==="
-          ls -la allure-results-integration/ || echo "Not found"
-          echo "=== allure-results-e2e ==="
-          ls -la allure-results-e2e/ || echo "Not found"
+          ls -la ./allure-results
+          ls -la ./allure-results-e2e
 
       - name: Upload E2E Allure results
         if: always()
