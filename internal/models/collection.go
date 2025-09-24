@@ -45,7 +45,7 @@ func (c1 *Collection) validate() error {
 	return nil
 }
 
-func (c1 *Collection) Equals(other interface{}) bool {
+func (c1 *Collection) Equal(other interface{}) bool {
 	if c1 == nil {
 		return other == nil
 	}

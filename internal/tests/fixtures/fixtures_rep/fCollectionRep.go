@@ -31,3 +31,19 @@ func DelTestCollections(
 		}
 	})
 }
+
+func AssertCollectionsAreInRes(t provider.T, collections, resCollections []*models.Collection) {
+	t.WithNewStep("Check collections sre in the result", func(sCtx provider.StepCtx) {
+		foundAll := make([]bool, len(collections))
+		for _, ru := range resCollections {
+			for i, u := range collections {
+				if ru.Equal(u) {
+					foundAll[i] = true
+				}
+			}
+		}
+		for _, v := range foundAll {
+			sCtx.Assert().True(v)
+		}
+	})
+}

@@ -98,7 +98,7 @@ func (a *Artwork) validate() error {
 	return nil
 }
 
-func (a1 *Artwork) Equals(other interface{}) bool {
+func (a1 *Artwork) Equal(other interface{}) bool {
 	if a1 == nil {
 		return other == nil
 	}
@@ -115,8 +115,8 @@ func (a1 *Artwork) Equals(other interface{}) bool {
 		a1.technic == a2.technic &&
 		a1.material == a2.material &&
 		a1.size == a2.size &&
-		a1.author.Equals(a2.author) &&
-		a1.collection.Equals(a2.collection)
+		a1.author.Equal(a2.author) &&
+		a1.collection.Equal(a2.collection)
 }
 
 func (a *Artwork) ToArtworkResponse() jsonreqresp.ArtworkResponse {

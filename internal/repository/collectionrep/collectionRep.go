@@ -21,6 +21,8 @@ type CollectionRep interface {
 	Add(ctx context.Context, e *models.Collection) error
 	Delete(ctx context.Context, idCol uuid.UUID) error
 	Update(ctx context.Context, idCol uuid.UUID, funcUpdate func(*models.Collection) (*models.Collection, error)) error
+	Ping(ctx context.Context) error
+	Close()
 }
 
 func NewCollectionRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {
@@ -31,5 +33,4 @@ func NewCollectionRep(ctx context.Context, datebaseType string, pgCreds *cnfg.Da
 	} else {
 		return nil, fmt.Errorf("NewCollectionRep: %w", cnfg.ErrUnknownDB)
 	}
-	// return &MockAdminRep{}, nil
 }

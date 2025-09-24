@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -20,11 +19,6 @@ type PgCollectionRep struct {
 }
 
 var (
-	pgInstance *PgCollectionRep
-	pgOnce     sync.Once
-)
-
-var (
 	ErrOpenConnect           = errors.New("open connect failed")
 	ErrPing                  = errors.New("ping failed")
 	ErrQueryBuilds           = errors.New("query build failed")
@@ -34,32 +28,23 @@ var (
 )
 
 func NewPgCollectionRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgCollectionRep, error) {
-	var resErr error
-	pgOnce.Do(func() {
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
-		db, err := sql.Open("pgx", connStr)
-		if err != nil {
-			resErr = fmt.Errorf("NewPgCollectionRep: %w: %w", ErrOpenConnect, err)
-			return
-		}
-		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("NewPgCollectionRep: %w: %w", ErrPing, err)
-			db.Close()
-			return
-		}
-		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxOpenConns)
-		db.SetMaxIdleConns(dbConf.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 
-		pgInstance = &PgCollectionRep{db: db}
-	})
-	if resErr != nil {
-		return nil, resErr
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("NewPgCollectionRep: %w: %w", ErrOpenConnect, err)
 	}
+	if err := db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("NewPgCollectionRep: %w: %w", ErrPing, err)
+	}
+	// Настраиваем пул соединений
+	db.SetMaxOpenConns(dbConf.MaxOpenConns)
+	db.SetMaxIdleConns(dbConf.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-	return pgInstance, nil
+	return &PgCollectionRep{db: db}, nil
 }
 
 func (pg *PgCollectionRep) parseCollectionsRows(rows *sql.Rows) ([]*models.Collection, error) {
@@ -134,6 +119,7 @@ func (pg *PgCollectionRep) execChangeQuery(ctx context.Context, query sq.Sqlizer
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
 	}
+
 	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
 		return fmt.Errorf("%w: %v", ErrQueryExec, err)
@@ -196,4 +182,14 @@ func (pg *PgCollectionRep) Update(
 		return fmt.Errorf("pgCollectionRep.Update: %w", err)
 	}
 	return nil
+}
+
+func (pg *PgCollectionRep) Ping(ctx context.Context) error {
+	return pg.db.PingContext(ctx)
+}
+
+func (pg *PgCollectionRep) Close() {
+	if pg.db != nil {
+		pg.db.Close()
+	}
 }

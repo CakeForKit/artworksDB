@@ -55,7 +55,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetAllArtworks(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Assert().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			sCtx.Assert().True(artworks[i].Equals(resArtworks[i]))
+			sCtx.Assert().True(artworks[i].Equal(resArtworks[i]))
 		}
 		mockArtworkRep.AssertCalled(t, "GetAllArtworks", ctx,
 			artworkFilter,
@@ -255,7 +255,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetArtworksFromEvent(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Assert().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			sCtx.Assert().True(artworks[i].Equals(resArtworks[i]))
+			sCtx.Assert().True(artworks[i].Equal(resArtworks[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockArtworkRep.AssertCalled(t, "GetByID", ctx, artworkIDs[0])

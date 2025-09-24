@@ -41,7 +41,7 @@ func (s *CollectionServiceSuite) TestCollectionServ_GetAll(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Require().True(len(collections) == len(resCols))
 		for i := range len(resCols) {
-			sCtx.Require().True(collections[i].Equals(resCols[i]))
+			sCtx.Require().True(collections[i].Equal(resCols[i]))
 		}
 		mockColRes.AssertCalled(t, "GetAll", ctx)
 	})

@@ -43,3 +43,12 @@ func (m *MockCollectionRep) Update(ctx context.Context, idCol uuid.UUID, funcUpd
 	args := m.Called(ctx, idCol, funcUpdate)
 	return args.Error(0)
 }
+
+func (m *MockCollectionRep) Ping(ctx context.Context) error {
+	args := m.Called(ctx)
+	return args.Error(0)
+}
+
+func (m *MockCollectionRep) Close() {
+	m.Called()
+}

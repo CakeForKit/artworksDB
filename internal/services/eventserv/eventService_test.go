@@ -129,7 +129,7 @@ func (s *EventServiceSuite) TestEventService_GetArtworksFromEvent(t provider.T) 
 		sCtx.Require().NoError(err)
 		sCtx.Require().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			sCtx.Require().True(artworks[i].Equals(resArtworks[i]))
+			sCtx.Require().True(artworks[i].Equal(resArtworks[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetArtworkIDs", ctx, eventID)
 		mockArtworkRep.AssertCalled(t, "GetByID", ctx, artworkIDs[0])

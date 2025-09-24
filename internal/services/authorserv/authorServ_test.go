@@ -43,7 +43,7 @@ func (s *AuthorServiceSuite) TestAuthorServ_GetAll(t provider.T) {
 		sCtx.Assert().NoError(err)
 		sCtx.Assert().Equal(len(authors), len(resAuthors))
 		for i := range resAuthors {
-			sCtx.Assert().True(authors[i].Equals(resAuthors[i]))
+			sCtx.Assert().True(authors[i].Equal(resAuthors[i]))
 		}
 		mockAuthorRep.AssertCalled(t, "GetAll", ctx)
 	}, allure.NewParameter("scenario", "success with 2 authors"))

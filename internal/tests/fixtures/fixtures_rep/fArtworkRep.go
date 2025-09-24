@@ -80,3 +80,19 @@ func DelTestArtworks(
 	})
 
 }
+
+func AssertArtworksAreInRes(t provider.T, artworks, resArtworks []*models.Artwork) {
+	t.WithNewStep("Check artworks sre in the result", func(sCtx provider.StepCtx) {
+		foundAll := make([]bool, len(artworks))
+		for _, ru := range resArtworks {
+			for i, u := range artworks {
+				if ru.Equal(u) {
+					foundAll[i] = true
+				}
+			}
+		}
+		for _, v := range foundAll {
+			sCtx.Assert().True(v)
+		}
+	})
+}

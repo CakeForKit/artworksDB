@@ -52,7 +52,7 @@ func (s *ArtworkServiceSuite) TestArtworkServ_GetAll(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Require().True(len(artworks) == len(resArtworks))
 		for i := range len(resArtworks) {
-			sCtx.Require().True(artworks[i].Equals(resArtworks[i]))
+			sCtx.Require().True(artworks[i].Equal(resArtworks[i]))
 		}
 		mockArtworkRep.AssertCalled(t, "GetAllArtworks", ctx,
 			mock.AnythingOfType("*jsonreqresp.ArtworkFilter"),

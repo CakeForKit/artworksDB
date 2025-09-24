@@ -31,3 +31,19 @@ func DelTestAuthors(
 		}
 	})
 }
+
+func AssertAuthorsAreInRes(t provider.T, authors, resAuthors []*models.Author) {
+	t.WithNewStep("Check authors sre in the result", func(sCtx provider.StepCtx) {
+		foundAll := make([]bool, len(authors))
+		for _, ru := range resAuthors {
+			for i, u := range authors {
+				if ru.Equal(u) {
+					foundAll[i] = true
+				}
+			}
+		}
+		for _, v := range foundAll {
+			sCtx.Assert().True(v)
+		}
+	})
+}

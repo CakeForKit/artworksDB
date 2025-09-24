@@ -59,8 +59,8 @@ func (a *Author) validate() error {
 	return nil
 }
 
-func (a1 *Author) Equals(other interface{}) bool {
-	if a1 == nil {
+func (a *Author) Equal(other interface{}) bool {
+	if a == nil {
 		return other == nil
 	}
 
@@ -72,9 +72,9 @@ func (a1 *Author) Equals(other interface{}) bool {
 		return false
 	}
 
-	return a1.name == a2.name &&
-		a1.birthYear == a2.birthYear &&
-		a1.deathYear == a2.deathYear
+	return a.name == a2.name &&
+		a.birthYear == a2.birthYear &&
+		a.deathYear == a2.deathYear
 }
 
 func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
@@ -86,12 +86,12 @@ func (a *Author) ToAuthorResponse() jsonreqresp.AuthorResponse {
 	}
 }
 
-func (auth *Author) GetID() uuid.UUID {
-	return auth.id
+func (a *Author) GetID() uuid.UUID {
+	return a.id
 }
 
-func (auth *Author) GetName() string {
-	return auth.name
+func (a *Author) GetName() string {
+	return a.name
 }
 
 func (a *Author) GetBirthYear() int {

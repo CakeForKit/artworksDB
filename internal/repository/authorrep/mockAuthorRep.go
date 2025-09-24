@@ -48,3 +48,7 @@ func (m *MockAuthorRep) HasArtworks(ctx context.Context, authorID uuid.UUID) (bo
 	args := m.Called(ctx, authorID)
 	return args.Bool(0), args.Error(1)
 }
+
+func (m *MockAuthorRep) Close() {
+	m.Called()
+}

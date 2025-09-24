@@ -2,7 +2,6 @@ package e2eapi_test
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 
@@ -45,16 +44,12 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 	// var accessToken string
 	registerUserReqCreator := testobj.NewRegisterUserRequestMother()
 	registerReq := registerUserReqCreator.RegisterDefault()
-	fmt.Print(registerReq)
 	t.WithNewStep("Register new user", func(sCtx provider.StepCtx) {
 		resp, err := s.client.DoRequest("POST", "/auth-user/register", registerReq)
 		sCtx.Require().NoError(err)
-		// body, err := io.ReadAll(resp.Body)
-		// sCtx.Require().NoError(err)
-		// fmt.Print(body)
 		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
 	})
-	fmt.Print("---- 1 \n")
+
 	t.WithNewStep("Login new user", func(sCtx provider.StepCtx) {
 		loginReq := registerUserReqCreator.Login(registerReq.Login, registerReq.Password)
 		resp, err := s.client.DoRequest("POST", "/auth-user/login", loginReq)
@@ -67,7 +62,7 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 		sCtx.Require().NotEmpty(loginResp.AccessToken)
 		// accessToken := loginResp.AccessToken
 	})
-	fmt.Print("---- 2 \n")
+
 	eventCreator := testobj.NewEventMother()
 	events := []*models.Event{
 		eventCreator.EventP(uuid.New()),
@@ -90,10 +85,10 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 		sCtx.Require().NoError(err)
 		fixturesrep.AddTestEvents(t, ctx, events, eventRep, employeeRep, adminRep, artworkRep, authorRep, collectionRep)
 	})
-	fmt.Print("---- 3 \n")
+
 	t.WithNewStep("Search events", func(sCtx provider.StepCtx) {
 		resp, err := s.client.DoRequest("GET", "/museum/events", nil)
-		fmt.Print("---- 4 \n")
+
 		sCtx.Require().NoError(err)
 		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
 		var eventResp []jsonreqresp.EventResponse

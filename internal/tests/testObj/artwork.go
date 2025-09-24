@@ -8,6 +8,7 @@ import (
 
 type ArtworkMother interface {
 	ArtworkP(artworkID uuid.UUID) *models.Artwork
+	ArtworkWithAuthorP(artworkID uuid.UUID, author *models.Author) *models.Artwork
 	AddArtworkRequest(creationYear int, authorID uuid.UUID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest
 	ArtworkFilter() *jsonreqresp.ArtworkFilter
 	ArtworkSortOps() *jsonreqresp.ArtworkSortOps
@@ -31,6 +32,21 @@ func (um *artworkMother) ArtworkP(artworkID uuid.UUID) *models.Artwork {
 		"test-artwork-size",
 		1999,
 		authorCretor.AuthorBirthYearP(uuid.New(), 1999-5),
+		colsCreator.CollectionP(uuid.New()),
+	)
+	return &artwork
+}
+
+func (um *artworkMother) ArtworkWithAuthorP(artworkID uuid.UUID, author *models.Author) *models.Artwork {
+	colsCreator := NewCollectionMother()
+	artwork, _ := models.NewArtwork(
+		artworkID,
+		"test-artwork-title",
+		"test-artwork-technic",
+		"test-artwork-material",
+		"test-artwork-size",
+		author.GetBirthYear()+1,
+		author,
 		colsCreator.CollectionP(uuid.New()),
 	)
 	return &artwork
