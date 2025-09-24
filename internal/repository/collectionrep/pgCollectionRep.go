@@ -172,7 +172,7 @@ func (pg *PgCollectionRep) Update(
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEmployee, err := funcUpdate(col)
 	if err != nil {
-		return fmt.Errorf("pgCollectionRep.Update: %w", ErrUpdate)
+		return fmt.Errorf("pgCollectionRep.Update: %w (%w)", ErrUpdate, err)
 	}
 	query := psql.Update("Collection").
 		Set("title", updatedEmployee.GetTitle()).
