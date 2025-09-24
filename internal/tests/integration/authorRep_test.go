@@ -241,22 +241,22 @@ func (s *AuthorRepSuite) TestAuthorRep_HasArtworks(t provider.T) {
 		t.Require().True(hasArtworks)
 	})
 
-	// t.Run("Has artworks - false", func(t provider.T) {
-	// 	author := s.authorCreator.AuthorP(uuid.New())
-	// 	fixturesrep.AddTestAuthors(t, s.ctx, []*models.Author{author}, s.authorRep)
-	// 	defer fixturesrep.DelTestAuthors(t, s.ctx, []*models.Author{author}, s.authorRep)
+	t.Run("Has artworks - false", func(t provider.T) {
+		author := s.authorCreator.AuthorP(uuid.New())
+		fixturesrep.AddTestAuthors(t, s.ctx, []*models.Author{author}, s.authorRep)
+		defer fixturesrep.DelTestAuthors(t, s.ctx, []*models.Author{author}, s.authorRep)
 
-	// 	// ACT
-	// 	hasArtworks, err := s.authorRep.HasArtworks(s.ctx, author.GetID())
+		// ACT
+		hasArtworks, err := s.authorRep.HasArtworks(s.ctx, author.GetID())
 
-	// 	t.Require().NoError(err)
-	// 	t.Require().False(hasArtworks)
-	// })
+		t.Require().NoError(err)
+		t.Require().False(hasArtworks)
+	})
 
-	// t.Run("Author not found", func(t provider.T) {
-	// 	// ACT
-	// 	_, err := s.authorRep.HasArtworks(s.ctx, uuid.New())
+	t.Run("Author not found", func(t provider.T) {
+		// ACT
+		_, err := s.authorRep.HasArtworks(s.ctx, uuid.New())
 
-	// 	t.Require().ErrorIs(err, authorrep.ErrAuthorNotFound)
-	// })
+		t.Require().ErrorIs(err, authorrep.ErrAuthorNotFound)
+	})
 }

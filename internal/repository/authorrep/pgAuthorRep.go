@@ -203,6 +203,10 @@ func (pg *PgAuthorRep) Update(
 }
 
 func (pg *PgAuthorRep) HasArtworks(ctx context.Context, authorID uuid.UUID) (bool, error) {
+	_, err := pg.GetByID(ctx, authorID)
+	if err != nil {
+		return false, fmt.Errorf("PgAuthorRep.HasArtworks %w", err)
+	}
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("1").
 		From("artworks").
