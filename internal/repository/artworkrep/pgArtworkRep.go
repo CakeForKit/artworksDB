@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -21,11 +20,6 @@ type PgArtworkRep struct {
 }
 
 var (
-	pgInstance *PgArtworkRep
-	pgOnce     sync.Once
-)
-
-var (
 	ErrOpenConnect        = errors.New("open connect failed")
 	ErrPing               = errors.New("ping failed")
 	ErrQueryBuilds        = errors.New("query build failed")
@@ -35,33 +29,22 @@ var (
 )
 
 func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgArtworkRep, error) {
-	var resErr error
-	pgOnce.Do(func() {
-		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
-		db, err := sql.Open("pgx", connStr)
-		if err != nil {
-			resErr = fmt.Errorf("NewPgArtworkRep: %w: %v", ErrOpenConnect, err)
-			return
-		}
-		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("NewPgArtworkRep: %w: %v", ErrPing, err)
-			db.Close()
-			return
-		}
-		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxOpenConns)
-		db.SetMaxIdleConns(dbConf.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
-
-		pgInstance = &PgArtworkRep{db: db}
-	})
-	if resErr != nil {
-		return nil, resErr
+	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("NewPgArtworkRep: %w: %v", ErrOpenConnect, err)
 	}
-
-	return pgInstance, nil
+	if err := db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("NewPgArtworkRep: %w: %v", ErrPing, err)
+	}
+	// Настраиваем пул соединений
+	db.SetMaxOpenConns(dbConf.MaxOpenConns)
+	db.SetMaxIdleConns(dbConf.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
+	return &PgArtworkRep{db: db}, nil
 }
 
 func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, error) {

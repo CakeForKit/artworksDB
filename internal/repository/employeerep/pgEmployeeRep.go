@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -20,11 +19,6 @@ type PgEmployeeRep struct {
 }
 
 var (
-	pgInstance *PgEmployeeRep
-	pgOnce     sync.Once
-)
-
-var (
 	ErrPgEmployeeRep       = errors.New("PgEmployeeRep.Update")
 	ErrOpenConnect         = errors.New("open connect failed")
 	ErrPing                = errors.New("ping failed")
@@ -35,33 +29,23 @@ var (
 )
 
 func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgEmployeeRep, error) {
-	var resErr error
-	pgOnce.Do(func() {
-		// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
-		db, err := sql.Open("pgx", connStr)
-		if err != nil {
-			resErr = fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrOpenConnect, err)
-			return
-		}
-		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrPing, err)
-			db.Close()
-			return
-		}
-		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxOpenConns)
-		db.SetMaxIdleConns(dbConf.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
-
-		pgInstance = &PgEmployeeRep{db: db}
-	})
-	if resErr != nil {
-		return nil, resErr
+	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrOpenConnect, err)
 	}
+	if err := db.PingContext(ctx); err != nil {
 
-	return pgInstance, nil
+		db.Close()
+		return nil, fmt.Errorf("NewPgEmployeeRep: %w: %v", ErrPing, err)
+	}
+	// Настраиваем пул соединений
+	db.SetMaxOpenConns(dbConf.MaxOpenConns)
+	db.SetMaxIdleConns(dbConf.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
+	return &PgEmployeeRep{db: db}, nil
 }
 
 func (pg *PgEmployeeRep) parseEmployeesRows(rows *sql.Rows) ([]*models.Employee, error) {

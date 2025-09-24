@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -20,11 +19,6 @@ type PgAuthorRep struct {
 }
 
 var (
-	pgInstance *PgAuthorRep
-	pgOnce     sync.Once
-)
-
-var (
 	ErrOpenConnect       = errors.New("open connect failed")
 	ErrPing              = errors.New("ping failed")
 	ErrQueryBuilds       = errors.New("query build failed")
@@ -34,32 +28,23 @@ var (
 )
 
 func NewPgAuthorRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgAuthorRep, error) {
-	var resErr error
-	pgOnce.Do(func() {
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
-		db, err := sql.Open("pgx", connStr)
-		if err != nil {
-			resErr = fmt.Errorf("NewPgAuthorRep: %w: %w", ErrOpenConnect, err)
-			return
-		}
-		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("NewPgAuthorRep: %w: %w", ErrPing, err)
-			db.Close()
-			return
-		}
-		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxOpenConns)
-		db.SetMaxIdleConns(dbConf.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-		pgInstance = &PgAuthorRep{db: db}
-	})
-	if resErr != nil {
-		return nil, resErr
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("NewPgAuthorRep: %w: %w", ErrOpenConnect, err)
 	}
+	if err := db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("NewPgAuthorRep: %w: %w", ErrPing, err)
+	}
+	// Настраиваем пул соединений
+	db.SetMaxOpenConns(dbConf.MaxOpenConns)
+	db.SetMaxIdleConns(dbConf.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-	return pgInstance, nil
+	return &PgAuthorRep{db: db}, nil
 }
 
 func (pg *PgAuthorRep) parseAuthorsRows(rows *sql.Rows) ([]*models.Author, error) {

@@ -3,7 +3,6 @@ package buyticketstxrep
 import (
 	"context"
 	"fmt"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -16,35 +15,22 @@ type RedisBuyTicketsTxRep struct {
 	rdb *redis.Client
 }
 
-var (
-	repInstance *RedisBuyTicketsTxRep
-	repOnce     sync.Once
-)
-
 func NewRedisBuyTicketsTxRep(
 	ctx context.Context,
 	redisCreds *cnfg.RedisCredentials,
 ) (*RedisBuyTicketsTxRep, error) {
-	var resErr error = nil
-	repOnce.Do(func() {
-		rdb := redis.NewClient(&redis.Options{
-			Addr:     fmt.Sprintf("%s:%d", redisCreds.Host, redisCreds.Port),
-			Password: redisCreds.Password,
-			Username: redisCreds.Username,
-			DB:       0,
-		})
-		if err := rdb.Ping(ctx).Err(); err != nil {
-			resErr = fmt.Errorf("failed to connect to redis server: %v", err)
-			return
-		}
-		repInstance = &RedisBuyTicketsTxRep{rdb: rdb}
-	})
 
-	if resErr != nil {
-		return nil, resErr
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     fmt.Sprintf("%s:%d", redisCreds.Host, redisCreds.Port),
+		Password: redisCreds.Password,
+		Username: redisCreds.Username,
+		DB:       0,
+	})
+	if err := rdb.Ping(ctx).Err(); err != nil {
+		return nil, fmt.Errorf("failed to connect to redis server: %v", err)
 	}
 
-	return repInstance, nil
+	return &RedisBuyTicketsTxRep{rdb: rdb}, nil
 }
 
 func (r *RedisBuyTicketsTxRep) GetByID(ctx context.Context, txID uuid.UUID) (*models.TicketPurchaseTx, error) {

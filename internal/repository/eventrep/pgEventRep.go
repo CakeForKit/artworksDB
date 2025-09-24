@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strconv"
-	"sync"
 	"time"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
@@ -22,11 +21,6 @@ type PgEventRep struct {
 }
 
 var (
-	pgInstance *PgEventRep
-	pgOnce     sync.Once
-)
-
-var (
 	ErrOpenConnect      = errors.New("open connect failed")
 	ErrPing             = errors.New("ping failed")
 	ErrQueryBuilds      = errors.New("query build failed")
@@ -36,33 +30,23 @@ var (
 )
 
 func NewPgEventRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgEventRep, error) {
-	var resErr error
-	pgOnce.Do(func() {
-		// connStr := "postgres://puser:ppassword@postgres_Events:5432/Events"
-		connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
-			pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
-		db, err := sql.Open("pgx", connStr)
-		if err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrOpenConnect, err)
-			return
-		}
-		if err := db.PingContext(ctx); err != nil {
-			resErr = fmt.Errorf("%w: %v", ErrPing, err)
-			db.Close()
-			return
-		}
-		// Настраиваем пул соединений
-		db.SetMaxOpenConns(dbConf.MaxOpenConns)
-		db.SetMaxIdleConns(dbConf.MaxIdleConns)
-		db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
-
-		pgInstance = &PgEventRep{db: db}
-	})
-	if resErr != nil {
-		return nil, resErr
+	// connStr := "postgres://puser:ppassword@postgres_Events:5432/Events"
+	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
+		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
+	db, err := sql.Open("pgx", connStr)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrOpenConnect, err)
 	}
+	if err := db.PingContext(ctx); err != nil {
+		db.Close()
+		return nil, fmt.Errorf("%w: %v", ErrPing, err)
+	}
+	// Настраиваем пул соединений
+	db.SetMaxOpenConns(dbConf.MaxOpenConns)
+	db.SetMaxIdleConns(dbConf.MaxIdleConns)
+	db.SetConnMaxLifetime(time.Duration(dbConf.ConnMaxLifetime.Hours()))
 
-	return pgInstance, nil
+	return &PgEventRep{db: db}, nil
 }
 
 func (pg *PgEventRep) parseEventsRows(rows *sql.Rows) ([]*models.Event, error) {
