@@ -36,7 +36,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetAllArtworks(t provider.T) {
 			artworkCreator.ArtworkP(uuid.New()),
 			artworkCreator.ArtworkP(uuid.New()),
 		}
-		artworkFilter := artworkCreator.ArtworkFilter()
+		artworkFilter := artworkCreator.ArtworkFilterEmpty()
 		artworkSortOps := artworkCreator.ArtworkSortOps()
 
 		mockArtworkRep := new(artworkrep.MockArtworkRep)
@@ -65,7 +65,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetAllArtworks(t provider.T) {
 	t.WithNewStep("success return 0 artworks", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworks := []*models.Artwork{}
-		artworkFilter := artworkCreator.ArtworkFilter()
+		artworkFilter := artworkCreator.ArtworkFilterEmpty()
 		artworkSortOps := artworkCreator.ArtworkSortOps()
 
 		mockArtworkRep := new(artworkrep.MockArtworkRep)
@@ -89,7 +89,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetAllArtworks(t provider.T) {
 	t.WithNewStep("error in artwork rep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		artworks := []*models.Artwork{}
-		artworkFilter := artworkCreator.ArtworkFilter()
+		artworkFilter := artworkCreator.ArtworkFilterEmpty()
 		artworkSortOps := artworkCreator.ArtworkSortOps()
 		expectedErr := errors.New("artwork rep error")
 

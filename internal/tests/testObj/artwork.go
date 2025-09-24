@@ -10,7 +10,7 @@ type ArtworkMother interface {
 	ArtworkP(artworkID uuid.UUID) *models.Artwork
 	ArtworkWithAuthorP(artworkID uuid.UUID, author *models.Author) *models.Artwork
 	AddArtworkRequest(creationYear int, authorID uuid.UUID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest
-	ArtworkFilter() *jsonreqresp.ArtworkFilter
+	ArtworkFilterEmpty() *jsonreqresp.ArtworkFilter
 	ArtworkSortOps() *jsonreqresp.ArtworkSortOps
 }
 
@@ -64,12 +64,12 @@ func (um *artworkMother) AddArtworkRequest(creationYear int, authorID uuid.UUID,
 	}
 }
 
-func (um *artworkMother) ArtworkFilter() *jsonreqresp.ArtworkFilter {
+func (um *artworkMother) ArtworkFilterEmpty() *jsonreqresp.ArtworkFilter {
 	return &jsonreqresp.ArtworkFilter{
-		Title:      "test-artwork-title",
-		AuthorName: "test-artwork-author",
-		Collection: "test-artwork-collection",
-		EventID:    uuid.New(),
+		Title:      "",
+		AuthorName: "",
+		Collection: "",
+		EventID:    uuid.Nil,
 	}
 }
 

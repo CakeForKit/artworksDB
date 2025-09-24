@@ -34,11 +34,11 @@ func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbC
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("NewPgArtworkRep: %w: %v", ErrOpenConnect, err)
+		return nil, fmt.Errorf("NewPgArtworkRep: %w: %w", ErrOpenConnect, err)
 	}
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("NewPgArtworkRep: %w: %v", ErrPing, err)
+		return nil, fmt.Errorf("NewPgArtworkRep: %w: %w", ErrPing, err)
 	}
 	// Настраиваем пул соединений
 	db.SetMaxOpenConns(dbConf.MaxOpenConns)
@@ -57,7 +57,7 @@ func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, er
 		if err := rows.Scan(&id, &title, &technic, &material, &size, &creationYear,
 			&authorID, &authorName, &authorBirthYear, &authorDeathYear,
 			&collectionID, &collectionTitle); err != nil {
-			return nil, fmt.Errorf("parseArtworksRows: scan error: %v", err)
+			return nil, fmt.Errorf("parseArtworksRows: scan error: %w", err)
 		}
 		deathYear := 0
 		if authorDeathYear.Valid {
@@ -65,20 +65,20 @@ func (pg *PgArtworkRep) parseArtworksRows(rows *sql.Rows) ([]*models.Artwork, er
 		}
 		author, err := models.NewAuthor(authorID, authorName, authorBirthYear, deathYear)
 		if err != nil {
-			return nil, fmt.Errorf("parseArtworksRows: %v", err)
+			return nil, fmt.Errorf("parseArtworksRows: %w", err)
 		}
 		collection, err := models.NewCollection(collectionID, collectionTitle)
 		if err != nil {
-			return nil, fmt.Errorf("parseArtworksRows: %v", err)
+			return nil, fmt.Errorf("parseArtworksRows: %w", err)
 		}
 		user, err := models.NewArtwork(id, title, technic, material, size, creationYear, &author, &collection)
 		if err != nil {
-			return nil, fmt.Errorf("parseArtworksRows: %w: %v", models.ErrValidateArtwork, err)
+			return nil, fmt.Errorf("parseArtworksRows: %w: %w", models.ErrValidateArtwork, err)
 		}
 		resArtworks = append(resArtworks, &user)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("parseArtworksRows: rows iteration error: %v", err)
+		return nil, fmt.Errorf("parseArtworksRows: rows iteration error: %w", err)
 	}
 	return resArtworks, nil
 }
@@ -118,12 +118,12 @@ func (pg *PgArtworkRep) addSortParams(query sq.SelectBuilder, sortOps *jsonreqre
 func (pg *PgArtworkRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Artwork, error) {
 	querySQL, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
@@ -183,16 +183,16 @@ func (pg *PgArtworkRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Artw
 func (pg *PgArtworkRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
 	querySQL, args, err := query.ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("%w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("%w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("%w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("%w: no artowrk added", ErrRowsAffected)
@@ -236,7 +236,7 @@ func (pg *PgArtworkRep) Update(ctx context.Context,
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedArtwork, err := funcUpdate(art)
 	if err != nil {
-		return fmt.Errorf("PgArtworkRep.Update: %w", ErrUpdateArtwork)
+		return fmt.Errorf("PgArtworkRep.Update: %w (%w)", ErrUpdateArtwork, err)
 	}
 	query := psql.Update("Artworks").
 		Set("title", updatedArtwork.GetTitle()).
