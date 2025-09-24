@@ -60,6 +60,22 @@ func (e *Employee) validate() error {
 	return nil
 }
 
+func (u *Employee) Equal(other *Employee) bool {
+	if u == nil && other == nil {
+		return true
+	}
+	if u == nil || other == nil {
+		return false
+	}
+
+	return u.id == other.id &&
+		u.username == other.username &&
+		u.login == other.login &&
+		u.hashedPassword == other.hashedPassword &&
+		u.valid == other.valid &&
+		u.adminID == other.adminID
+}
+
 func (e *Employee) GetID() uuid.UUID {
 	return e.id
 }

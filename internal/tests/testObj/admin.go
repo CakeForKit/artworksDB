@@ -23,8 +23,8 @@ func (um *adminMother) DefaultAdmin(adminID uuid.UUID) models.Admin {
 	admin, _ := models.NewAdmin(
 		adminID,
 		"test-admin",
-		"test-login"+uuid.NewString(),
-		"hashed-password"+uuid.NewString(),
+		"test-login"+adminID.String(),
+		"hashed-password"+adminID.String(),
 		time.Now(),
 		true,
 	)
@@ -40,8 +40,8 @@ func (um *adminMother) AdminWithPswdHash(adminID uuid.UUID, hashedPassword strin
 	admin, _ := models.NewAdmin(
 		adminID,
 		"test-admin",
-		"test-login"+uuid.NewString(),
-		"hashed-password"+uuid.NewString(),
+		"test-login"+adminID.String(),
+		"hashed-password"+adminID.String(),
 		time.Now(),
 		true,
 	)

@@ -16,6 +16,19 @@ import (
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
 
+func getEmployeesOfEvents(events []*models.Event) (employees []*models.Employee) {
+	employeeCreator := testobj.NewEmployeeMother()
+	employeesMap := make(map[uuid.UUID]*models.Employee, 0)
+	for _, v := range events {
+		if _, ok := employeesMap[v.GetEmployeeID()]; !ok {
+			empl := employeeCreator.DefaultEmployeeP(v.GetEmployeeID(), uuid.New())
+			employees = append(employees, empl)
+			employeesMap[v.GetEmployeeID()] = empl
+		}
+	}
+	return
+}
+
 func AddTestEvents(
 	t provider.T, ctx context.Context, events []*models.Event,
 	eventRep eventrep.EventRep,
@@ -25,23 +38,10 @@ func AddTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	adminCreator := testobj.NewAdminMother()
-	admin := adminCreator.DefaultAdmin(uuid.New())
-	AddTestAdmin(t, ctx, adminRep, []*models.Admin{&admin})
+	employees := getEmployeesOfEvents(events)
+	AddTestEmployees(t, ctx, employees, employeeRep, adminRep)
 
-	t.WithNewStep("Add Test Employees for Events", func(sCtx provider.StepCtx) {
-		employees := make(map[uuid.UUID]*models.Employee, 0)
-		employeeCreator := testobj.NewEmployeeMother()
-		for _, e := range events {
-			if _, ok := employees[e.GetEmployeeID()]; !ok {
-				empl := employeeCreator.DefaultEmployeeP(e.GetEmployeeID(), admin.GetID())
-				err := employeeRep.Add(ctx, empl)
-				sCtx.Require().NoError(err)
-			}
-		}
-	})
-
-	t.WithNewStep("Add Test Artowrks for Events", func(sCtx provider.StepCtx) {
+	t.WithNewStep("Add Test Artworks for Events", func(sCtx provider.StepCtx) {
 		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
 		artworks := make([]*models.Artwork, 0)
 		artworkCreator := testobj.NewArtworkMother()
@@ -76,35 +76,7 @@ func DelTestEvent(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	admins := make(map[uuid.UUID]*models.Admin, 0)
-	employees := make(map[uuid.UUID]*models.Employee, 0)
-
-	t.WithNewStep("Search to delete Test Employees", func(sCtx provider.StepCtx) {
-		for _, e := range events {
-			if _, ok := employees[e.GetEmployeeID()]; !ok {
-				empl, err := employeeRep.GetByID(ctx, e.GetEmployeeID())
-				if err == nil {
-					employees[empl.GetID()] = empl
-				} else {
-					sCtx.Assert().ErrorIs(err, employeerep.ErrEmployeeNotFound)
-				}
-			}
-		}
-	})
-	t.WithNewStep("Search to delete Test Admins", func(sCtx provider.StepCtx) {
-		for _, e := range employees {
-			if _, ok := admins[e.GetAdminID()]; !ok {
-				adm, err := adminRep.GetByID(ctx, e.GetAdminID())
-				if err == nil {
-					admins[adm.GetID()] = adm
-				} else {
-					sCtx.Assert().ErrorIs(err, adminrep.ErrAdminNotFound)
-				}
-			}
-		}
-	})
-
-	t.WithNewStep("Delete Test Artowrks for Events", func(sCtx provider.StepCtx) {
+	t.WithNewStep("Delete Test Artworks for Events", func(sCtx provider.StepCtx) {
 		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
 		artworks := make([]*models.Artwork, 0)
 		artworkCreator := testobj.NewArtworkMother()
@@ -126,17 +98,8 @@ func DelTestEvent(
 			sCtx.Assert().NoError(err)
 		}
 	})
-	emplToDel := make([]*models.Employee, 0)
-	for _, v := range employees {
-		emplToDel = append(emplToDel, v)
-	}
-	DelTestEmployee(t, ctx, employeeRep, emplToDel)
-
-	adminToDel := make([]*models.Admin, 0)
-	for _, v := range admins {
-		adminToDel = append(adminToDel, v)
-	}
-	DelTestAdmin(t, ctx, adminRep, adminToDel)
+	employees := getEmployeesOfEvents(events)
+	DelTestEmployees(t, ctx, employees, employeeRep, adminRep)
 }
 
 func AssertEventResponsesAreInRes(t provider.T, eventResp, expectedEventResp []jsonreqresp.EventResponse) {

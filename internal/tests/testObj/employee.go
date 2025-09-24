@@ -11,6 +11,7 @@ type EmployeeMother interface {
 	DefaultEmployee(employeeID uuid.UUID, adminID uuid.UUID) models.Employee
 	EmployeeWithPswdHash(employeeID uuid.UUID, adminID uuid.UUID, hashedPassword string) models.Employee
 	DefaultEmployeeP(employeeID uuid.UUID, adminID uuid.UUID) *models.Employee
+	EmployeeWithLoginP(employeeID uuid.UUID, adminID uuid.UUID, login string) *models.Employee
 }
 
 func NewEmployeeMother() EmployeeMother {
@@ -23,7 +24,7 @@ func (um *employeeMother) DefaultEmployee(employeeID uuid.UUID, adminID uuid.UUI
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login"+uuid.NewString(),
+		"test-login"+employeeID.String(),
 		"hashed-password",
 		time.Now(),
 		true,
@@ -36,7 +37,7 @@ func (um *employeeMother) EmployeeWithPswdHash(employeeID uuid.UUID, adminID uui
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login"+uuid.NewString(),
+		"test-login"+employeeID.String(),
 		hashedPassword,
 		time.Now(),
 		true,
@@ -44,11 +45,25 @@ func (um *employeeMother) EmployeeWithPswdHash(employeeID uuid.UUID, adminID uui
 	)
 	return employee
 }
+
 func (um *employeeMother) DefaultEmployeeP(employeeID uuid.UUID, adminID uuid.UUID) *models.Employee {
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",
-		"test-login"+uuid.NewString(),
+		"test-login"+employeeID.String(),
+		"hashedpassword",
+		time.Now(),
+		true,
+		adminID,
+	)
+	return &employee
+}
+
+func (um *employeeMother) EmployeeWithLoginP(employeeID uuid.UUID, adminID uuid.UUID, login string) *models.Employee {
+	employee, _ := models.NewEmployee(
+		employeeID,
+		"test-employee",
+		login,
 		"hashedpassword",
 		time.Now(),
 		true,
