@@ -58,27 +58,6 @@ func (s *ArtworkRepSuite) AfterAll(t provider.T) {
 	}
 }
 
-/*
-func (s *ArtworkRepSuite) TestArtworkRep_GetAll(t provider.T) {
-	t.Parallel()
-	t.Run("Success", func(t provider.T) {
-		artworks := []*models.Artwork{
-			s.artworkCreator.ArtworkP(uuid.New()),
-			s.artworkCreator.ArtworkP(uuid.New()),
-		}
-		fixturesrep.AddTestArtworks(t, s.ctx, artworks, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, artworks, s.artworkRep, s.authorRep, s.collectionRep)
-		filterOps := s.artworkCreator.ArtworkFilterEmpty()
-		sortOps := s.artworkCreator.ArtworkSortOps()
-		// ACT
-		resArtworks, err := s.artworkRep.GetAllArtworks(s.ctx, filterOps, sortOps)
-
-		t.Require().NoError(err)
-		fixturesrep.AssertArtworksAreInRes(t, artworks, resArtworks)
-	})
-}
-*/
-
 func (s *ArtworkRepSuite) TestArtworkRep_GetAllArtworks(t provider.T) {
 	t.Parallel()
 

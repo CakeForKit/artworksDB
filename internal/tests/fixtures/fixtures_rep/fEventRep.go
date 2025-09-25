@@ -2,6 +2,7 @@ package fixturesrep
 
 import (
 	"context"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -16,14 +17,26 @@ import (
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
 
-func getEmployeesOfEvents(events []*models.Event) (employees []*models.Employee) {
-	employeeCreator := testobj.NewEmployeeMother()
-	employeesMap := make(map[uuid.UUID]*models.Employee, 0)
+func getEmployeeIDsOfEvents(events []*models.Event) (employeeIDs uuid.UUIDs) {
+	employeesMap := make(map[uuid.UUID]bool, 0)
 	for _, v := range events {
-		if _, ok := employeesMap[v.GetEmployeeID()]; !ok {
-			empl := employeeCreator.DefaultEmployeeP(v.GetEmployeeID(), uuid.New())
-			employees = append(employees, empl)
-			employeesMap[v.GetEmployeeID()] = empl
+		id := v.GetEmployeeID()
+		if _, ok := employeesMap[id]; !ok {
+			employeesMap[id] = true
+			employeeIDs = append(employeeIDs, id)
+		}
+	}
+	return
+}
+
+func getArtworkIDsOfEvents(events []*models.Event) (artworkIDS uuid.UUIDs) {
+	artworksMap := make(map[uuid.UUID]bool, 0)
+	for _, e := range events {
+		for _, ids := range e.GetArtworkIDs() {
+			if _, ok := artworksMap[ids]; !ok {
+				artworksMap[ids] = true
+				artworkIDS = append(artworkIDS, ids)
+			}
 		}
 	}
 	return
@@ -38,21 +51,30 @@ func AddTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	employees := getEmployeesOfEvents(events)
-	AddTestEmployees(t, ctx, employees, employeeRep, adminRep)
+	fmt.Printf("AddTestEvents:\n")
+	fmt.Println("Events:")
+	for _, v := range events {
+		fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
+	}
+	fmt.Print("\n\n")
 
-	t.WithNewStep("Add Test Artworks for Events", func(sCtx provider.StepCtx) {
-		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
-		artworks := make([]*models.Artwork, 0)
+	t.WithNewStep("Add Test Employees", func(sCtx provider.StepCtx) {
+		adminID := uuid.New()
+		employeeIDs := getEmployeeIDsOfEvents(events)
+		employeeCreator := testobj.NewEmployeeMother()
+		employees := make([]*models.Employee, 0, len(employeeIDs))
+		for _, id := range employeeIDs {
+			employees = append(employees, employeeCreator.DefaultEmployeeP(id, adminID))
+		}
+		AddTestEmployees(t, ctx, employees, employeeRep, adminRep)
+	})
+
+	t.WithNewStep("Add Test Artworks", func(sCtx provider.StepCtx) {
+		artworkIDs := getArtworkIDsOfEvents(events)
 		artworkCreator := testobj.NewArtworkMother()
-		for _, e := range events {
-			for _, ids := range e.GetArtworkIDs() {
-				if _, ok := artworksMap[ids]; !ok {
-					a := artworkCreator.ArtworkP(ids)
-					artworksMap[ids] = a
-					artworks = append(artworks, a)
-				}
-			}
+		artworks := make([]*models.Artwork, 0, len(artworkIDs))
+		for _, id := range artworkIDs {
+			artworks = append(artworks, artworkCreator.ArtworkP(id))
 		}
 		AddTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
 	})
@@ -67,7 +89,7 @@ func AddTestEvents(
 	})
 }
 
-func DelTestEvent(
+func DelTestEvents(
 	t provider.T, ctx context.Context, events []*models.Event,
 	eventRep eventrep.EventRep,
 	employeeRep employeerep.EmployeeRep,
@@ -76,30 +98,47 @@ func DelTestEvent(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	t.WithNewStep("Delete Test Artworks for Events", func(sCtx provider.StepCtx) {
-		artworksMap := make(map[uuid.UUID]*models.Artwork, 0)
-		artworks := make([]*models.Artwork, 0)
-		artworkCreator := testobj.NewArtworkMother()
+	fmt.Printf("DelTestEvents:\n")
+	fmt.Println("Events:")
+	for _, v := range events {
+		fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
+	}
+	fmt.Print("\n\n")
+	t.WithNewStep("Delete artwork-event relationships", func(sCtx provider.StepCtx) {
 		for _, e := range events {
-			for _, ids := range e.GetArtworkIDs() {
-				if _, ok := artworksMap[ids]; !ok {
-					a := artworkCreator.ArtworkP(ids)
-					artworksMap[ids] = a
-					artworks = append(artworks, a)
-				}
+			artworkIDs := e.GetArtworkIDs()
+			for _, v := range artworkIDs {
+				err := eventRep.DeleteArtworkFromEvent(ctx, e.GetID(), v)
+				sCtx.Assert().NoError(err)
 			}
 		}
-		DelTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
 	})
-
 	t.WithNewStep("Delete Test Events", func(sCtx provider.StepCtx) {
 		for _, u := range events {
 			err := eventRep.Delete(ctx, u.GetID())
 			sCtx.Assert().NoError(err)
 		}
 	})
-	employees := getEmployeesOfEvents(events)
-	DelTestEmployees(t, ctx, employees, employeeRep, adminRep)
+	t.WithNewStep("Delete Test Artworks", func(sCtx provider.StepCtx) {
+		artworkIDs := getArtworkIDsOfEvents(events)
+		artworks := make([]*models.Artwork, 0, len(artworkIDs))
+		for _, id := range artworkIDs {
+			a, err := artworkRep.GetByID(ctx, id)
+			sCtx.Assert().NoError(err)
+			artworks = append(artworks, a)
+		}
+		DelTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
+	})
+	t.WithNewStep("Delete Test Employees", func(sCtx provider.StepCtx) {
+		employeeIDs := getEmployeeIDsOfEvents(events)
+		employees := make([]*models.Employee, 0, len(employeeIDs))
+		for _, id := range employeeIDs {
+			a, err := employeeRep.GetByID(ctx, id)
+			sCtx.Assert().NoError(err)
+			employees = append(employees, a)
+		}
+		DelTestEmployees(t, ctx, employees, employeeRep, adminRep)
+	})
 }
 
 func AssertEventResponsesAreInRes(t provider.T, eventResp, expectedEventResp []jsonreqresp.EventResponse) {
@@ -108,6 +147,22 @@ func AssertEventResponsesAreInRes(t provider.T, eventResp, expectedEventResp []j
 		for i, ru := range expectedEventResp {
 			for _, u := range eventResp {
 				if ru.Equal(&u) {
+					foundAll[i] = true
+				}
+			}
+		}
+		for _, v := range foundAll {
+			sCtx.Assert().True(v)
+		}
+	})
+}
+
+func AssertEventsAreInRes(t provider.T, events, resEvents []*models.Event) {
+	t.WithNewStep("Check events sre in the result", func(sCtx provider.StepCtx) {
+		foundAll := make([]bool, len(events))
+		for _, ru := range resEvents {
+			for i, u := range events {
+				if ru.Equals(u) {
 					foundAll[i] = true
 				}
 			}

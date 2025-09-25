@@ -1,10 +1,10 @@
 #!/bin/bash
 
-# ALLURE_LAUNCH_START=$(date +%s000) \
-# ALLURE_LAUNCH_END=$(date +%s000) \
-# ALLURE_LAUNCH_NAME="unit-test-$(shell date +%Y%m%d-%H%M%S)" \
-# go test -v -run "TestUserRepSuite/UserRepSuite/" git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration/...;
-# exit 0
+ALLURE_LAUNCH_START=$(date +%s000) \
+ALLURE_LAUNCH_END=$(date +%s000) \
+ALLURE_LAUNCH_NAME="unit-test-$(shell date +%Y%m%d-%H%M%S)" \
+go test -v -run "TestEventRepSuite/EventRepSuite/" git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration/...;
+exit 0
 
 ALLURE_LAUNCH_START=$(date +%s000) \
 ALLURE_LAUNCH_END=$(date +%s000) \

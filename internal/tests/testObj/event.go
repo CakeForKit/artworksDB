@@ -13,6 +13,7 @@ type EventMother interface {
 	EventCntTicketsP(eventID uuid.UUID, cntTickets int) *models.Event
 	EventAdd(employeeID uuid.UUID) *jsonreqresp.EventAdd
 	StatCollectionsP() *models.StatCollections
+	EventFilterEmpty() *jsonreqresp.EventFilter
 }
 
 func NewEventMother() EventMother {
@@ -33,7 +34,7 @@ func (um *eventMother) EventP(eventID uuid.UUID) *models.Event {
 		uuid.New(),
 		100,
 		true,
-		uuid.UUIDs{uuid.New(), uuid.New(), uuid.New()},
+		uuid.UUIDs{uuid.New()}, //, uuid.New(), uuid.New()},
 	)
 	return &event
 }
@@ -74,4 +75,14 @@ func (um *eventMother) StatCollectionsP() *models.StatCollections {
 		10,
 	)
 	return &st
+}
+
+func (um *eventMother) EventFilterEmpty() *jsonreqresp.EventFilter {
+	return &jsonreqresp.EventFilter{
+		Title:     "",
+		DateBegin: time.Time{},
+		DateEnd:   time.Time{},
+		CanVisit:  "",
+		Valid:     "",
+	}
 }

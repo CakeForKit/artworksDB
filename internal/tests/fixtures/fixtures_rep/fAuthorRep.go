@@ -12,6 +12,13 @@ func AddTestAuthors(
 	t provider.T, ctx context.Context, authors []*models.Author,
 	authorRep authorrep.AuthorRep,
 ) {
+	// fmt.Println("AddTestAuthors:")
+	// fmt.Println("authors:")
+	// for _, v := range authors {
+	// 	fmt.Println(v)
+	// }
+	// fmt.Print("\n\n")
+
 	t.WithNewStep("Add Test Authors", func(sCtx provider.StepCtx) {
 		for _, u := range authors {
 			err := authorRep.Add(ctx, u)
@@ -24,6 +31,12 @@ func DelTestAuthors(
 	t provider.T, ctx context.Context, authors []*models.Author,
 	authorRep authorrep.AuthorRep,
 ) {
+	// fmt.Println("DelTestAuthors:")
+	// fmt.Println("authors:")
+	// for _, v := range authors {
+	// 	fmt.Println(v)
+	// }
+	// fmt.Print("\n\n")
 	t.WithNewStep("Del Test Authors", func(sCtx provider.StepCtx) {
 		for _, u := range authors {
 			err := authorRep.Delete(ctx, u.GetID())

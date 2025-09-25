@@ -389,7 +389,7 @@ func (ch *CHEventRep) Add(ctx context.Context, e *models.Event) error {
 	return nil
 }
 
-func (ch *CHEventRep) Delete(ctx context.Context, id uuid.UUID) error {
+func (ch *CHEventRep) SetNotValid(ctx context.Context, id uuid.UUID) error {
 	query := "ALTER TABLE Events UPDATE valid = 0 WHERE id = ?"
 	err := ch.execChangeQuery(ctx, query, id)
 	if err != nil {
@@ -398,7 +398,7 @@ func (ch *CHEventRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (ch *CHEventRep) RealDelete(ctx context.Context, id uuid.UUID) error {
+func (ch *CHEventRep) Delete(ctx context.Context, id uuid.UUID) error {
 	query := "ALTER TABLE Events DELETE WHERE id = ?"
 	err := ch.execChangeQuery(ctx, query, id)
 	if err != nil {

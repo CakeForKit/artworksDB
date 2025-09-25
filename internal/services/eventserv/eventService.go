@@ -107,7 +107,7 @@ func (e *eventService) Add(ctx context.Context, eventReq *jsonreqresp.EventAdd) 
 }
 
 func (e *eventService) Delete(ctx context.Context, id uuid.UUID) error {
-	return e.eventRep.Delete(ctx, id)
+	return e.eventRep.SetNotValid(ctx, id)
 }
 
 func (e *eventService) Update(ctx context.Context, eventID uuid.UUID, updateFields *jsonreqresp.EventUpdate) error {

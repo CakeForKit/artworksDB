@@ -65,12 +65,12 @@ func (m *MockEventRep) Add(ctx context.Context, e *models.Event) error {
 	return args.Error(0)
 }
 
-func (m *MockEventRep) Delete(ctx context.Context, eventID uuid.UUID) error {
+func (m *MockEventRep) SetNotValid(ctx context.Context, eventID uuid.UUID) error {
 	args := m.Called(ctx, eventID)
 	return args.Error(0)
 }
 
-func (m *MockEventRep) RealDelete(ctx context.Context, eventID uuid.UUID) error {
+func (m *MockEventRep) Delete(ctx context.Context, eventID uuid.UUID) error {
 	args := m.Called(ctx, eventID)
 	return args.Error(0)
 }

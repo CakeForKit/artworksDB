@@ -140,7 +140,7 @@ func (th *testHelper) createAndAddEvent(t *testing.T, num int) *models.Event {
 func (th *testHelper) deleteEvent(t *testing.T, events []*models.Event) {
 	ctx := context.Background()
 	for _, event := range events {
-		err := th.erep.RealDelete(ctx, event.GetID())
+		err := th.erep.Delete(ctx, event.GetID())
 		require.NoError(t, err)
 	}
 }

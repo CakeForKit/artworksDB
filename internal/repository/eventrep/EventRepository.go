@@ -29,8 +29,8 @@ type EventRep interface {
 	CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool, error)
 	//
 	Add(ctx context.Context, e *models.Event) error
+	SetNotValid(ctx context.Context, eventID uuid.UUID) error
 	Delete(ctx context.Context, eventID uuid.UUID) error
-	RealDelete(ctx context.Context, eventID uuid.UUID) error
 	Update(ctx context.Context, eventID uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) error
 	AddArtworksToEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUIDs) error
 	DeleteArtworkFromEvent(ctx context.Context, eventID uuid.UUID, artworkID uuid.UUID) error

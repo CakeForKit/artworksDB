@@ -2,6 +2,7 @@ package fixturesrep
 
 import (
 	"context"
+	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
@@ -11,14 +12,13 @@ import (
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
 
-func getAdminsOfEmployees(employees []*models.Employee) (admins []*models.Admin) {
-	adminCreator := testobj.NewAdminMother()
-	adminsMap := make(map[uuid.UUID]*models.Admin, 0)
+func getAdminIDsOfEmployees(employees []*models.Employee) (adminIDs uuid.UUIDs) {
+	adminsMap := make(map[uuid.UUID]bool, 0)
 	for _, v := range employees {
-		if _, ok := adminsMap[v.GetAdminID()]; !ok {
-			a := adminCreator.DefaultAdminP(v.GetAdminID())
-			admins = append(admins, a)
-			adminsMap[v.GetAdminID()] = a
+		id := v.GetAdminID()
+		if _, ok := adminsMap[id]; !ok {
+			adminsMap[id] = true
+			adminIDs = append(adminIDs, id)
 		}
 	}
 	return
@@ -29,9 +29,22 @@ func AddTestEmployees(
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
 ) {
-	admins := getAdminsOfEmployees(employees)
-	AddTestAdmin(t, ctx, adminRep, admins)
+	fmt.Printf("AddTestEmployees:\n")
+	fmt.Println("Employees:")
+	for _, v := range employees {
+		fmt.Printf("(%v) %v\n\n", v.GetID(), v)
+	}
+	fmt.Print("\n\n")
 
+	t.WithNewStep("Add Test Admins", func(sCtx provider.StepCtx) {
+		adminIDs := getAdminIDsOfEmployees(employees)
+		adminCreator := testobj.NewAdminMother()
+		admins := make([]*models.Admin, 0, len(adminIDs))
+		for _, id := range adminIDs {
+			admins = append(admins, adminCreator.DefaultAdminP(id))
+		}
+		AddTestAdmin(t, ctx, adminRep, admins)
+	})
 	t.WithNewStep("Add Test Employees", func(sCtx provider.StepCtx) {
 		for _, u := range employees {
 			err := employeeRep.Add(ctx, u)
@@ -45,14 +58,28 @@ func DelTestEmployees(
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
 ) {
+	fmt.Printf("DelTestEmployees:\n")
+	fmt.Println("Employees:")
+	for _, v := range employees {
+		fmt.Printf("(%v) %v\n\n", v.GetID(), v)
+	}
+	fmt.Print("\n\n")
 	t.WithNewStep("Delete Test Employees", func(sCtx provider.StepCtx) {
 		for _, u := range employees {
 			err := employeeRep.Delete(ctx, u.GetID())
 			sCtx.Assert().NoError(err)
 		}
 	})
-	admins := getAdminsOfEmployees(employees)
-	DelTestAdmin(t, ctx, adminRep, admins)
+	t.WithNewStep("Delete Test Admins", func(sCtx provider.StepCtx) {
+		adminIDs := getAdminIDsOfEmployees(employees)
+		admins := make([]*models.Admin, 0, len(adminIDs))
+		for _, id := range adminIDs {
+			a, err := adminRep.GetByID(ctx, id)
+			sCtx.Assert().NoError(err)
+			admins = append(admins, a)
+		}
+		DelTestAdmin(t, ctx, adminRep, admins)
+	})
 }
 
 func AssertEmployeesAreInRes(t provider.T, employees, resEmployees []*models.Employee) {

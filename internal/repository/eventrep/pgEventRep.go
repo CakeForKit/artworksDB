@@ -339,7 +339,7 @@ func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
 	return nil
 }
 
-func (pg *PgEventRep) Delete(ctx context.Context, id uuid.UUID) error {
+func (pg *PgEventRep) SetNotValid(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Update("Events").
 		Set("valid", false).
@@ -351,7 +351,7 @@ func (pg *PgEventRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return nil
 }
 
-func (pg *PgEventRep) RealDelete(ctx context.Context, id uuid.UUID) error {
+func (pg *PgEventRep) Delete(ctx context.Context, id uuid.UUID) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Delete("Events").
 		Where(sq.Eq{"id": id})
