@@ -11,6 +11,9 @@ import (
 type EventMother interface {
 	EventP(eventID uuid.UUID) *models.Event
 	EventCntTicketsP(eventID uuid.UUID, cntTickets int) *models.Event
+	EventWithDatesP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time) *models.Event
+	EventWithArtworksP(eventID uuid.UUID, artworkIDs uuid.UUIDs) *models.Event
+	EventWithDateArtworksP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event
 	EventAdd(employeeID uuid.UUID) *jsonreqresp.EventAdd
 	StatCollectionsP() *models.StatCollections
 	EventFilterEmpty() *jsonreqresp.EventFilter
@@ -34,7 +37,7 @@ func (um *eventMother) EventP(eventID uuid.UUID) *models.Event {
 		uuid.New(),
 		100,
 		true,
-		uuid.UUIDs{uuid.New()}, //, uuid.New(), uuid.New()},
+		uuid.UUIDs{uuid.New(), uuid.New()},
 	)
 	return &event
 }
@@ -50,7 +53,55 @@ func (um *eventMother) EventCntTicketsP(eventID uuid.UUID, cntTickets int) *mode
 		uuid.New(),
 		cntTickets,
 		true,
-		uuid.UUIDs{uuid.New(), uuid.New(), uuid.New()},
+		uuid.UUIDs{uuid.New(), uuid.New()},
+	)
+	return &event
+}
+
+func (um *eventMother) EventWithDatesP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time) *models.Event {
+	event, _ := models.NewEvent(
+		eventID,
+		"test-event-title",
+		dateBegin,
+		dateEnd,
+		"test-adress",
+		true,
+		uuid.New(),
+		100,
+		true,
+		uuid.UUIDs{uuid.New(), uuid.New()},
+	)
+	return &event
+}
+
+func (um *eventMother) EventWithArtworksP(eventID uuid.UUID, artworkIDs uuid.UUIDs) *models.Event {
+	event, _ := models.NewEvent(
+		eventID,
+		"test-event-title",
+		time.Date(2023, time.October, 1, 15, 30, 0, 0, time.UTC),
+		time.Date(2023, time.October, 10, 15, 30, 0, 0, time.UTC),
+		"test-adress",
+		true,
+		uuid.New(),
+		100,
+		true,
+		artworkIDs,
+	)
+	return &event
+}
+
+func (um *eventMother) EventWithDateArtworksP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event {
+	event, _ := models.NewEvent(
+		eventID,
+		"test-event-title",
+		dateBegin,
+		dateEnd,
+		"test-adress",
+		true,
+		uuid.New(),
+		100,
+		true,
+		artworkIDs,
 	)
 	return &event
 }

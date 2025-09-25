@@ -35,11 +35,11 @@ func NewPgEventRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbCon
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 	db, err := sql.Open("pgx", connStr)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrOpenConnect, err)
+		return nil, fmt.Errorf("%w: %w", ErrOpenConnect, err)
 	}
 	if err := db.PingContext(ctx); err != nil {
 		db.Close()
-		return nil, fmt.Errorf("%w: %v", ErrPing, err)
+		return nil, fmt.Errorf("%w: %w", ErrPing, err)
 	}
 	// Настраиваем пул соединений
 	db.SetMaxOpenConns(dbConf.MaxOpenConns)
@@ -58,16 +58,16 @@ func (pg *PgEventRep) parseEventsRows(rows *sql.Rows) ([]*models.Event, error) {
 		var canVisit, valid bool
 		var cntTickets int
 		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit, &address, &cntTickets, &creatorID, &valid); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+			return nil, fmt.Errorf("scan error: %w", err)
 		}
 		user, err := models.NewEvent(id, title, dateBegin, dateEnd, address, canVisit, creatorID, cntTickets, valid, nil)
 		if err != nil {
-			return nil, fmt.Errorf("parseEventsRows: %v", err)
+			return nil, fmt.Errorf("parseEventsRows: %w", err)
 		}
 		resEvents = append(resEvents, &user)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("rows iteration error: %v", err)
+		return nil, fmt.Errorf("rows iteration error: %w", err)
 	}
 	return resEvents, nil
 }
@@ -104,12 +104,12 @@ func (pg *PgEventRep) addFilterParams(query sq.SelectBuilder, filterOps *jsonreq
 func (pg *PgEventRep) execQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.Event, error) {
 	querySQL, args, err := query.ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, querySQL, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
@@ -120,19 +120,43 @@ func (pg *PgEventRep) execQuery(ctx context.Context, query sq.SelectBuilder) ([]
 	return events, nil
 }
 
+func (pg *PgEventRep) checkEventByID(ctx context.Context, eventID uuid.UUID) (bool, error) {
+	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+	query, args, err := psql.Select("id").
+		From("events").
+		Where(sq.Eq{"id": eventID}).
+		ToSql()
+	if err != nil {
+		return false, fmt.Errorf("PgEventRep.CheckEventByID: %w: %w", ErrQueryBuilds, err)
+	}
+	rows, err := pg.db.QueryContext(ctx, query, args...)
+	if err != nil {
+		return false, fmt.Errorf("PgEventRep.CheckEventByID: %w: %w", ErrQueryExec, err)
+	}
+	defer rows.Close()
+	return rows.Next(), nil
+}
+
 func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uuid.UUIDs, error) {
+	found, err := pg.checkEventByID(ctx, eventID)
+	if err != nil {
+		return uuid.UUIDs{}, fmt.Errorf("PgEventRep.GetArtworkIDs: %w", err)
+	} else if !found {
+		return uuid.UUIDs{}, fmt.Errorf("PgEventRep.GetArtworkIDs: %w", ErrEventNotFound)
+	}
+
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("artworkID").
 		From("Artwork_event").
 		Where(sq.Eq{"eventID": eventID}).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("%w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
@@ -140,12 +164,12 @@ func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uui
 	for rows.Next() {
 		var id uuid.UUID
 		if err := rows.Scan(&id); err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetArtworkIDs: %v", err)
+			return nil, fmt.Errorf("PgEventRep.GetArtworkIDs: %w", err)
 		}
 		artworkIDs = append(artworkIDs, id)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetArtworkIDs rows iteration error: %v", err)
+		return nil, fmt.Errorf("PgEventRep.GetArtworkIDs rows iteration error: %w", err)
 	}
 	return artworkIDs, nil
 }
@@ -200,7 +224,7 @@ func (pg *PgEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 	if len(events) == 0 {
 		return nil, ErrEventNotFound
 	} else if len(events) > 1 {
-		return nil, fmt.Errorf("PgEventRep.GetByID %w: %v", ErrExpectedOneEvent, err)
+		return nil, fmt.Errorf("PgEventRep.GetByID %w: %w", ErrExpectedOneEvent, err)
 	}
 	events, err = pg.joinArtworkIDsToEvents(ctx, events)
 	if err != nil {
@@ -225,29 +249,29 @@ func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 		From(funcCall).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate %w: %w", ErrQueryBuilds, err)
 	}
 
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
 	events, err := pg.parseEventsRows(rows)
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate: %v", err)
+		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate: %w", err)
 	}
 	if len(events) == 0 {
-		return nil, fmt.Errorf("PgEventRep.GetEventsOfArtworkOnDate: %w", ErrEventNotFound)
+		return []*models.Event{}, nil
 	}
 	for _, event := range events {
 		artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
 		if err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
+			return nil, fmt.Errorf("PgEventRep.GetAll %w", err)
 		}
 		if err := event.AddArtworks(artworkIDs); err != nil {
-			return nil, fmt.Errorf("PgEventRep.GetAll %v", err)
+			return nil, fmt.Errorf("PgEventRep.GetAll %w", err)
 		}
 	}
 	return events, nil
@@ -261,11 +285,11 @@ func (pg *PgEventRep) GetCollectionsStat(ctx context.Context, eventID uuid.UUID)
 		From(funcCall).
 		ToSql()
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %v", ErrQueryBuilds, err)
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %w", ErrQueryBuilds, err)
 	}
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %v", ErrQueryExec, err)
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 
@@ -275,7 +299,7 @@ func (pg *PgEventRep) GetCollectionsStat(ctx context.Context, eventID uuid.UUID)
 		var coltTitle string
 		var cntArtworks int
 		if err := rows.Scan(&colID, &coltTitle, &cntArtworks); err != nil {
-			return nil, fmt.Errorf("scan error: %v", err)
+			return nil, fmt.Errorf("scan error: %w", err)
 		}
 		statCol, err := models.NewStatCollections(colID, coltTitle, cntArtworks)
 		if err != nil {
@@ -284,7 +308,7 @@ func (pg *PgEventRep) GetCollectionsStat(ctx context.Context, eventID uuid.UUID)
 		res = append(res, &statCol)
 	}
 	if err := rows.Err(); err != nil {
-		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat rows iteration error: %v", err)
+		return nil, fmt.Errorf("PgEventRep.GetCollectionsStat rows iteration error: %w", err)
 	}
 	return res, nil
 }
@@ -296,11 +320,11 @@ func (pg *PgEventRep) CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool
 		Where(sq.Eq{"id": id}).
 		ToSql()
 	if err != nil {
-		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %v", ErrQueryBuilds, err)
+		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %w", ErrQueryBuilds, err)
 	}
 	rows, err := pg.db.QueryContext(ctx, query, args...)
 	if err != nil {
-		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %v", ErrQueryExec, err)
+		return false, fmt.Errorf("PgEventRep.CheckEmployeeByID: %w: %w", ErrQueryExec, err)
 	}
 	defer rows.Close()
 	return rows.Next(), nil
@@ -309,16 +333,16 @@ func (pg *PgEventRep) CheckEmployeeByID(ctx context.Context, id uuid.UUID) (bool
 func (pg *PgEventRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) error {
 	querySQL, args, err := query.ToSql()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryBuilds, err)
+		return fmt.Errorf("%w: %w", ErrQueryBuilds, err)
 	}
 	result, err := pg.db.ExecContext(ctx, querySQL, args...)
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrQueryExec, err)
+		return fmt.Errorf("%w: %w", ErrQueryExec, err)
 	}
 	// проверка количества затронутых строк
 	rowsAffected, err := result.RowsAffected()
 	if err != nil {
-		return fmt.Errorf("%w: %v", ErrRowsAffected, err)
+		return fmt.Errorf("%w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
 		return fmt.Errorf("%w: no artowrk added", ErrRowsAffected)
@@ -367,7 +391,7 @@ func (pg *PgEventRep) Update(ctx context.Context,
 	funcUpdate func(*models.Event) (*models.Event, error)) error {
 	event, err := pg.GetByID(ctx, id)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Update: %v", err)
+		return fmt.Errorf("PgEventRep.Update: %w", err)
 	}
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)

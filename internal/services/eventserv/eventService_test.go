@@ -50,7 +50,7 @@ func (s *EventServiceSuite) TestEventServ_GetAll(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Require().True(len(events) == len(resEvents))
 		for i := range len(resEvents) {
-			sCtx.Assert().True(events[i].Equals(resEvents[i]))
+			sCtx.Assert().True(events[i].Equal(resEvents[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetAll", ctx,
 			mock.AnythingOfType("*jsonreqresp.EventFilter"))

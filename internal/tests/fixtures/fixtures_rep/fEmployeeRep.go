@@ -2,7 +2,6 @@ package fixturesrep
 
 import (
 	"context"
-	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
@@ -29,12 +28,12 @@ func AddTestEmployees(
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
 ) {
-	fmt.Printf("AddTestEmployees:\n")
-	fmt.Println("Employees:")
-	for _, v := range employees {
-		fmt.Printf("(%v) %v\n\n", v.GetID(), v)
-	}
-	fmt.Print("\n\n")
+	// fmt.Printf("AddTestEmployees:\n")
+	// fmt.Println("Employees:")
+	// for _, v := range employees {
+	// 	fmt.Printf("(%v) %v\n\n", v.GetID(), v)
+	// }
+	// fmt.Print("\n\n")
 
 	t.WithNewStep("Add Test Admins", func(sCtx provider.StepCtx) {
 		adminIDs := getAdminIDsOfEmployees(employees)
@@ -58,12 +57,12 @@ func DelTestEmployees(
 	employeeRep employeerep.EmployeeRep,
 	adminRep adminrep.AdminRep,
 ) {
-	fmt.Printf("DelTestEmployees:\n")
-	fmt.Println("Employees:")
-	for _, v := range employees {
-		fmt.Printf("(%v) %v\n\n", v.GetID(), v)
-	}
-	fmt.Print("\n\n")
+	// fmt.Printf("DelTestEmployees:\n")
+	// fmt.Println("Employees:")
+	// for _, v := range employees {
+	// 	fmt.Printf("(%v) %v\n\n", v.GetID(), v)
+	// }
+	// fmt.Print("\n\n")
 	t.WithNewStep("Delete Test Employees", func(sCtx provider.StepCtx) {
 		for _, u := range employees {
 			err := employeeRep.Delete(ctx, u.GetID())

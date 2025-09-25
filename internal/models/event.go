@@ -93,7 +93,11 @@ func (e *Event) validate() error {
 	return nil
 }
 
-func (e1 *Event) Equals(other interface{}) bool {
+func CmpTimeToMinute(t1, t2 time.Time) bool {
+	return int(t1.Sub(t2).Minutes()) == 0
+}
+
+func (e1 *Event) Equal(other interface{}) bool {
 	if e1 == nil {
 		return other == nil
 	}
@@ -110,9 +114,10 @@ func (e1 *Event) Equals(other interface{}) bool {
 			return false
 		}
 	}
+
 	return e1.title == e2.title &&
-		e1.dateBegin.Equal(e2.dateBegin) &&
-		e1.dateEnd.Equal(e2.dateEnd) &&
+		CmpTimeToMinute(e1.dateBegin, e2.dateBegin) &&
+		CmpTimeToMinute(e1.dateEnd, e2.dateEnd) &&
 		e1.address == e2.address &&
 		e1.canVisit == e2.canVisit &&
 		e1.employeeID == e2.employeeID &&

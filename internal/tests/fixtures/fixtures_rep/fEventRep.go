@@ -2,7 +2,6 @@ package fixturesrep
 
 import (
 	"context"
-	"fmt"
 
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
 	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
@@ -51,12 +50,12 @@ func AddTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	fmt.Printf("AddTestEvents:\n")
-	fmt.Println("Events:")
-	for _, v := range events {
-		fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
-	}
-	fmt.Print("\n\n")
+	// fmt.Printf("AddTestEvents:\n")
+	// fmt.Println("Events:")
+	// for _, v := range events {
+	// 	fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
+	// }
+	// fmt.Print("\n\n")
 
 	t.WithNewStep("Add Test Employees", func(sCtx provider.StepCtx) {
 		adminID := uuid.New()
@@ -98,12 +97,12 @@ func DelTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	fmt.Printf("DelTestEvents:\n")
-	fmt.Println("Events:")
-	for _, v := range events {
-		fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
-	}
-	fmt.Print("\n\n")
+	// fmt.Printf("DelTestEvents:\n")
+	// fmt.Println("Events:")
+	// for _, v := range events {
+	// 	fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
+	// }
+	// fmt.Print("\n\n")
 	t.WithNewStep("Delete artwork-event relationships", func(sCtx provider.StepCtx) {
 		for _, e := range events {
 			artworkIDs := e.GetArtworkIDs()
@@ -162,7 +161,7 @@ func AssertEventsAreInRes(t provider.T, events, resEvents []*models.Event) {
 		foundAll := make([]bool, len(events))
 		for _, ru := range resEvents {
 			for i, u := range events {
-				if ru.Equals(u) {
+				if ru.Equal(u) {
 					foundAll[i] = true
 				}
 			}

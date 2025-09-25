@@ -138,7 +138,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetAllEvents(t provider.T) {
 		sCtx.Require().NoError(err)
 		sCtx.Assert().True(len(events) == len(resEvents))
 		for i := range len(resEvents) {
-			sCtx.Assert().True(events[i].Equals(resEvents[i]))
+			sCtx.Assert().True(events[i].Equal(resEvents[i]))
 		}
 		mockEventRep.AssertCalled(t, "GetAll", ctx, eventFilter)
 	})
@@ -204,7 +204,7 @@ func (s *SearcherServiceSuite) TestSearcher_GetEvent(t provider.T) {
 		resEvent, err := searcherServ.GetEvent(ctx, eventID)
 
 		sCtx.Require().NoError(err)
-		sCtx.Assert().True(event.Equals(resEvent))
+		sCtx.Assert().True(event.Equal(resEvent))
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
 	})
 
