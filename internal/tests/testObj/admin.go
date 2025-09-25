@@ -41,8 +41,8 @@ func (um *adminMother) AdminWithPswdHash(adminID uuid.UUID, hashedPassword strin
 		adminID,
 		"test-admin",
 		"test-login"+adminID.String(),
-		"hashed-password"+adminID.String(),
-		time.Now(),
+		hashedPassword,
+		time.Now().UTC(),
 		true,
 	)
 	return admin

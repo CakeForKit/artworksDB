@@ -263,7 +263,7 @@ func (s *EventServiceSuite) TestEventService_Delete(t provider.T) {
 		mockArtworkRep := new(artworkrep.MockArtworkRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
-		mockEventRep.On("Delete", ctx, eventID).Return(nil)
+		mockEventRep.On("SetNotValid", ctx, eventID).Return(nil)
 
 		eventServ := eventserv.NewEventService(mockEventRep, mockArtworkRep)
 
@@ -271,7 +271,7 @@ func (s *EventServiceSuite) TestEventService_Delete(t provider.T) {
 		err := eventServ.Delete(ctx, eventID)
 
 		sCtx.Require().NoError(err)
-		mockEventRep.AssertCalled(t, "Delete", ctx, eventID)
+		mockEventRep.AssertCalled(t, "SetNotValid", ctx, eventID)
 	})
 
 	t.WithNewStep("error in delete", func(sCtx provider.StepCtx) {
@@ -282,7 +282,7 @@ func (s *EventServiceSuite) TestEventService_Delete(t provider.T) {
 		mockArtworkRep := new(artworkrep.MockArtworkRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
-		mockEventRep.On("Delete", ctx, eventID).Return(expectedErr)
+		mockEventRep.On("SetNotValid", ctx, eventID).Return(expectedErr)
 
 		eventServ := eventserv.NewEventService(mockEventRep, mockArtworkRep)
 
@@ -290,7 +290,7 @@ func (s *EventServiceSuite) TestEventService_Delete(t provider.T) {
 		err := eventServ.Delete(ctx, eventID)
 
 		sCtx.Require().ErrorIs(err, expectedErr)
-		mockEventRep.AssertCalled(t, "Delete", ctx, eventID)
+		mockEventRep.AssertCalled(t, "SetNotValid", ctx, eventID)
 	})
 }
 
