@@ -50,13 +50,6 @@ func AddTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	// fmt.Printf("AddTestEvents:\n")
-	// fmt.Println("Events:")
-	// for _, v := range events {
-	// 	fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
-	// }
-	// fmt.Print("\n\n")
-
 	t.WithNewStep("Add Test Employees", func(sCtx provider.StepCtx) {
 		adminID := uuid.New()
 		employeeIDs := getEmployeeIDsOfEvents(events)
@@ -88,6 +81,42 @@ func AddTestEvents(
 	})
 }
 
+func AddTestEventsWithArtworks(
+	t provider.T, ctx context.Context, events []*models.Event, artworks []*models.Artwork,
+	eventRep eventrep.EventRep,
+	employeeRep employeerep.EmployeeRep,
+	adminRep adminrep.AdminRep,
+	artworkRep artworkrep.ArtworkRep,
+	authorRep authorrep.AuthorRep,
+	collectionRep collectionrep.CollectionRep,
+) {
+	t.WithNewStep("Add Test Employees", func(sCtx provider.StepCtx) {
+		adminID := uuid.New()
+		employeeIDs := getEmployeeIDsOfEvents(events)
+		employeeCreator := testobj.NewEmployeeMother()
+		employees := make([]*models.Employee, 0, len(employeeIDs))
+		for _, id := range employeeIDs {
+			employees = append(employees, employeeCreator.DefaultEmployeeP(id, adminID))
+		}
+		AddTestEmployees(t, ctx, employees, employeeRep, adminRep)
+	})
+
+	t.WithNewStep("Add Test Artworks", func(sCtx provider.StepCtx) {
+		if len(artworks) > 0 {
+			AddTestArtworks(t, ctx, artworks, artworkRep, authorRep, collectionRep)
+		}
+	})
+
+	t.WithNewStep("Add Test Events", func(sCtx provider.StepCtx) {
+		for _, u := range events {
+			err := eventRep.Add(ctx, u)
+			sCtx.Require().NoError(err)
+			err = eventRep.AddArtworksToEvent(ctx, u.GetID(), u.GetArtworkIDs())
+			sCtx.Require().NoError(err)
+		}
+	})
+}
+
 func DelTestEvents(
 	t provider.T, ctx context.Context, events []*models.Event,
 	eventRep eventrep.EventRep,
@@ -97,12 +126,6 @@ func DelTestEvents(
 	authorRep authorrep.AuthorRep,
 	collectionRep collectionrep.CollectionRep,
 ) {
-	// fmt.Printf("DelTestEvents:\n")
-	// fmt.Println("Events:")
-	// for _, v := range events {
-	// 	fmt.Printf("%v\nEmployeeID = %v\n", v, v.GetEmployeeID())
-	// }
-	// fmt.Print("\n\n")
 	t.WithNewStep("Delete artwork-event relationships", func(sCtx provider.StepCtx) {
 		for _, e := range events {
 			artworkIDs := e.GetArtworkIDs()

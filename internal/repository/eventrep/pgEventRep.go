@@ -144,7 +144,10 @@ func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uui
 	} else if !found {
 		return uuid.UUIDs{}, fmt.Errorf("PgEventRep.GetArtworkIDs: %w", ErrEventNotFound)
 	}
+	return pg.getArtworkIDs(ctx, eventID)
+}
 
+func (pg *PgEventRep) getArtworkIDs(ctx context.Context, eventID uuid.UUID) (uuid.UUIDs, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Select("artworkID").
 		From("Artwork_event").
@@ -176,7 +179,7 @@ func (pg *PgEventRep) GetArtworkIDs(ctx context.Context, eventID uuid.UUID) (uui
 
 func (pg *PgEventRep) joinArtworkIDsToEvents(ctx context.Context, events []*models.Event) ([]*models.Event, error) {
 	for _, event := range events {
-		artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
+		artworkIDs, err := pg.getArtworkIDs(ctx, event.GetID())
 		if err != nil {
 			return nil, fmt.Errorf("join ArtworkIds %w", err)
 		}
@@ -266,7 +269,7 @@ func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 		return []*models.Event{}, nil
 	}
 	for _, event := range events {
-		artworkIDs, err := pg.GetArtworkIDs(ctx, event.GetID())
+		artworkIDs, err := pg.getArtworkIDs(ctx, event.GetID())
 		if err != nil {
 			return nil, fmt.Errorf("PgEventRep.GetAll %w", err)
 		}
@@ -345,7 +348,7 @@ func (pg *PgEventRep) execChangeQuery(ctx context.Context, query sq.Sqlizer) err
 		return fmt.Errorf("%w: %w", ErrRowsAffected, err)
 	}
 	if rowsAffected == 0 {
-		return fmt.Errorf("%w: no artowrk added", ErrRowsAffected)
+		return fmt.Errorf("%w: no artowrk changed", ErrRowsAffected)
 	}
 	return nil
 }
@@ -397,12 +400,13 @@ func (pg *PgEventRep) Update(ctx context.Context,
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	updatedEvent, err := funcUpdate(event)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.Update: %w", ErrUpdateEvent)
+		return fmt.Errorf("PgEventRep.Update: %w (%w)", ErrUpdateEvent, err)
 	}
 
 	query := psql.Update("Events").
 		Set("title", updatedEvent.GetTitle()).
 		Set("dateBegin", updatedEvent.GetDateBegin()).
+		Set("dateEnd", updatedEvent.GetDateEnd()).
 		Set("canVisit", updatedEvent.GetAccess()).
 		Set("adress", updatedEvent.GetAddress()).
 		Set("cntTickets", updatedEvent.GetTicketCount()).
@@ -425,7 +429,7 @@ func (pg *PgEventRep) AddArtworksToEvent(ctx context.Context, eventID uuid.UUID,
 			Values(eventID, artworkID)
 		err := pg.execChangeQuery(ctx, query)
 		if err != nil {
-			return fmt.Errorf("PgEventRep.AddArtworksToEvent %w", ErrEventArtowrkNotFound)
+			return fmt.Errorf("PgEventRep.AddArtworksToEvent %w (%w)", ErrEventArtowrkNotFound, err)
 		}
 	}
 	return nil
@@ -440,7 +444,7 @@ func (pg *PgEventRep) DeleteArtworkFromEvent(ctx context.Context, eventID uuid.U
 		})
 	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
-		return fmt.Errorf("PgEventRep.DeleteArtworkFromEvent %w", ErrEventArtowrkNotFound)
+		return fmt.Errorf("PgEventRep.DeleteArtworkFromEvent %w (%w)", ErrEventArtowrkNotFound, err)
 	}
 	return nil
 }
