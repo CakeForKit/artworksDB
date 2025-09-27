@@ -1,3 +1,0 @@
-"DESCRIPTION","DURATION IN MS","NAME","PARENT SUITE","START TIME","STATUS","STOP TIME","SUB SUITE","SUITE","TEST CLASS","TEST METHOD"
-"User register, auth, search events","557","TestUser_MVP","","Tue Sep 23 11:36:42 GMT 2025","passed","Tue Sep 23 11:36:42 GMT 2025","","UserE2ESuite","",""
-"","59","TestUserRep_GetAll","","Tue Sep 23 11:34:50 GMT 2025","passed","Tue Sep 23 11:34:50 GMT 2025","","UserRepSuite","",""
