@@ -17,11 +17,11 @@ jobs:
         cache-dependency-path: go.sum
     - name: Run Unit Tests
       run: |
-        go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice;
+        go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/...;
       env:
         ALLURE_OUTPUT_DIR: allure-results
         ALLURE_OUTPUT_PATH: ${{ github.workspace }}
-      # go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/... 
+      # go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice
 
     - name: Upload Allure results
       if: always()
