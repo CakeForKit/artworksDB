@@ -82,5 +82,6 @@ func LogMiddleware(projLogger MiddlewareLogger) gin.HandlerFunc {
 				projLogger.Infow("Request completed", logFields...)
 			}
 		}
+		c.Next()
 	}
 }

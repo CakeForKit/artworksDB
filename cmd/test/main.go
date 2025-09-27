@@ -10,6 +10,7 @@ import (
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/api"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/middleware"
+	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/projlog"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
 	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
@@ -52,7 +53,17 @@ func main() {
 		c.AbortWithStatus(http.StatusNoContent)
 	})
 	apiGroup := engine.Group("/api/v1")
-	engine.Use(gin.Logger())
+	// engine.Use(gin.Logger())
+	logCnfg, err := cnfg.GetLogConfig()
+	if err != nil {
+		panic(fmt.Errorf("cannot load LogConfig: %v", err))
+	}
+	projLogger, err := projlog.NewLogger(logCnfg)
+	if err != nil {
+		panic(err)
+	}
+	defer projLogger.Sync()
+	apiGroup.Use(middleware.LogMiddleware(projLogger))
 	engine.Use(gin.Recovery())
 
 	// ----- Config ------
@@ -162,6 +173,7 @@ func main() {
 	// --------------------
 
 	// ----- Groups -----
+
 	userGroup := apiGroup.Group("/user")
 	userGroup.Use(middleware.AuthMiddleware(authUserServ, authZ, true))
 	guestGroup := apiGroup.Group("/guest")
