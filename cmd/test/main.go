@@ -23,11 +23,15 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/services/adminserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/artworkserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	attemptsrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/attempts_rep"
+	authsessionrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_session_repository"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/otp"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
 	"github.com/CakeForKit/artworksDB.git/internal/services/authorserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/buyticketserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/collectionserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/emailserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/eventserv"
 	"github.com/CakeForKit/artworksDB.git/internal/services/mailing"
 	"github.com/CakeForKit/artworksDB.git/internal/services/searcher"
@@ -148,7 +152,25 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	authUserServ, err := auth.NewAuthUser(*appCnfg, userRep, tokenMaker, hasher)
+	durationSession, _ := time.ParseDuration("10m")
+	maxAttempts := 5
+	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+	otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
+	emailCnfg := cnfg.DefaultEmailCnfg()
+	emailServ := emailserv.NewEmailService(
+		emailCnfg.Host,
+		emailCnfg.Port,
+		emailCnfg.Username,
+		emailCnfg.Password,
+		emailCnfg.From,
+	)
+	otpServ := otp.NewOTPService(*emailServ)
+	authUserServ, err := auth.NewAuthUser(
+		*appCnfg, userRep,
+		tokenMaker, hasher,
+		otpServ, authUserSessionRep,
+		loginAttemptRep, otpAttemptRep)
 	if err != nil {
 		panic(err)
 	}

@@ -49,6 +49,68 @@ definitions:
     - password
     - username
     type: object
+  authmodels.Login2FAUserRequest:
+    properties:
+      code:
+        example: 1234q
+        type: string
+      sessionAuthID:
+        example: cfd9ff5d-cb37-407c-b043-288a482e9239
+        type: string
+    required:
+    - code
+    - sessionAuthID
+    type: object
+  authmodels.Login2FAUserResponse:
+    properties:
+      access_token:
+        type: string
+    type: object
+  authmodels.LoginUserRequest:
+    properties:
+      login:
+        example: ulogin
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        example: "12345678"
+        minLength: 4
+        type: string
+    required:
+    - login
+    - password
+    type: object
+  authmodels.RegisterUserRequest:
+    properties:
+      email:
+        example: uuser@test.ru
+        maxLength: 100
+        minLength: 6
+        type: string
+      login:
+        example: ulogin
+        maxLength: 50
+        minLength: 4
+        type: string
+      password:
+        example: "12345678"
+        minLength: 4
+        type: string
+      subscribe_email:
+        example: true
+        type: boolean
+      username:
+        example: uname
+        maxLength: 50
+        type: string
+    required:
+    - email
+    - login
+    - password
+    - subscribe_email
+    - username
+    type: object
   jsonreqresp.AddArtworkRequest:
     properties:
       authorID:
@@ -213,6 +275,12 @@ definitions:
     required:
     - cntTickets
     - eventID
+    type: object
+  jsonreqresp.ChangeSubscribeToMailingRequest:
+    properties:
+      subscribe:
+        example: true
+        type: boolean
     type: object
   jsonreqresp.CollectionResponse:
     properties:
@@ -481,6 +549,21 @@ definitions:
         example: true
         type: boolean
     type: object
+  jsonreqresp.UserSelfResponse:
+    properties:
+      email:
+        example: alice.smith@example.com
+        type: string
+      login:
+        example: alice@example.com
+        type: string
+      subscribeMail:
+        example: true
+        type: boolean
+      username:
+        example: alice_smith
+        type: string
+    type: object
 host: localhost:8080
 info:
   contact: {}
@@ -648,6 +731,80 @@ paths:
       summary: Вход сотрудника
       tags:
       - Аутентификация
+  /auth-user/login:
+    post:
+      consumes:
+      - application/json
+      description: Аутентифицирует пользователя, присылает код подтверждения на почту
+        и возвращает id сессии авторизации
+      parameters:
+      - description: Учетные данные для входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authmodels.LoginUserRequest'
+      responses:
+        "200":
+          description: Пользователь успешно аутентифицирован и ему отправлен код подтверждения
+        "400":
+          description: Неверные входные параметры
+        "401":
+          description: Ошибка аутентификации
+      summary: Вход пользователя
+      tags:
+      - аутентификация
+  /auth-user/login-2fa:
+    post:
+      consumes:
+      - application/json
+      description: Подтверждает вход пользователя с помощью одноразового кода и выдает
+        access token
+      parameters:
+      - description: Данные для подтверждения входа
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authmodels.Login2FAUserRequest'
+      responses:
+        "200":
+          description: Успешная аутентификация, возвращает access token
+          schema:
+            $ref: '#/definitions/authmodels.Login2FAUserResponse'
+        "400":
+          description: Неверные входные параметры или невалидный session ID
+        "401":
+          description: Неверный код подтверждения или пользователь не найден
+        "500":
+          description: Внутренняя ошибка сервера
+      summary: Вход с двухфакторной аутентификацией
+      tags:
+      - аутентификация
+  /auth-user/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует нового пользователя
+      parameters:
+      - description: Данные для регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authmodels.RegisterUserRequest'
+      responses:
+        "200":
+          description: Пользователь зарегистрирован
+        "400":
+          description: Неверные входные параметры
+        "401":
+          description: Ошибка аутентификации
+        "409":
+          description: Попытка повторной регистрации
+      summary: Регистрация пользователя
+      tags:
+      - аутентификация
   /employee/artworks:
     delete:
       consumes:
@@ -1465,4 +1622,53 @@ paths:
       summary: Получить статистику по коллекциям для мероприятия
       tags:
       - Поиск
+  /user/self:
+    get:
+      description: Returns authenticated user's profile information
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/jsonreqresp.UserSelfResponse'
+      security:
+      - ApiKeyAuth: []
+      summary: Get user profile
+      tags:
+      - User
+    put:
+      consumes:
+      - application/json
+      description: Changes user's subscription to email mailings
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: Subscription preference
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Invalid request body
+      security:
+      - ApiKeyAuth: []
+      summary: Update mailing subscription
+      tags:
+      - User
 swagger: "2.0"

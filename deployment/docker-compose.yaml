@@ -14,8 +14,6 @@ services:
       - postgres-db
       - redis_artworks
       - clickhouse-db
-    labels:
-      - "project=artworks"
 
   postgres:
     container_name: postgres_artworks
@@ -23,15 +21,10 @@ services:
     image: postgres:14.8-alpine3.18
     env_file:
       - ../configs/db.env
-    environment:
-      # Явно указываем, какие переменные из .env использует этот контейнер
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     ports:
       - "${POSTGRES_PORT}:5432"
     volumes:
-      - data-volume:/var/lib/postgresql/data
+      - pg-db-volume:/var/lib/postgresql/data
     healthcheck:
       test: [ "CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}" ]
       interval: 5s
@@ -40,8 +33,6 @@ services:
       start_period: 60s
     networks:
       - postgres-db
-    labels:
-      - "project=artworks"
 
   migrator:
     container_name: migrator_artworks
@@ -50,13 +41,13 @@ services:
         condition: service_healthy  
     env_file:
       - ../configs/db.env
+    environment:
+      - POSTGRES_HOST=postgres_artworks
     build:
       context: ../migrations
       dockerfile: Dockerfile
     networks:
       - postgres-db
-    labels:
-      - "project=artworks"
       
   redis_artworks:
     container_name: redis_artworks
@@ -110,7 +101,7 @@ services:
 
 volumes:
   clickhouse-data:
-  data-volume:
+  pg-db-volume:
     driver: local
 
 

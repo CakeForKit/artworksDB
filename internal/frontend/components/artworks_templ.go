@@ -5,11 +5,11 @@ package components
 
 //lint:file-ignore SA4006 This context is only used if a nested component is present.
 
-import (
-	"github.com/a-h/templ"
-	templruntime "github.com/a-h/templ/runtime"
+import "github.com/a-h/templ"
+import templruntime "github.com/a-h/templ/runtime"
 
-	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+import (
+	"github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 )
 
 func ArtworksPage(artworks []jsonreqresp.ArtworkResponse, filter jsonreqresp.ArtworkFilter, sortOps jsonreqresp.ArtworkSortOps) templ.Component {

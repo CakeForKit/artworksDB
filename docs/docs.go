@@ -267,6 +267,117 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth-user/login": {
+            "post": {
+                "description": "Аутентифицирует пользователя, присылает код подтверждения на почту и возвращает id сессии авторизации",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "аутентификация"
+                ],
+                "summary": "Вход пользователя",
+                "parameters": [
+                    {
+                        "description": "Учетные данные для входа",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authmodels.LoginUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пользователь успешно аутентифицирован и ему отправлен код подтверждения"
+                    },
+                    "400": {
+                        "description": "Неверные входные параметры"
+                    },
+                    "401": {
+                        "description": "Ошибка аутентификации"
+                    }
+                }
+            }
+        },
+        "/auth-user/login-2fa": {
+            "post": {
+                "description": "Подтверждает вход пользователя с помощью одноразового кода и выдает access token",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "аутентификация"
+                ],
+                "summary": "Вход с двухфакторной аутентификацией",
+                "parameters": [
+                    {
+                        "description": "Данные для подтверждения входа",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authmodels.Login2FAUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Успешная аутентификация, возвращает access token",
+                        "schema": {
+                            "$ref": "#/definitions/authmodels.Login2FAUserResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Неверные входные параметры или невалидный session ID"
+                    },
+                    "401": {
+                        "description": "Неверный код подтверждения или пользователь не найден"
+                    },
+                    "500": {
+                        "description": "Внутренняя ошибка сервера"
+                    }
+                }
+            }
+        },
+        "/auth-user/register": {
+            "post": {
+                "description": "Регистрирует нового пользователя",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "аутентификация"
+                ],
+                "summary": "Регистрация пользователя",
+                "parameters": [
+                    {
+                        "description": "Данные для регистрации",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authmodels.RegisterUserRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Пользователь зарегистрирован"
+                    },
+                    "400": {
+                        "description": "Неверные входные параметры"
+                    },
+                    "401": {
+                        "description": "Ошибка аутентификации"
+                    },
+                    "409": {
+                        "description": "Попытка повторной регистрации"
+                    }
+                }
+            }
+        },
         "/employee/artworks": {
             "get": {
                 "security": [
@@ -1530,6 +1641,84 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/user/self": {
+            "get": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Returns authenticated user's profile information",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Get user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.UserSelfResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "ApiKeyAuth": []
+                    }
+                ],
+                "description": "Changes user's subscription to email mailings",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "User"
+                ],
+                "summary": "Update mailing subscription",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "bearer {token}",
+                        "name": "Authorization",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "description": "Subscription preference",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/jsonreqresp.ChangeSubscribeToMailingRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Invalid request body"
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1595,6 +1784,89 @@ const docTemplate = `{
                     "type": "string",
                     "maxLength": 50,
                     "example": "ename"
+                }
+            }
+        },
+        "authmodels.Login2FAUserRequest": {
+            "type": "object",
+            "required": [
+                "code",
+                "sessionAuthID"
+            ],
+            "properties": {
+                "code": {
+                    "type": "string",
+                    "example": "1234q"
+                },
+                "sessionAuthID": {
+                    "type": "string",
+                    "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
+                }
+            }
+        },
+        "authmodels.Login2FAUserResponse": {
+            "type": "object",
+            "properties": {
+                "access_token": {
+                    "type": "string"
+                }
+            }
+        },
+        "authmodels.LoginUserRequest": {
+            "type": "object",
+            "required": [
+                "login",
+                "password"
+            ],
+            "properties": {
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "ulogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                }
+            }
+        },
+        "authmodels.RegisterUserRequest": {
+            "type": "object",
+            "required": [
+                "email",
+                "login",
+                "password",
+                "subscribe_email",
+                "username"
+            ],
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "maxLength": 100,
+                    "minLength": 6,
+                    "example": "uuser@test.ru"
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "minLength": 4,
+                    "example": "ulogin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 4,
+                    "example": "12345678"
+                },
+                "subscribe_email": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "uname"
                 }
             }
         },
@@ -1814,6 +2086,15 @@ const docTemplate = `{
                 "eventID": {
                     "type": "string",
                     "example": "b10f841d-ba75-48df-a9cf-c86fc9bd3041"
+                }
+            }
+        },
+        "jsonreqresp.ChangeSubscribeToMailingRequest": {
+            "type": "object",
+            "properties": {
+                "subscribe": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },
@@ -2185,6 +2466,27 @@ const docTemplate = `{
                 "valid": {
                     "type": "boolean",
                     "example": true
+                }
+            }
+        },
+        "jsonreqresp.UserSelfResponse": {
+            "type": "object",
+            "properties": {
+                "email": {
+                    "type": "string",
+                    "example": "alice.smith@example.com"
+                },
+                "login": {
+                    "type": "string",
+                    "example": "alice@example.com"
+                },
+                "subscribeMail": {
+                    "type": "boolean",
+                    "example": true
+                },
+                "username": {
+                    "type": "string",
+                    "example": "alice_smith"
                 }
             }
         }

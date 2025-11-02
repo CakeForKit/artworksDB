@@ -21,8 +21,10 @@ type EmailOTPServ struct {
 	emailServ emailserv.EmailService
 }
 
-func NewOTPService() OTPService {
-	return &EmailOTPServ{}
+func NewOTPService(emailServ emailserv.EmailService) OTPService {
+	return &EmailOTPServ{
+		emailServ: emailServ,
+	}
 }
 
 func (s *EmailOTPServ) SendOTP(user models.User) (string, error) {

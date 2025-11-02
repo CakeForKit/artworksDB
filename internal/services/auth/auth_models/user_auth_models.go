@@ -6,6 +6,15 @@ type LoginUserRequest struct {
 }
 
 type LoginUserResponse struct {
+	SessionAuthID string `json:"sessionAuthID" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
+}
+
+type Login2FAUserRequest struct {
+	SessionAuthID string `json:"sessionAuthID" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
+	OTPCode       string `json:"code" binding:"required" example:"1234q"`
+}
+
+type Login2FAUserResponse struct {
 	AccessToken string `json:"access_token"`
 }
 
