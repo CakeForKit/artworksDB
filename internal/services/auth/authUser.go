@@ -89,12 +89,12 @@ func (s *authUser) LoginUser(ctx context.Context, lur authmodels.LoginUserReques
 
 func (s *authUser) OTP(ctx context.Context, sessionID uuid.UUID, otp string) (string, error) {
 	if err := s.otpAttemptRep.Add(sessionID); err != nil {
-		return "", fmt.Errorf("%w: %w", ErrAuthUser, err)
+		return "", fmt.Errorf("%v: %w", ErrAuthUser, err)
 	}
 
 	session, err := s.sessionRep.CheckOTP(sessionID, otp)
 	if err != nil {
-		return "", fmt.Errorf("%w: %w", ErrAuthUser, err)
+		return "", fmt.Errorf("%v: %w", ErrAuthUser, err)
 	}
 
 	accessToken, err := s.tokenMaker.CreateToken(
