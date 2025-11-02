@@ -6,17 +6,20 @@ import (
 	"testing"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
-	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	attemptsrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/attempts_rep"
+	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
+	authsessionrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_session_repository"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/otp"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
+	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 
-	// "github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/mock"
 )
 
@@ -30,7 +33,8 @@ func TestAuthUserService(t *testing.T) {
 }
 
 func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
-
+	durationSession, _ := time.ParseDuration("10m")
+	maxAttempts := 5
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
@@ -41,7 +45,7 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 	hashedPassword := "$2a$10$hashedpassword123"
 	user := userCreator.UserWithPswdHash(uuid.New(), hashedPassword)
 	passwordUser := "password123"
-	registerReq := auth.RegisterUserRequest{
+	registerReq := authmodels.RegisterUserRequest{
 		Username:       user.GetUsername(),
 		Login:          user.GetLogin(),
 		Password:       passwordUser,
@@ -52,6 +56,10 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		mockHasher := new(hasher.MockHasher)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		mockHasher.On("HashPassword", passwordUser).Return(hashedPassword, nil)
 
@@ -64,7 +72,11 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 				user.IsSubscribedToMail() == u.IsSubscribedToMail()
 		})).Return(nil)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			tokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 		// act
 		err = authUserServ.RegisterUser(ctx, registerReq)
@@ -81,8 +93,16 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 		mockHasher.On("HashPassword", passwordUser).Return("", expectedErr)
 
 		mockUserRep := new(userrep.MockUserRep)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			tokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
@@ -98,6 +118,10 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 	t.WithNewStep("user repository error", func(sCtx provider.StepCtx) {
 		// ARRANGE
 		ctx := context.Background()
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 		mockHasher := new(hasher.MockHasher)
 		mockHasher.On("HashPassword", passwordUser).Return(hashedPassword, nil)
 
@@ -105,7 +129,11 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 		expectedErr := errors.New("database error")
 		mockUserRep.On("Add", ctx, mock.AnythingOfType("*models.User")).Return(expectedErr)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, tokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			tokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
@@ -120,6 +148,9 @@ func (s *AuthUserServiceSuite) TestAuthUser_RegisterUser(t provider.T) {
 }
 
 func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
+	durationSession, _ := time.ParseDuration("10m")
+	maxAttempts := 5
+
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
@@ -128,7 +159,7 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 	user := userCreator.UserWithPswdHash(uuid.New(), hashedPassword)
 	passwordUser := "password123"
 
-	loginReq := auth.LoginUserRequest{
+	loginReq := authmodels.LoginUserRequest{
 		Login:    user.GetLogin(),
 		Password: passwordUser,
 	}
@@ -139,6 +170,10 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		// Настройка моков
 		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
@@ -148,11 +183,21 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 		mockTokenMaker.On("CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration).
 			Return(expectedToken, nil)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		otpCode := "1234"
+		mockOTPServ.On("SendOTP", user).Return(otpCode, nil)
+
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
-		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+		sessionID, err := authUserServ.LoginUser(ctx, loginReq)
+		sCtx.Require().NoError(err)
+		tokenStr, err := authUserServ.OTP(ctx, sessionID, otpCode)
+		sCtx.Require().NoError(err)
 
 		// ASSERT
 		sCtx.Require().NoError(err)
@@ -168,20 +213,28 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		expectedErr := errors.New("user not found")
 		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(nil, expectedErr)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
-		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+		sessionID, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
 		sCtx.Require().Error(err)
-		sCtx.Assert().Empty(tokenStr)
-		sCtx.Assert().Equal(expectedErr, err)
+		sCtx.Assert().Equal(sessionID, uuid.Nil)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertNotCalled(t, "CheckPassword", mock.Anything, mock.Anything)
 	})
@@ -192,22 +245,30 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
 
 		expectedErr := errors.New("wrong password")
 		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(expectedErr)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
-		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+		sessionID, err := authUserServ.LoginUser(ctx, loginReq)
 
 		// ASSERT
 		sCtx.Require().Error(err)
-		sCtx.Assert().Empty(tokenStr)
-		sCtx.Assert().Equal(expectedErr, err)
+		sCtx.Assert().Equal(sessionID, uuid.Nil)
+		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockUserRep.AssertCalled(t, "GetByLogin", ctx, user.GetLogin())
 		mockHasher.AssertCalled(t, "CheckPassword", passwordUser, hashedPassword)
 	})
@@ -218,19 +279,32 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		mockUserRep.On("GetByLogin", ctx, user.GetLogin()).Return(&user, nil)
 		mockHasher.On("CheckPassword", passwordUser, hashedPassword).Return(nil)
+
+		otpCode := "1234"
+		mockOTPServ.On("SendOTP", user).Return(otpCode, nil)
 
 		expectedErr := errors.New("token creation failed")
 		mockTokenMaker.On("CreateToken", user.GetID(), token.UserRole, appCnfg.AccessTokenDuration).
 			Return("", expectedErr)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
-		tokenStr, err := authUserServ.LoginUser(ctx, loginReq)
+		sessionID, err := authUserServ.LoginUser(ctx, loginReq)
+		sCtx.Require().NoError(err)
+		tokenStr, err := authUserServ.OTP(ctx, sessionID, otpCode)
 
 		// ASSERT
 		sCtx.Require().Error(err)
@@ -243,6 +317,8 @@ func (s *AuthUserServiceSuite) TestAuthUser_LoginUser(t provider.T) {
 }
 
 func (s *AuthUserServiceSuite) TestAuthUser_VerifyByToken(t provider.T) {
+	durationSession, _ := time.ParseDuration("10m")
+	maxAttempts := 5
 	appConfigCreator := testobj.NewAppConfigMother()
 	appCnfg := appConfigCreator.Default()
 
@@ -251,6 +327,10 @@ func (s *AuthUserServiceSuite) TestAuthUser_VerifyByToken(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		expectedPayload := &token.Payload{
 			PersonID:  uuid.New(),
@@ -261,7 +341,11 @@ func (s *AuthUserServiceSuite) TestAuthUser_VerifyByToken(t provider.T) {
 		tokenString := "valid-token-123"
 		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(expectedPayload, nil)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT
@@ -278,12 +362,20 @@ func (s *AuthUserServiceSuite) TestAuthUser_VerifyByToken(t provider.T) {
 		mockHasher := new(hasher.MockHasher)
 		mockUserRep := new(userrep.MockUserRep)
 		mockTokenMaker := new(token.MockTokenMaker)
+		mockOTPServ := new(otp.MockOTPService)
+		authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
+		loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
+		otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
 
 		tokenString := "invalid-token"
 		expectedErr := errors.New("invalid token")
 		mockTokenMaker.On("VerifyToken", tokenString, token.UserRole).Return(nil, expectedErr)
 
-		authUserServ, err := auth.NewAuthUser(appCnfg, mockUserRep, mockTokenMaker, mockHasher)
+		authUserServ, err := auth.NewAuthUser(
+			appCnfg, mockUserRep,
+			mockTokenMaker, mockHasher,
+			mockOTPServ, authUserSessionRep,
+			loginAttemptRep, otpAttemptRep)
 		sCtx.Require().NoError(err)
 
 		// ACT

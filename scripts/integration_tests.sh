@@ -3,13 +3,13 @@
 # ALLURE_LAUNCH_START=$(date +%s000) \
 # ALLURE_LAUNCH_END=$(date +%s000) \
 # ALLURE_LAUNCH_NAME="unit-test-$(shell date +%Y%m%d-%H%M%S)" \
-# go test -v -run "TestEventRepSuite/EventRepSuite/" git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration/...;
+# go test -v -run "TestEventRepSuite/EventRepSuite/" github.com/CakeForKit/artworksDB.git/internal/tests/integration/...;
 # exit 0
 
 ALLURE_LAUNCH_START=$(date +%s000) \
 ALLURE_LAUNCH_END=$(date +%s000) \
 ALLURE_LAUNCH_NAME="unit-test-$(shell date +%Y%m%d-%H%M%S)" \
-go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration/...;
+go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integration/...;
 
 
 
@@ -41,6 +41,6 @@ go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integra
 # 			-e ALLURE_LAUNCH_END=$(date +%s000) \
 # 			-e ALLURE_LAUNCH_NAME="build-$(date +%Y%m%d-%H%M%S)" \
 # 			test-runner \
-# 			go test -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration; 
+# 			go test -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integration; 
 
 exit 0

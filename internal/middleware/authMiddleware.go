@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strings"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
+	"github.com/CakeForKit/artworksDB.git/internal/frontend"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
 	"github.com/gin-gonic/gin"
 )
 

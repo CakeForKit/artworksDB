@@ -6,7 +6,7 @@ import (
 	"log"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	_ "github.com/ClickHouse/clickhouse-go"
 	_ "github.com/lib/pq"
 )

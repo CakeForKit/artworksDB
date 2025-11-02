@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 )
 

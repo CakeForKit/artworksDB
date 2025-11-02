@@ -5,10 +5,10 @@ import (
 	"errors"
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
 	"github.com/google/uuid"
 )
 

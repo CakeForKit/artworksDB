@@ -4,10 +4,10 @@ import (
 	"errors"
 	"net/http"
 
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/adminserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/adminserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

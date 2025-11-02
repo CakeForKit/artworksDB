@@ -1,4 +1,4 @@
-module git.iu7.bmstu.ru/ped22u691/PPO.git
+module github.com/CakeForKit/artworksDB.git
 
 go 1.25.0
 

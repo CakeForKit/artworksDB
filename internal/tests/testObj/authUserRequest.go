@@ -3,14 +3,14 @@ package testobj
 import (
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
 	"github.com/google/uuid"
 )
 
 type AuthUserRequestMother interface {
-	RegisterDefault() auth.RegisterUserRequest
-	Login(login, password string) auth.LoginUserRequest
-	// RegisterDefaultP() *auth.RegisterUserRequest
+	RegisterDefault() authmodels.RegisterUserRequest
+	Login(login, password string) authmodels.LoginUserRequest
+	// RegisterDefaultP() *authmodels.RegisterUserRequest
 }
 
 func NewRegisterUserRequestMother() AuthUserRequestMother {
@@ -19,8 +19,8 @@ func NewRegisterUserRequestMother() AuthUserRequestMother {
 
 type authUserRequestMother struct{}
 
-func (um *authUserRequestMother) RegisterDefault() auth.RegisterUserRequest {
-	return auth.RegisterUserRequest{
+func (um *authUserRequestMother) RegisterDefault() authmodels.RegisterUserRequest {
+	return authmodels.RegisterUserRequest{
 		Username:       "test-username-" + uuid.NewString(),
 		Login:          "test-login-" + uuid.NewString(),
 		Password:       "test-password-" + uuid.NewString(),
@@ -29,15 +29,15 @@ func (um *authUserRequestMother) RegisterDefault() auth.RegisterUserRequest {
 	}
 }
 
-func (um *authUserRequestMother) Login(login, password string) auth.LoginUserRequest {
-	return auth.LoginUserRequest{
+func (um *authUserRequestMother) Login(login, password string) authmodels.LoginUserRequest {
+	return authmodels.LoginUserRequest{
 		Login:    login,
 		Password: password,
 	}
 }
 
-// func (um *authUserRequestMother) RegisterDefaultP() *auth.RegisterUserRequest {
-// 	return &auth.RegisterUserRequest{
+// func (um *authUserRequestMother) RegisterDefaultP() *authmodels.RegisterUserRequest {
+// 	return &authmodels.RegisterUserRequest{
 // 		Username:       "test-username-" + uuid.NewString(),
 // 		Login:          "test-login-" + uuid.NewString(),
 // 		Password:       "test-password-" + uuid.NewString(),

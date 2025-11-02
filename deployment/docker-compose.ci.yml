@@ -1,6 +1,6 @@
 # docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env up --build -d  postgres migrator
-# go test -v git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration
-# docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env run --rm test-runner go test -v git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration
+# go test -v github.com/CakeForKit/artworksDB.git/internal/tests/integration
+# docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env run --rm test-runner go test -v github.com/CakeForKit/artworksDB.git/internal/tests/integration
 services:
   test-runner:
     container_name: test_runner_artworks

@@ -3,7 +3,7 @@ package hasher_test
 import (
 	"testing"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
 	"github.com/stretchr/testify/assert"
 )
 

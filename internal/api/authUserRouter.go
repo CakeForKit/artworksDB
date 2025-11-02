@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"net/http"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
 	"github.com/gin-gonic/gin"
 )
 
@@ -26,7 +27,7 @@ func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu auth.AuthUser) {
 // @Description Регистрирует нового пользователя
 // @Tags аутентификация
 // @Accept json
-// @Param request body auth.RegisterUserRequest true "Данные для регистрации"
+// @Param request body authmodels.RegisterUserRequest true "Данные для регистрации"
 // @Success 200 "Пользователь зарегистрирован"
 // @Failure 400 "Неверные входные параметры"
 // @Failure 401 "Ошибка аутентификации"
@@ -37,7 +38,7 @@ func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu auth.AuthUser) {
 func (r *AuthUserRouter) Register(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req auth.RegisterUserRequest
+	var req authmodels.RegisterUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		fmt.Printf("Error %v", err)
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -60,7 +61,7 @@ func (r *AuthUserRouter) Register(c *gin.Context) {
 // @Description Аутентифицирует пользователя и возвращает токен доступа
 // @Tags аутентификация
 // @Accept json
-// @Param request body auth.LoginUserRequest true "Учетные данные для входа"
+// @Param request body authmodels.LoginUserRequest true "Учетные данные для входа"
 // @Success 200 "Пользователь успешно аутентифицирован"
 // @Failure 400 "Неверные входные параметры"
 // @Failure 401 "Ошибка аутентификации"
@@ -70,7 +71,7 @@ func (r *AuthUserRouter) Register(c *gin.Context) {
 func (r *AuthUserRouter) Login(c *gin.Context) {
 	ctx := c.Request.Context()
 
-	var req auth.LoginUserRequest
+	var req authmodels.LoginUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -86,7 +87,7 @@ func (r *AuthUserRouter) Login(c *gin.Context) {
 		return
 	}
 
-	rsp := auth.LoginUserResponse{
+	rsp := authmodels.LoginUserResponse{
 		AccessToken: accessToken,
 	}
 	c.JSON(http.StatusOK, rsp)

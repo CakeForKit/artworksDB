@@ -9,7 +9,7 @@ import (
 	"path/filepath"
 	"strconv"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"gonum.org/v1/plot"
 	"gonum.org/v1/plot/font"
 	"gonum.org/v1/plot/plotter"

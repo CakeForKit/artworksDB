@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 
-	querytime "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/query_time"
+	querytime "github.com/CakeForKit/artworksDB.git/internal/query_time"
 )
 
 func main() {

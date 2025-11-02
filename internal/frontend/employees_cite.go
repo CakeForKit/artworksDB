@@ -3,13 +3,13 @@ package frontend
 import (
 	"net/http"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend/components"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/frontend/gintemplrenderer"
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/artworkserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/authorserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/collectionserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
+	"github.com/CakeForKit/artworksDB.git/internal/frontend/components"
+	"github.com/CakeForKit/artworksDB.git/internal/frontend/gintemplrenderer"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/services/artworkserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/authorserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/collectionserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/eventserv"
 	"github.com/gin-gonic/gin"
 )
 

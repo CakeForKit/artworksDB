@@ -17,8 +17,8 @@ COPY . .
 
 # RUN CGO_ENABLED=0 GOOS=linux go list -m all
 # Перемещаем docs в правильное место (чтобы соответствовать пути модуля)
-# RUN mkdir -p /build/src/git.iu7.bmstu.ru/ped22u691/PPO.git && \
-    # mv docs /build/src/git.iu7.bmstu.ru/ped22u691/PPO.git/
+# RUN mkdir -p /build/src/github.com/CakeForKit/artworksDB.git && \
+    # mv docs /build/src/github.com/CakeForKit/artworksDB.git/
 
 # Собираем приложение с оптимизациями
 # CGO_ENABLED=0 - Генерирует полностью статический бинарный файл
@@ -41,7 +41,7 @@ COPY --from=builder /build/bin/artwork-app .
 # Копируем необходимые файлы конфигурации
 COPY --from=builder /build/configs ./configs
 COPY --from=builder /build/migrations ./migrations
-# COPY --from=builder /build/src/git.iu7.bmstu.ru/ped22u691/PPO.git/docs ./docs
+# COPY --from=builder /build/src/github.com/CakeForKit/artworksDB.git/docs ./docs
 
 # Устанавливаем зависимости (добавляем swag)
 RUN apk add --no-cache git bash && \

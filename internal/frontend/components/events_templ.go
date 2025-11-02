@@ -5,12 +5,13 @@ package components
 
 //lint:file-ignore SA4006 This context is only used if a nested component is present.
 
-import "github.com/a-h/templ"
-import templruntime "github.com/a-h/templ/runtime"
-
 import (
 	"fmt"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+
+	"github.com/a-h/templ"
+	templruntime "github.com/a-h/templ/runtime"
+
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 )
 
 func EventsPage(events []jsonreqresp.EventResponse, filter jsonreqresp.EventFilter) templ.Component {

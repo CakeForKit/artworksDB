@@ -3,7 +3,7 @@ package testobj
 import (
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
 	"github.com/google/uuid"
 )
 

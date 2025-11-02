@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"

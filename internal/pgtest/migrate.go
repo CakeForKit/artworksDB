@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"

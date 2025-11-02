@@ -4,8 +4,8 @@ import (
 	"context"
 	"testing"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
-	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"

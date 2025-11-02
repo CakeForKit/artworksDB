@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
 	"github.com/google/uuid"
 )
 

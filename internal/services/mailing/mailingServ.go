@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"strings"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
 	"github.com/google/uuid"
 )
 

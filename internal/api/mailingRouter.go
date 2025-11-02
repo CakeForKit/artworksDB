@@ -4,9 +4,9 @@ import (
 	"errors"
 	"net/http"
 
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/eventserv"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/mailing"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/services/eventserv"
+	"github.com/CakeForKit/artworksDB.git/internal/services/mailing"
 	"github.com/gin-gonic/gin"
 )
 

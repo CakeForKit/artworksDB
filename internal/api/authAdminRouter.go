@@ -4,8 +4,8 @@ import (
 	"errors"
 	"net/http"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
 	"github.com/gin-gonic/gin"
 )
 

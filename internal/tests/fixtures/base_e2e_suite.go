@@ -3,7 +3,7 @@ package fixtures
 import (
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
 )

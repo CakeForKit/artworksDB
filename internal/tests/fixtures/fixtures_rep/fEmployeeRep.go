@@ -3,10 +3,10 @@ package fixturesrep
 import (
 	"context"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
+	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )

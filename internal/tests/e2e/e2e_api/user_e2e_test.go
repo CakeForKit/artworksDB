@@ -5,18 +5,18 @@ import (
 	"net/http"
 	"testing"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/adminrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/artworkrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/authorrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/eventrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/fixtures"
-	fixturesrep "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/fixtures/fixtures_rep"
-	testobj "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/testObj"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/authorrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/collectionrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
+	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
+	"github.com/CakeForKit/artworksDB.git/internal/tests/fixtures"
+	fixturesrep "github.com/CakeForKit/artworksDB.git/internal/tests/fixtures/fixtures_rep"
+	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 	"github.com/ozontech/allure-go/pkg/framework/suite"
@@ -56,7 +56,7 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 
 		sCtx.Require().NoError(err)
 		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
-		var loginResp auth.LoginUserResponse
+		var loginResp authmodels.LoginUserResponse
 		err = s.client.GetBody(resp, &loginResp)
 		sCtx.Require().NoError(err)
 		sCtx.Require().NotEmpty(loginResp.AccessToken)

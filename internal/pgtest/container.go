@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"github.com/docker/go-connections/nat"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/wait"

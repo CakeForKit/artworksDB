@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )

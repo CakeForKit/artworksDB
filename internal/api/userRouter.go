@@ -3,8 +3,8 @@ package api
 import (
 	"net/http"
 
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/userservice"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/services/userservice"
 	"github.com/gin-gonic/gin"
 )
 

@@ -5,11 +5,11 @@ import (
 	"errors"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/employeerep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/hasher"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth/token"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
 	"github.com/google/uuid"
 )
 

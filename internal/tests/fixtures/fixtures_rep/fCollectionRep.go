@@ -3,8 +3,8 @@ package fixturesrep
 import (
 	"context"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/collectionrep"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/collectionrep"
 	"github.com/ozontech/allure-go/pkg/framework/provider"
 )
 

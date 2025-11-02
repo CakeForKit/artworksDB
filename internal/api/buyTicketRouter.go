@@ -5,10 +5,10 @@ import (
 	"errors"
 	"net/http"
 
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/buyticketstxrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/buyticketserv"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/buyticketstxrep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/buyticketserv"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

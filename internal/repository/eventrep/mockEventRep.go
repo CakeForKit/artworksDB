@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	jsonreqresp "git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models/json_req_resp"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/google/uuid"
 	"github.com/stretchr/testify/mock"
 )

@@ -93,7 +93,7 @@ clear_docker:
 # 	ALLURE_LAUNCH_END=$(date +%s000) \
 # 	ALLURE_OUTPUT_PATH=$(shell pwd) \
 # 	ALLURE_LAUNCH_NAME="build-$(shell date +%Y%m%d-%H%M%S)" \
-# 	go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/...; \
+# 	go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/services/...; \
 # 	SERVICES_EXIT_CODE=$$?; \
 # 	if [ $$SERVICES_EXIT_CODE -eq 0 ]; then \
 # 		docker compose -f ./deployment/docker-compose.ci.yml \
@@ -104,7 +104,7 @@ clear_docker:
 # 			-e ALLURE_OUTPUT_PATH=/app \
 # 			-e ALLURE_LAUNCH_NAME="build-$(date +%Y%m%d-%H%M%S)" \
 # 			test-runner \
-# 			go test -v -shuffle=on git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration; \
+# 			go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integration; \
 # 			INTEGRATION_EXIT_CODE=$$?; \
 # 	fi; \
 # 	exit 0
@@ -156,7 +156,7 @@ clear_docker:
 
 # run:
 # 	docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env up --build  test-runner
-# # 	docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env run -T --rm test-runner go test -v git.iu7.bmstu.ru/ped22u691/PPO.git/internal/tests/integration 
+# # 	docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env run -T --rm test-runner go test -v github.com/CakeForKit/artworksDB.git/internal/tests/integration 
 
 # up:
 # 	docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env up --build -d postgres migrator

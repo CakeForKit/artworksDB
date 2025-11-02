@@ -11,8 +11,8 @@ import (
 	"sync"
 	"time"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/cnfg"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/pgtest"
+	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
+	"github.com/CakeForKit/artworksDB.git/internal/pgtest"
 	sq "github.com/Masterminds/squirrel"
 	"github.com/google/uuid"
 	_ "github.com/jackc/pgx/v5/stdlib"

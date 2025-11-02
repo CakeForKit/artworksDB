@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/models"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/repository/userrep"
-	"git.iu7.bmstu.ru/ped22u691/PPO.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/models"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
 )
 
 type UserService interface {
