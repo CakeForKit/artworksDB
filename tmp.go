@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	emailCnfg := cnfg.DefaultEmailCnfg()
+	emailCnfg := cnfg.LoadEmailCnfg()
 	s := emailserv.NewEmailService(
 		emailCnfg.Host,
 		emailCnfg.Port,
@@ -23,7 +23,7 @@ func main() {
 		fmt.Printf("Error: %v", err)
 	}
 
-	emailReaderCnfg := cnfg.DefaultEmailReaderCnfg()
+	emailReaderCnfg := cnfg.LoadEmailReaderCnfg()
 
 	emailReader := emailreader.NewEmailReader(
 		emailReaderCnfg.Host,     // IMAP хост

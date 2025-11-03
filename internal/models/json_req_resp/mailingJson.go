@@ -8,3 +8,7 @@ type MailingResponse struct {
 type ChangeSubscribeToMailingRequest struct {
 	Subscribe bool `json:"subscribe" binding:"boolean" example:"true"`
 }
+
+type ChangePasswordRequest struct {
+	Password string `json:"password" binding:"required,min=4" example:"12345678"`
+}

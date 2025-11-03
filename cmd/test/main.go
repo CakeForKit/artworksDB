@@ -157,7 +157,7 @@ func main() {
 	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
 	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
 	otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
-	emailCnfg := cnfg.DefaultEmailCnfg()
+	emailCnfg := cnfg.LoadEmailCnfg()
 	emailServ := emailserv.NewEmailService(
 		emailCnfg.Host,
 		emailCnfg.Port,
@@ -183,7 +183,7 @@ func main() {
 		panic(err)
 	}
 	// serv
-	userServ := userservice.NewUserService(userRep, authZ)
+	userServ := userservice.NewUserService(userRep, authZ, hasher)
 	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
 	buyTicketServ, _ := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
 	collectionServ := collectionserv.NewCollectionServ(collectionRep)

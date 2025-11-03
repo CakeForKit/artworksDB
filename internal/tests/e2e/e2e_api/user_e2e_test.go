@@ -1,27 +1,5 @@
 package e2eapi_test
 
-// import (
-// 	"context"
-// 	"net/http"
-// 	"testing"
-
-// 	"github.com/CakeForKit/artworksDB.git/internal/models"
-// 	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/authorrep"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/collectionrep"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
-// 	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
-// 	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
-// 	"github.com/CakeForKit/artworksDB.git/internal/tests/fixtures"
-// 	fixturesrep "github.com/CakeForKit/artworksDB.git/internal/tests/fixtures/fixtures_rep"
-// 	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
-// 	"github.com/google/uuid"
-// 	"github.com/ozontech/allure-go/pkg/framework/provider"
-// 	"github.com/ozontech/allure-go/pkg/framework/suite"
-// )
-
 // type UserE2ESuite struct {
 // 	fixtures.BaseE2ESuite
 // 	client *fixtures.HTTPClient

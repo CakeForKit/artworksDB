@@ -6,7 +6,9 @@ WHERE schemaname = 'public';
 
 
 
-select * from artworks;
+select * from users;
+
+delete from users where email = 'tmpforread@mail.ru';
 
 select *
 from artworks art 

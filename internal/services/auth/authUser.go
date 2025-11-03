@@ -66,7 +66,6 @@ func (s *authUser) LoginUser(ctx context.Context, lur authmodels.LoginUserReques
 	if err := s.loginAttemptRep.Add(lur.Login); err != nil {
 		return uuid.Nil, fmt.Errorf("%v: %w", ErrAuthUser, err)
 	}
-
 	user, err := s.userrep.GetByLogin(ctx, lur.Login)
 	if err != nil {
 		return uuid.Nil, fmt.Errorf("%v: %w", ErrAuthUser, err)

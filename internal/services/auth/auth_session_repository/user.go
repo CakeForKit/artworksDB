@@ -58,17 +58,18 @@ func (r *authUserSessionRep) CheckOTP(sessionID uuid.UUID, otp string) (*OTPSess
 	baseErr := fmt.Errorf("%w: CheckOTP", ErrAuthUserSessionRep)
 	val, ok := r.sessions.Load(sessionID)
 	if !ok {
-		return nil, fmt.Errorf("%w: %w", baseErr, ErrSessionNotFound)
+		return nil, fmt.Errorf("%v: %w", baseErr, ErrSessionNotFound)
 	}
 	session, ok := val.(*OTPSession)
 	if !ok {
-		return nil, fmt.Errorf("%w: %w", baseErr, ErrSerialyzeSession)
+		return nil, fmt.Errorf("%v: %w", baseErr, ErrSerialyzeSession)
 	}
 	if time.Now().UTC().Sub(session.CreatedAt) > r.durationSession {
-		return nil, fmt.Errorf("%w: %w", baseErr, ErrExpiresSession)
+		return nil, fmt.Errorf("%v: %w", baseErr, ErrExpiresSession)
 	}
 	if session.RequiresOTP != otp {
-		return nil, fmt.Errorf("%w: %w", baseErr, ErrWrongOTP)
+		return nil, fmt.Errorf("%v: %w", baseErr, ErrWrongOTP)
+		// return nil, fmt.Errorf("%v: %w (exp: %s, get: %s)", baseErr, ErrWrongOTP, session.RequiresOTP, otp)
 	}
 	return session, nil
 }

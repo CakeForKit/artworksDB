@@ -3,3 +3,4 @@ tmp
 *:Zone.Identifier
 allure-results
 allure-report
+configs/email.env 

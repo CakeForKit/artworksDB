@@ -24,6 +24,8 @@ type AppConfig struct {
 	BuyTicketTransactionDuration time.Duration `mapstructure:"buy_ticket_transaction_duration"`
 	Port                         int           `mapstructure:"port"`
 	AppHost                      string
+	MaxLoginAttemps              int           `mapstructure:"max_login_attempts"`
+	DurationLoginSession         time.Duration `mapstructure:"duration_login_session"`
 }
 
 type DatebaseConfig struct {

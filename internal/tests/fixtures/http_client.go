@@ -31,7 +31,7 @@ func (c *HTTPClient) DoRequest(method, path string, body interface{}) (*http.Res
 			return nil, err
 		}
 	}
-
+	// fmt.Printf("Path: %s, Request body: %v\n\n\n", path, body)
 	req, err := http.NewRequest(method, c.BaseURL+path, bytes.NewBuffer(jsonData))
 	if err != nil {
 		return nil, err
@@ -51,4 +51,30 @@ func (c *HTTPClient) GetBody(resp *http.Response, target interface{}) error {
 		return err
 	}
 	return json.Unmarshal(body, target)
+}
+
+func (c *HTTPClient) DoAuthRequest(method, path string, body interface{}, token string) (*http.Response, error) {
+	var jsonData []byte
+	if body != nil {
+		var err error
+		jsonData, err = json.Marshal(body)
+		if err != nil {
+			return nil, err
+		}
+	}
+
+	req, err := http.NewRequest(method, c.BaseURL+path, bytes.NewBuffer(jsonData))
+	if err != nil {
+		return nil, err
+	}
+
+	if token != "" {
+		req.Header.Set("Authorization", "bearer "+token)
+	}
+
+	if body != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+
+	return c.Client.Do(req)
 }

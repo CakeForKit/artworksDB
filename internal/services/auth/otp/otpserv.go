@@ -9,6 +9,8 @@ import (
 	"github.com/google/uuid"
 )
 
+const OTPSubject = "Код подтверждения"
+
 type OTPService interface {
 	SendOTP(user models.User) (string, error) // отправить код на почту (или др)
 }
@@ -29,7 +31,7 @@ func NewOTPService(emailServ emailserv.EmailService) OTPService {
 
 func (s *EmailOTPServ) SendOTP(user models.User) (string, error) {
 	otpCode := uuid.New().String()[:4]
-	err := s.emailServ.SendEmail([]string{user.GetEmail()}, "Код подтверждения", otpCode)
+	err := s.emailServ.SendEmail([]string{user.GetEmail()}, OTPSubject, otpCode)
 	if err != nil {
 		return "", fmt.Errorf("%v: %w", ErrOTPService, err)
 	}

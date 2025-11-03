@@ -276,6 +276,15 @@ definitions:
     - cntTickets
     - eventID
     type: object
+  jsonreqresp.ChangePasswordRequest:
+    properties:
+      password:
+        example: "12345678"
+        minLength: 4
+        type: string
+    required:
+    - password
+    type: object
   jsonreqresp.ChangeSubscribeToMailingRequest:
     properties:
       subscribe:
@@ -1669,6 +1678,37 @@ paths:
       security:
       - ApiKeyAuth: []
       summary: Update mailing subscription
+      tags:
+      - User
+  /user/self/change-password:
+    put:
+      consumes:
+      - application/json
+      description: Updates authenticated user's password
+      parameters:
+      - description: bearer {token}
+        in: header
+        name: Authorization
+        required: true
+        type: string
+      - description: New password data
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/jsonreqresp.ChangePasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Password changed successfully
+        "400":
+          description: Invalid request body
+        "500":
+          description: Internal server error
+      security:
+      - ApiKeyAuth: []
+      summary: Change password
       tags:
       - User
 swagger: "2.0"

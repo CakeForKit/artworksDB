@@ -16,7 +16,6 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"github.com/CakeForKit/artworksDB.git/internal/frontend"
 	"github.com/CakeForKit/artworksDB.git/internal/middleware"
-	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/authorrep"
@@ -48,43 +47,12 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func main2() {
-	ctx := context.Background()
-	clhCreds, err := cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
-	if err != nil {
-		panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
-	}
-	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/", "config", "yaml")
-	if err != nil {
-		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
-	}
-	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
-	if err != nil {
-		panic(fmt.Errorf("cannot load AppConfig: %v", err))
-	}
-	arep, err := eventrep.NewEventRep(ctx, appCnfg.Datebase, clhCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	res, err := arep.GetAll(ctx, &jsonreqresp.EventFilter{})
-	if err != nil {
-		panic(err)
-	}
-	for _, a := range res {
-		fmt.Printf("%+v\n\n", *a)
-	}
-
-}
-
 func main() {
 	ctx := context.Background()
 	engine := gin.New()
-	// engine.Handle("OPTIONS", "/api/*path", func(c *gin.Context) {
-	// 	c.Header("Access-Control-Allow-Origin", "*")
-	// 	c.Header("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
-	// 	c.Header("Access-Control-Allow-Headers", "Content-Type")
-	// 	c.Status(200)
-	// })
+	engine.Use(gin.Logger())
+	engine.Use(gin.Recovery())
+
 	// Настройка CORS
 	engine.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // Можно указать конкретные домены вместо "*"
@@ -109,9 +77,6 @@ func main() {
 	// }
 	// defer projLogger.Sync()
 	// apiGroup.Use(middleware.LogMiddleware(projLogger))
-
-	engine.Use(gin.Logger())
-	engine.Use(gin.Recovery())
 
 	// ----- Config ------
 	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
@@ -199,12 +164,10 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	durationSession, _ := time.ParseDuration("10m")
-	maxAttempts := 5
-	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
-	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
-	otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
-	emailCnfg := cnfg.DefaultEmailCnfg()
+	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(appCnfg.DurationLoginSession)
+	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(appCnfg.MaxLoginAttemps, appCnfg.DurationLoginSession)
+	otpAttemptRep := attemptsrep.NewOTPAttemptRep(appCnfg.MaxLoginAttemps, appCnfg.DurationLoginSession)
+	emailCnfg := cnfg.LoadEmailCnfg()
 	emailServ := emailserv.NewEmailService(
 		emailCnfg.Host,
 		emailCnfg.Port,
@@ -230,7 +193,7 @@ func main() {
 		panic(err)
 	}
 	// serv
-	userServ := userservice.NewUserService(userRep, authZ)
+	userServ := userservice.NewUserService(userRep, authZ, hasher)
 	adminserv := adminserv.NewAdminService(employeeRep, userRep, authZ)
 	buyTicketServ, _ := buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
 	collectionServ := collectionserv.NewCollectionServ(collectionRep)

@@ -7,7 +7,9 @@ import (
 
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	attemptsrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/attempts_rep"
 	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -74,14 +76,16 @@ func (r *AuthUserRouter) Login(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	sessionID, err := r.authu.LoginUser(ctx, req)
 	if err != nil {
-		if errors.Is(err, userrep.ErrUserNotFound) {
+		if errors.Is(err, attemptsrep.ErrReachedMaxLoginAttempts) {
+			c.JSON(http.StatusTooManyRequests, gin.H{"error": err.Error()})
+		} else if errors.Is(err, userrep.ErrUserNotFound) || errors.Is(err, hasher.ErrPassword) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		}
+
 		return
 	}
 

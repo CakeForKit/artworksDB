@@ -4,6 +4,8 @@ app:
   access_token_duration: "15h"
   buy_ticket_transaction_duration: "15m"
   port: 8080
+  max_login_attempts: 3
+  duration_login_session: "5s"
 
 datebase:
   max_open_conns: 10      # Максимальное количество открытых соединений

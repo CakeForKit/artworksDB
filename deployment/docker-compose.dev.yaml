@@ -10,6 +10,10 @@ services:
       - GIN_MODE=debug
       - AIR_WATCH=.  # Следить за изменениями во всей директории
       - POSTGRES_HOST=postgres_artworks
+      - APP_EMAIL_PASSWORD=${APP_EMAIL_PASSWORD}
+      - APP_EMAIL=${APP_EMAIL}
+      - TEST_USER_EMAIL=${TEST_USER_EMAIL}
+      - TEST_USER_EMAIL_PASSWORD=${TEST_USER_EMAIL_PASSWORD}
     volumes:
       - ../:/app          # Монтируем весь проект в контейнер
       - /app/go/pkg/mod   # Кэш для модулей Go

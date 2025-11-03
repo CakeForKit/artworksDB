@@ -10,7 +10,7 @@ import (
 type AuthUserRequestMother interface {
 	RegisterDefault() authmodels.RegisterUserRequest
 	Login(login, password string) authmodels.LoginUserRequest
-	// RegisterDefaultP() *authmodels.RegisterUserRequest
+	RegisterWithEmail(email string) authmodels.RegisterUserRequest
 }
 
 func NewRegisterUserRequestMother() AuthUserRequestMother {
@@ -36,12 +36,12 @@ func (um *authUserRequestMother) Login(login, password string) authmodels.LoginU
 	}
 }
 
-// func (um *authUserRequestMother) RegisterDefaultP() *authmodels.RegisterUserRequest {
-// 	return &authmodels.RegisterUserRequest{
-// 		Username:       "test-username-" + uuid.NewString(),
-// 		Login:          "test-login-" + uuid.NewString(),
-// 		Password:       "test-password-" + uuid.NewString(),
-// 		Email:          fmt.Sprintf("user%s@test.com", uuid.NewString()),
-// 		SubscribeEmail: true,
-// 	}
-// }
+func (um *authUserRequestMother) RegisterWithEmail(email string) authmodels.RegisterUserRequest {
+	return authmodels.RegisterUserRequest{
+		Username:       "test-username-" + uuid.NewString(),
+		Login:          "test-login-" + uuid.NewString(),
+		Password:       "test-password-" + uuid.NewString(),
+		Email:          email,
+		SubscribeEmail: true,
+	}
+}

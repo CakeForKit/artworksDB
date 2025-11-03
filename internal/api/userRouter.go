@@ -1,6 +1,7 @@
 package api
 
 import (
+	"fmt"
 	"net/http"
 
 	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
@@ -20,6 +21,7 @@ func NewUserRouter(router *gin.RouterGroup, userServ userservice.UserService) Us
 	gr := router.Group("self")
 	gr.GET("", r.GetSelf)
 	gr.PUT("", r.ChangeSubscribeToMailing)
+	gr.PUT("/change-password", r.ChangePassword)
 
 	return r
 }
@@ -66,6 +68,36 @@ func (r *UserRouter) ChangeSubscribeToMailing(c *gin.Context) {
 		return
 	}
 	err := r.userServ.ChangeSubscribeToMailing(ctx, req.Subscribe)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{})
+}
+
+// ChangePassword changes user's password
+// @Summary Change password
+// @Description Updates authenticated user's password
+// @Tags User
+// @Accept json
+// @Produce json
+// @Security ApiKeyAuth
+// @Param Authorization header string true "bearer {token}"
+// @Param request body jsonreqresp.ChangePasswordRequest true "New password data"
+// @Success 200 "Password changed successfully"
+// @Failure 400 "Invalid request body"
+// @Failure 500 "Internal server error"
+// @Router /user/self/change-password [put]
+func (r *UserRouter) ChangePassword(c *gin.Context) {
+	ctx := c.Request.Context()
+
+	var req jsonreqresp.ChangePasswordRequest
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		return
+	}
+	fmt.Printf("ChangePassword: ChangePasswordRequest: %v\n\n", req)
+	err := r.userServ.ChangePassword(ctx, req.Password)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return

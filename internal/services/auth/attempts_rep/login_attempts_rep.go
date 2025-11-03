@@ -53,7 +53,8 @@ func (r *loginAttemptUserRep) Add(login string) error {
 	if !ok {
 		return fmt.Errorf("%w: %w", baseErr, ErrSerialyzeSession)
 	}
-	if attempt.CreatedAt.Sub(time.Now().UTC()) > r.durationSession {
+
+	if time.Now().UTC().Sub(attempt.CreatedAt) > r.durationSession {
 		attempt.Count = 1
 		attempt.CreatedAt = time.Now().UTC()
 		return nil

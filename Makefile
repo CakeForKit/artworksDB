@@ -10,6 +10,7 @@ DC_CI := ./deployment/docker-compose.ci.yml
 TEST_DB_ENV := ./configs/test_db.env
 DC_DEV := ./deployment/docker-compose.dev.yaml
 DB_ENV := ./configs/db.env
+EMAIL_ENV := ./configs/email.env
 
 .PHONY: allure
 allure: unit_test integration_test e2e_test report_allure open_allure
@@ -44,7 +45,7 @@ open_allure:
 
 .PHONY: run_app
 run_app:
-	docker compose -v -f $(DC_DEV) --env-file $(DB_ENV) up --build app
+	docker compose -v -f $(DC_DEV) --env-file $(DB_ENV) --env-file $(EMAIL_ENV) up --build app
 
 .PHONY: down_app
 down_app:
@@ -66,8 +67,8 @@ stop_serv:
 .PHONY: run_test_app
 run_test_app:
 # --no-cache
-	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) build --progress=plain test-runner
-	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) up  test-runner
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) --env-file $(EMAIL_ENV) build --progress=plain test-runner
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) --env-file $(EMAIL_ENV) up  test-runner
 
 .PHONY: down_test_app
 down_test_app:
