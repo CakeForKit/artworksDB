@@ -75,7 +75,7 @@ jobs:
         if: steps.integration-tests.outcome == 'success'
         run: |
           docker compose -f ./deployment/docker-compose.ci.yml \
-            --env-file ./configs/test_db.env \up --build -d redis_artworks test-runner 
+            --env-file ./configs/test_db.env up --build -d redis_artworks test-runner 
         env:
           APP_EMAIL_PASSWORD: ${{ secrets.APP_EMAIL_PASSWORD }}
           APP_EMAIL: ${{ secrets.APP_EMAIL }}
