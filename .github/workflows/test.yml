@@ -96,7 +96,7 @@ jobs:
             -e TEST_USER_EMAIL_PASSWORD=${{ secrets.TEST_USER_EMAIL_PASSWORD }} \
             -T test-runner \
             go test -v ./internal/tests/e2e/e2e_auth || true
-            
+
       - name: Run E2E Tests MVP
         if: steps.test-runner-up.outcome == 'success'
         run: |
@@ -104,6 +104,10 @@ jobs:
             exec \
             -e ALLURE_OUTPUT_PATH=/app \
             -e ALLURE_OUTPUT_DIR=allure-results \
+            -e APP_EMAIL_PASSWORD=${{ secrets.APP_EMAIL_PASSWORD }} \
+            -e APP_EMAIL=${{ secrets.APP_EMAIL }} \
+            -e TEST_USER_EMAIL=${{ secrets.TEST_USER_EMAIL }} \
+            -e TEST_USER_EMAIL_PASSWORD=${{ secrets.TEST_USER_EMAIL_PASSWORD }} \
             -T test-runner \
             go test ./internal/tests/e2e/e2e_api
           docker cp test_runner_artworks:/app/allure-results ${{ github.workspace }}/allure-results-e2e || true

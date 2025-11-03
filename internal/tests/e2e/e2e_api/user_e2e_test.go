@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"testing"
 	"time"
 
@@ -15,6 +16,7 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/repository/collectionrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
+	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
 	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/otp"
 	"github.com/CakeForKit/artworksDB.git/internal/services/emailreader"
@@ -28,7 +30,9 @@ import (
 
 type UserE2ESuite struct {
 	fixtures.BaseE2ESuite
-	client *fixtures.HTTPClient
+	client                 *fixtures.HTTPClient
+	registerUserReqCreator testobj.AuthUserRequestMother
+	registerUserData       authmodels.RegisterUserRequest
 }
 
 func TestUserE2E(t *testing.T) {
@@ -41,21 +45,42 @@ func (s *UserE2ESuite) BeforeAll(t provider.T) {
 	s.client = fixtures.NewHTTPClient(s.BaseURL)
 }
 
+func (s *UserE2ESuite) BeforeEach(t provider.T) {
+	s.registerUserReqCreator = testobj.NewRegisterUserRequestMother()
+	s.registerUserData = s.registerUserReqCreator.RegisterWithEmail(s.EmailReader.Username)
+	t.WithNewStep("Register new user", func(sCtx provider.StepCtx) {
+		resp, err := s.client.DoRequest("POST", "/auth-user/register", s.registerUserData)
+		sCtx.Require().NoError(err)
+		sCtx.Assert().Equal(http.StatusOK, resp.StatusCode)
+		// respText := ""
+		// bodyBytes, err := io.ReadAll(resp.Body)
+		// if err == nil {
+		// 	respText = string(bodyBytes)
+		// }
+		// fmt.Printf("respText: %s\n\n", respText)
+
+	})
+}
+
+func (s *UserE2ESuite) AfterEach(t provider.T) {
+	t.WithNewStep("Delete user", func(sCtx provider.StepCtx) {
+		ctx := context.Background()
+		userRep, err := userrep.NewUserRep(ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)
+		sCtx.Require().NoError(err)
+		user, err := userRep.GetByLogin(ctx, s.registerUserData.Login)
+		sCtx.Require().NoError(err)
+		userRep.Delete(ctx, user.GetID())
+	})
+}
+
 func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 	t.Tag("e2e")
 	t.Description("User register, auth, search events")
 
 	// var accessToken string
-	registerUserReqCreator := testobj.NewRegisterUserRequestMother()
-	registerReq := registerUserReqCreator.RegisterWithEmail(s.EmailReader.Username)
-	t.WithNewStep("Register new user", func(sCtx provider.StepCtx) {
-		resp, err := s.client.DoRequest("POST", "/auth-user/register", registerReq)
-		sCtx.Require().NoError(err)
-		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
-	})
 
 	t.WithNewStep("Login new user", func(sCtx provider.StepCtx) {
-		loginReq := registerUserReqCreator.Login(registerReq.Login, registerReq.Password)
+		loginReq := s.registerUserReqCreator.Login(s.registerUserData.Login, s.registerUserData.Password)
 		resp, err := s.client.DoRequest("POST", "/auth-user/login", loginReq)
 
 		sCtx.Require().NoError(err)
@@ -76,7 +101,7 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 			Subject: otp.OTPSubject,
 		})
 		sCtx.Require().NoError(err)
-		OTPCode := email.Body
+		OTPCode := strings.ReplaceAll(email.Body, "\r\n", "")
 
 		login2faReq := authmodels.Login2FAUserRequest{
 			SessionAuthID: sessionID,
@@ -85,7 +110,13 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 
 		resp, err = s.client.DoRequest("POST", "/auth-user/login-2fa", login2faReq)
 		sCtx.Require().NoError(err)
-		sCtx.Require().Equal(http.StatusOK, resp.StatusCode)
+		sCtx.Assert().Equal(http.StatusOK, resp.StatusCode)
+		// respText := ""
+		// bodyBytes, err := io.ReadAll(resp.Body)
+		// if err == nil {
+		// 	respText = string(bodyBytes)
+		// }
+		// fmt.Printf("respText: %s\n\n", respText)
 
 		var loginResp authmodels.Login2FAUserResponse
 		err = s.client.GetBody(resp, &loginResp)
@@ -131,4 +162,5 @@ func (s *UserE2ESuite) TestUser_MVP(t provider.T) {
 		}
 		fixturesrep.AssertEventResponsesAreInRes(t, eventResp, expectedEventResp)
 	})
+
 }
