@@ -9,13 +9,15 @@ import (
 )
 
 type GodogTestConfig struct {
-	BaseURL     string
-	AppCnfg     *cnfg.AppConfig
-	EmailCnfg   *cnfg.EmailCnfg
-	DBCreds     *cnfg.DatebaseCredentials
-	DBCnfg      *cnfg.DatebaseConfig
-	RedisCreds  *cnfg.RedisCredentials
-	EmailReader *emailreader.EmailReader
+	BaseURL string
+	AppCnfg *cnfg.AppConfig
+
+	DBCreds         *cnfg.DatebaseCredentials
+	DBCnfg          *cnfg.DatebaseConfig
+	RedisCreds      *cnfg.RedisCredentials
+	EmailCnfg       *cnfg.EmailCnfg
+	EmailReaderCnfg *cnfg.EmailReaderCnfg
+	EmailReader     *emailreader.EmailReader
 }
 
 func NewGodogTestConfig() (*GodogTestConfig, error) {
@@ -25,20 +27,21 @@ func NewGodogTestConfig() (*GodogTestConfig, error) {
 		return nil, fmt.Errorf("failed to load config: %w", err)
 	}
 	testConf.AppCnfg = appCnfg
-	testConf.EmailCnfg = cnfg.LoadEmailCnfg()
-
 	testConf.DBCreds = dbCreds
 	testConf.DBCnfg = dbCnfg
 	testConf.RedisCreds = redisCreds
 	testConf.BaseURL = fmt.Sprintf("http://%s:%d/api/v1", appCnfg.AppHost, appCnfg.Port)
-	emailReaderCnfg := cnfg.LoadEmailReaderCnfg()
+
+	testConf.EmailCnfg = cnfg.LoadEmailCnfg()
+	testConf.EmailReaderCnfg = cnfg.LoadEmailReaderCnfg()
 	testConf.EmailReader = emailreader.NewEmailReader(
-		emailReaderCnfg.Host,     // IMAP хост
-		emailReaderCnfg.Port,     // IMAP порт
-		emailReaderCnfg.Username, // Email
-		emailReaderCnfg.Password, // Пароль
+		testConf.EmailReaderCnfg.Host,     // IMAP хост
+		testConf.EmailReaderCnfg.Port,     // IMAP порт
+		testConf.EmailReaderCnfg.Username, // Email
+		testConf.EmailReaderCnfg.Password, // Пароль
 	)
+
 	fmt.Printf("testConf.EmailCnfg: %v\n", testConf.EmailCnfg)
-	fmt.Printf("emailReaderCnfg: %v\n\n", emailReaderCnfg)
+	fmt.Printf("emailReaderCnfg: %v\n\n", testConf.EmailReaderCnfg)
 	return testConf, nil
 }

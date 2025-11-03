@@ -59,7 +59,8 @@ func InitializeLoginScenario(sc *godog.ScenarioContext) {
 		}
 
 		registerUserReqCreator := testobj.NewRegisterUserRequestMother()
-		registerReq := registerUserReqCreator.RegisterWithEmail("tmpforread@mail.ru")
+		fmt.Printf("login_test.go Before: %s == %s\n", regCtx.baseConf.EmailReader.Username, "tmpforread@mail.ru")
+		registerReq := registerUserReqCreator.RegisterWithEmail(regCtx.baseConf.EmailReader.Username) // "tmpforread@mail.ru"
 		resp, err := regCtx.client.DoRequest("POST", "/auth-user/register", registerReq)
 		if err != nil {
 			return ctx, err
