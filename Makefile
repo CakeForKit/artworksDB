@@ -68,7 +68,7 @@ stop_serv:
 run_test_app:
 # --no-cache
 	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) --env-file $(EMAIL_ENV) build --progress=plain test-runner
-	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) --env-file $(EMAIL_ENV) up  test-runner
+	docker compose -v -f $(DC_CI) --env-file $(TEST_DB_ENV) --env-file $(EMAIL_ENV) up  test-runner -d
 
 .PHONY: down_test_app
 down_test_app:

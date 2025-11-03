@@ -26,6 +26,7 @@ func NewGodogTestConfig() (*GodogTestConfig, error) {
 	}
 	testConf.AppCnfg = appCnfg
 	testConf.EmailCnfg = cnfg.LoadEmailCnfg()
+
 	testConf.DBCreds = dbCreds
 	testConf.DBCnfg = dbCnfg
 	testConf.RedisCreds = redisCreds
@@ -37,6 +38,7 @@ func NewGodogTestConfig() (*GodogTestConfig, error) {
 		emailReaderCnfg.Username, // Email
 		emailReaderCnfg.Password, // Пароль
 	)
+	fmt.Printf("testConf.EmailCnfg: %v\n", testConf.EmailCnfg)
 	fmt.Printf("emailReaderCnfg: %v\n\n", emailReaderCnfg)
 	return testConf, nil
 }

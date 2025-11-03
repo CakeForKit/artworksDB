@@ -12,19 +12,19 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-      # redis_artworks:
-      #   condition: service_healthy
-
-    # command: tail -f /dev/null # Просто держим контейнер alive
     environment:
       - POSTGRES_HOST=test_postgres_artworks
       - GIN_MODE=debug
-      - AIR_WATCH=.  # Следить за изменениями во всей директории
+      - AIR_WATCH=. 
+      - APP_EMAIL_PASSWORD=${APP_EMAIL_PASSWORD}
+      - APP_EMAIL=${APP_EMAIL}
+      - TEST_USER_EMAIL=${TEST_USER_EMAIL}
+      - TEST_USER_EMAIL_PASSWORD=${TEST_USER_EMAIL_PASSWORD}
     volumes:
-      - ../:/app          # Монтируем весь проект в контейнер
-      - /app/go/pkg/mod   # Кэш для модулей Go
-      - /app/bin          # Для бинарников (если нужно)
-    command: air -c ./cmd/test/.air.toml  # Заменяем стандартную команду на air
+      - ../:/app          
+      - /app/go/pkg/mod   
+      - /app/bin         
+    command: air -c ./cmd/test/.air.toml  
 
     networks:
       - test-network

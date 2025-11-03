@@ -10,7 +10,6 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/api"
 	"github.com/CakeForKit/artworksDB.git/internal/cnfg"
 	"github.com/CakeForKit/artworksDB.git/internal/middleware"
-	"github.com/CakeForKit/artworksDB.git/internal/projlog"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/adminrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/authorrep"
@@ -44,6 +43,8 @@ func main() {
 	fmt.Print("TEST MAIN\n\n")
 	ctx := context.Background()
 	engine := gin.New()
+	engine.Use(gin.Logger())
+	engine.Use(gin.Recovery())
 
 	engine.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"*"}, // Можно указать конкретные домены вместо "*"
@@ -57,18 +58,17 @@ func main() {
 		c.AbortWithStatus(http.StatusNoContent)
 	})
 	apiGroup := engine.Group("/api/v1")
-	// engine.Use(gin.Logger())
-	logCnfg, err := cnfg.GetLogConfig()
-	if err != nil {
-		panic(fmt.Errorf("cannot load LogConfig: %v", err))
-	}
-	projLogger, err := projlog.NewLogger(logCnfg)
-	if err != nil {
-		panic(err)
-	}
-	defer projLogger.Sync()
-	apiGroup.Use(middleware.LogMiddleware(projLogger))
-	engine.Use(gin.Recovery())
+
+	// logCnfg, err := cnfg.GetLogConfig()
+	// if err != nil {
+	// 	panic(fmt.Errorf("cannot load LogConfig: %v", err))
+	// }
+	// projLogger, err := projlog.NewLogger(logCnfg)
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer projLogger.Sync()
+	// apiGroup.Use(middleware.LogMiddleware(projLogger))
 
 	// ----- Config ------
 	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
@@ -152,11 +152,9 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
-	durationSession, _ := time.ParseDuration("10m")
-	maxAttempts := 5
-	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(durationSession)
-	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(maxAttempts, durationSession)
-	otpAttemptRep := attemptsrep.NewOTPAttemptRep(maxAttempts, durationSession)
+	authUserSessionRep := authsessionrep.NewAuthUserSessionRep(appCnfg.DurationLoginSession)
+	loginAttemptRep := attemptsrep.NewLoginAttemptUserRep(appCnfg.MaxLoginAttemps, appCnfg.DurationLoginSession)
+	otpAttemptRep := attemptsrep.NewOTPAttemptRep(appCnfg.MaxLoginAttemps, appCnfg.DurationLoginSession)
 	emailCnfg := cnfg.LoadEmailCnfg()
 	emailServ := emailserv.NewEmailService(
 		emailCnfg.Host,

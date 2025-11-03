@@ -18,6 +18,7 @@ func main() {
 		emailCnfg.Password,
 		emailCnfg.From,
 	)
+	fmt.Printf("mail: %s, password: %s\n", emailCnfg.From, emailCnfg.Password)
 	err := s.SendEmail([]string{"tmpforread@mail.ru"}, "subject", "body2")
 	if err != nil {
 		fmt.Printf("Error: %v", err)
