@@ -41,7 +41,7 @@ func NewGodogTestConfig() (*GodogTestConfig, error) {
 		testConf.EmailReaderCnfg.Password, // Пароль
 	)
 
-	fmt.Printf("testConf.EmailCnfg: %v\n", testConf.EmailCnfg)
-	fmt.Printf("emailReaderCnfg: %v\n\n", testConf.EmailReaderCnfg)
+	// fmt.Printf("testConf.EmailCnfg: %v\n", testConf.EmailCnfg)
+	// fmt.Printf("emailReaderCnfg: %v\n\n", testConf.EmailReaderCnfg)
 	return testConf, nil
 }

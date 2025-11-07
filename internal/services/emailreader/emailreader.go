@@ -3,6 +3,7 @@ package emailreader
 import (
 	"fmt"
 	"io"
+	"log"
 	"strings"
 
 	"github.com/emersion/go-imap"
@@ -46,7 +47,13 @@ func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, err
 	if err != nil {
 		return nil, fmt.Errorf("ошибка подключения: %w", err)
 	}
-	defer c.Logout()
+	// defer  c.Logout()
+	defer func() {
+		err := c.Logout()
+		if err != nil {
+			log.Printf("Logout error: %v", err)
+		}
+	}()
 
 	if err := c.Login(er.Username, er.Password); err != nil {
 		return nil, fmt.Errorf("ошибка авторизации: %w", err)

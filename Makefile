@@ -12,6 +12,21 @@ DC_DEV := ./deployment/docker-compose.dev.yaml
 DB_ENV := ./configs/db.env
 EMAIL_ENV := ./configs/email.env
 
+
+.PHONY: lint
+lint:
+	golangci-lint run
+
+.PHONY: fmt
+fmt:
+	gofmt -w -s .
+	goimports -w .
+
+# # Проверка форматирования
+# fmt-check:
+# 	gofmt -l -s .
+# 	@test -z "$$(gofmt -l -s .)"
+
 .PHONY: allure
 allure: unit_test integration_test e2e_test report_allure open_allure
 

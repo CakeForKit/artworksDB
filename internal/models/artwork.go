@@ -64,6 +64,16 @@ func NewArtwork(
 }
 
 func (a *Artwork) validate() error {
+	if err := a.validateBasicFields(); err != nil {
+		return err
+	}
+	if err := a.validateReferences(); err != nil {
+		return err
+	}
+	return a.validateWithAuthor()
+}
+
+func (a *Artwork) validateBasicFields() error {
 	switch {
 	case a.title == "":
 		return ErrArtworkEmptyTitle
@@ -83,16 +93,28 @@ func (a *Artwork) validate() error {
 		return ErrArtworkSizeTooLong
 	case a.creationYear < 0:
 		return ErrArtworkInvalidYear
-	case a.author == nil:
+	}
+	return nil
+}
+
+func (a *Artwork) validateReferences() error {
+	if a.author == nil {
 		return ErrArtworkInvalidAuthor
-	case a.collection == nil:
+	}
+	if a.collection == nil {
 		return ErrArtworkInvalidCollection
 	}
+	return nil
+}
 
-	// validateWithAuthor
+func (a *Artwork) validateWithAuthor() error {
 	birthYear := a.author.GetBirthYear()
 	deathYear := a.author.GetDeathYear()
-	if a.creationYear < birthYear || (deathYear > 0 && a.creationYear > deathYear) {
+
+	if a.creationYear < birthYear {
+		return ErrArtworkYearNotInRange
+	}
+	if deathYear > 0 && a.creationYear > deathYear {
 		return ErrArtworkYearNotInRange
 	}
 	return nil
