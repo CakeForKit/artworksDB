@@ -11,7 +11,6 @@ import (
 	_ "github.com/lib/pq"
 )
 
-// Config содержит настройки подключения к базам данных
 type Config struct {
 	PostgresDSN   string
 	ClickHouseDSN string
