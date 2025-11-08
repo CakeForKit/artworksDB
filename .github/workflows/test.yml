@@ -149,7 +149,7 @@ jobs:
           merge-multiple: true       # Объединяем файлы из разных артефактов
 
       - name: Allure Report action from marketplace  # Генерация отчета Allure
-        uses: simple-elf/allure-report-action@v1.12
+        uses: simple-elf/allure-report-action@master # simple-elf/allure-report-action@v1.12
         if: always()
         with:
           allure_results: allure-results  # Папка с результатами тестов
