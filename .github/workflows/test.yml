@@ -13,16 +13,12 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.24'
+        go-version: '1.25'
         cache-dependency-path: go.sum
 
-    - name: Install golangci-lint
+    - name: Run golangci-lint via go run
       run: |
-        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.64.8
-
-    - name: Run golangci-lint
-      run: |
-        $(go env GOPATH)/bin/golangci-lint run --timeout=5m
+        go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 run --timeout=5m
 
   unit-tests:
     runs-on: ubuntu-latest
