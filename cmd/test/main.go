@@ -125,6 +125,7 @@ func getRepositories(
 	if err != nil {
 		return
 	}
+	return
 }
 
 func main() {
@@ -168,8 +169,12 @@ func main() {
 	// ------------------
 
 	// ----- Repositories -----
-	userRep, employeeRep , adminRep , collectionRep , 
-	authorRep , artworkRep , eventRep , txRep , tPurchasesRep , err := 
+	userRep, employeeRep, adminRep, collectionRep,
+		authorRep, artworkRep, eventRep, txRep,
+		tPurchasesRep, err := getRepositories(ctx, appCnfg, dbCreds, redisCreds, dbCnfg)
+	if err != nil {
+		panic(err)
+	}
 	// ------------------------
 
 	// ----- Services -----
