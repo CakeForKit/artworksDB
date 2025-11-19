@@ -31,7 +31,10 @@ type artworkService struct {
 	collectionRep collectionrep.CollectionRep
 }
 
-func NewArtworkService(artRep artworkrep.ArtworkRep, authorRep authorrep.AuthorRep, collectionRep collectionrep.CollectionRep) ArtworkService {
+func NewArtworkService(
+	artRep artworkrep.ArtworkRep, authorRep authorrep.AuthorRep,
+	collectionRep collectionrep.CollectionRep,
+) ArtworkService {
 	return &artworkService{
 		artworkRep:    artRep,
 		authorRep:     authorRep,

@@ -13,7 +13,7 @@ const (
 	LoggerKey loggerCtx = iota
 )
 
-type MiddlewareLogger interface {
+type MyMiddlewareLogger interface {
 	Infof(format string, args ...interface{})
 	Errorf(format string, args ...interface{})
 	Debugf(format string, args ...interface{})
@@ -41,7 +41,7 @@ func getDebugInfo(c *gin.Context) []interface{} {
 	return debugInfo
 }
 
-func LogMiddleware(projLogger MiddlewareLogger) gin.HandlerFunc {
+func LogMiddleware(projLogger MyMiddlewareLogger) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		start := time.Now()
 		projLogger.Infow("Incoming request",

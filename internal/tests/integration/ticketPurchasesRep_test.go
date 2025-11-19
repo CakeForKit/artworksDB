@@ -63,8 +63,10 @@ func (s *TicketPurchasesRepSuite) TestTicketPurchasesRep_GetAllTicketPurchasess(
 			s.eventCreator.EventP(uuid.New()),
 			s.eventCreator.EventP(uuid.New()),
 		}
-		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep,
+		s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep,
+		s.artworkRep, s.authorRep, s.collectionRep)
 
 		filterOps := s.eventCreator.EventFilterEmpty()
 

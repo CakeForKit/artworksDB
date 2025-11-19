@@ -38,7 +38,7 @@ func (s *ArtworkRepSuite) BeforeAll(t provider.T) {
 	s.artworkCreator = testobj.NewArtworkMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.artworkRep, err = artworkrep.NewArtworkRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 		s.authorRep, err = authorrep.NewAuthorRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
@@ -136,8 +136,10 @@ func (s *ArtworkRepSuite) TestArtworkRep_Add(t provider.T) {
 	t.Run("Success", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
 		fixturesrep.AddTestAuthors(t, s.ctx, []*models.Author{artwork.GetAuthor()}, s.authorRep)
-		fixturesrep.AddTestCollections(t, s.ctx, []*models.Collection{artwork.GetCollection()}, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestCollections(t, s.ctx, []*models.Collection{artwork.GetCollection()},
+			s.collectionRep)
+		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
 
 		// ACT
 		err := s.artworkRep.Add(s.ctx, artwork)
@@ -151,8 +153,12 @@ func (s *ArtworkRepSuite) TestArtworkRep_Add(t provider.T) {
 
 	t.Run("Duplicate error", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
 
 		// ACT - try to add artwork with same ID
 		err := s.artworkRep.Add(s.ctx, artwork)
@@ -213,8 +219,12 @@ func (s *ArtworkRepSuite) TestArtworkRep_Update(t provider.T) {
 
 	t.Run("Success", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
 
 		newArtwork, err := models.NewArtwork(
 			artwork.GetID(),
@@ -254,8 +264,12 @@ func (s *ArtworkRepSuite) TestArtworkRep_Update(t provider.T) {
 
 	t.Run("Update function returns error", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep,
+			s.authorRep, s.collectionRep)
 
 		expectedErr := errors.New("update function error")
 		funcUpdate := func(a *models.Artwork) (*models.Artwork, error) {

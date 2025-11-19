@@ -32,7 +32,7 @@ func (s *AdminRepSuite) BeforeAll(t provider.T) {
 	s.adminCreator = testobj.NewAdminMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.adminRep, err = adminrep.NewAdminRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 	})

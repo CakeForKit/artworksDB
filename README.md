@@ -28,7 +28,7 @@
 
 ## Запуск
 ```bash
-cd deployment/
+cd artworks-deployment/
 make prep
 make up
 ```

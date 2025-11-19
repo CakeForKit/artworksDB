@@ -51,7 +51,7 @@ jobs:
 
       - name: Build and up db and migrator containers
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml \
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d postgres migrator
         env:
           POSTGRES_HOST: localhost
@@ -74,7 +74,7 @@ jobs:
         id: test-runner-up
         if: steps.integration-tests.outcome == 'success'
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml \
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d redis_artworks test-runner 
         env:
           APP_EMAIL_PASSWORD: ${{ secrets.APP_EMAIL_PASSWORD }}
@@ -85,7 +85,7 @@ jobs:
       - name: Run E2E Tests Auth
         if: steps.test-runner-up.outcome == 'success'
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml \
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env \
             exec \
             -e ALLURE_OUTPUT_PATH=/app \
@@ -100,7 +100,7 @@ jobs:
       - name: Run E2E Tests MVP
         if: steps.test-runner-up.outcome == 'success'
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml --env-file ./configs/test_db.env \
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml --env-file ./configs/test_db.env \
             exec \
             -e ALLURE_OUTPUT_PATH=/app \
             -e ALLURE_OUTPUT_DIR=allure-results \
@@ -125,7 +125,7 @@ jobs:
       - name: Cleanup
         if: always()
         run: |
-          docker compose -f ./deployment/docker-compose.ci.yml \
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             down -v --remove-orphans
     
   allure-report:

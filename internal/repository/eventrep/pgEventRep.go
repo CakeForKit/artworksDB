@@ -194,7 +194,7 @@ func (pg *PgEventRep) GetAll(ctx context.Context, filterOps *jsonreqresp.EventFi
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select(
 		"events.id", "events.title", "events.dateBegin", "events.dateEnd", "events.canVisit",
-		"events.adress", "events.cntTickets", "events.creatorID", "events.valid").
+		"events.address", "events.cntTickets", "events.creatorID", "events.valid").
 		From("events")
 
 	query = pg.addFilterParams(query, filterOps)
@@ -216,7 +216,7 @@ func (pg *PgEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select(
 		"events.id", "events.title", "events.dateBegin", "events.dateEnd", "events.canVisit",
-		"events.adress", "events.cntTickets", "events.creatorID", "events.valid").
+		"events.address", "events.cntTickets", "events.creatorID", "events.valid").
 		From("events").
 		Where(sq.Eq{"id": id})
 
@@ -248,7 +248,7 @@ func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 		formatTime(dateBeg),
 		formatTime(dateEnd),
 	))
-	query, args, err := psql.Select("event_id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID", "valid").
+	query, args, err := psql.Select("event_id", "title", "dateBegin", "dateEnd", "canVisit", "address", "cntTickets", "creatorID", "valid").
 		From(funcCall).
 		ToSql()
 	if err != nil {
@@ -357,7 +357,7 @@ func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
 
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Insert("Events").
-		Columns("id", "title", "dateBegin", "dateEnd", "canVisit", "adress", "cntTickets", "creatorID").
+		Columns("id", "title", "dateBegin", "dateEnd", "canVisit", "address", "cntTickets", "creatorID").
 		Values(e.GetID(), e.GetTitle(), e.GetDateBegin(), e.GetDateEnd(), e.GetAccess(), e.GetAddress(), e.GetTicketCount(), e.GetEmployeeID())
 	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
@@ -408,7 +408,7 @@ func (pg *PgEventRep) Update(ctx context.Context,
 		Set("dateBegin", updatedEvent.GetDateBegin()).
 		Set("dateEnd", updatedEvent.GetDateEnd()).
 		Set("canVisit", updatedEvent.GetAccess()).
-		Set("adress", updatedEvent.GetAddress()).
+		Set("address", updatedEvent.GetAddress()).
 		Set("cntTickets", updatedEvent.GetTicketCount()).
 		Set("creatorID", updatedEvent.GetEmployeeID()).
 		// Set("valid", updatedEvent.IsValid()).

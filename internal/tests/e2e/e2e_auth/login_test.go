@@ -59,7 +59,8 @@ func InitializeLoginScenario(sc *godog.ScenarioContext) {
 		}
 
 		registerUserReqCreator := testobj.NewRegisterUserRequestMother()
-		registerReq := registerUserReqCreator.RegisterWithEmail(regCtx.baseConf.EmailReader.Username) // "tmpforread@mail.ru"
+		// "tmpforread@mail.ru"
+		registerReq := registerUserReqCreator.RegisterWithEmail(regCtx.baseConf.EmailReader.Username)
 		resp, err := regCtx.client.DoRequest("POST", "/auth-user/register", registerReq)
 		if err != nil {
 			return ctx, err
@@ -81,12 +82,15 @@ func InitializeLoginScenario(sc *godog.ScenarioContext) {
 
 	sc.Step(`^I have valid login data$`, regCtx.iHaveValidLoginData)
 	sc.Step(`^I have invalid login data$`, regCtx.iHaveInvalidLoginData)
-	sc.Step(`^I send POST request to "([^"]*)" with (valid data|duplicate data|invalid data)$`, regCtx.iSendPOSTRequestToWithData)
+	sc.Step(`^I send POST request to "([^"]*)" with (valid data|duplicate data|invalid data)$`,
+		regCtx.iSendPOSTRequestToWithData)
 	sc.Step(`^the response status should be (\d+)$`, regCtx.theResponseStatusShouldBe)
 	sc.Step(`^the response must contain the session ID$`, regCtx.theResponseMustContainTheSessionID)
 	sc.Step(`^I have valid otp code$`, regCtx.iHaveValidOTPCode)
-	sc.Step(`^I send POST request to "([^"]*)" with (valid code|invalid code)$`, regCtx.iSendPOSTRequestToWithCode)
-	sc.Step(`^the response must contain the access token$`, regCtx.theResponseMustContainTheAccessToken)
+	sc.Step(`^I send POST request to "([^"]*)" with (valid code|invalid code)$`,
+		regCtx.iSendPOSTRequestToWithCode)
+	sc.Step(`^the response must contain the access token$`,
+		regCtx.theResponseMustContainTheAccessToken)
 	sc.Step(`^wait duration session$`, regCtx.wait)
 	sc.Step(`^I have changed password$`, regCtx.iHaveChangedPassword)
 

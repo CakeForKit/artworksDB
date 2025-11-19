@@ -39,7 +39,7 @@ func (s *AuthorRepSuite) BeforeAll(t provider.T) {
 	s.artworkCreator = testobj.NewArtworkMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.authorRep, err = authorrep.NewAuthorRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 		s.collectionRep, err = collectionrep.NewCollectionRep(s.ctx, s.AppCnfg.Datebase, s.DBCreds, s.DBCnfg)

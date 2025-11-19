@@ -77,14 +77,14 @@ CREATE TABLE Events (
     dateBegin TIMESTAMP NOT NULL,
     dateEnd TIMESTAMP NOT NULL,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT,
     creatorID UUID NOT NULL,
     valid BOOLEAN NOT NULL DEFAULT TRUE,
     FOREIGN KEY (creatorID) REFERENCES Employees(id)
 );
 ALTER TABLE Events ADD CONSTRAINT emptyCheck 
-    CHECK(title != '' AND adress != ''); 
+    CHECK(title != '' AND address != ''); 
 ALTER TABLE Events ADD CONSTRAINT dateBeginEndCheck 
     CHECK(dateBegin < dateEnd);
 
@@ -167,13 +167,13 @@ RETURNS TABLE (
     dateBegin TIMESTAMP,
     dateEnd TIMESTAMP,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT,
     creatorID UUID,
     valid BOOLEAN
 ) AS $$
 
-    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID, e.valid
+    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.address, e.cntTickets, e.creatorID, e.valid
     FROM Events e
     JOIN Artwork_event ae ON e.id = ae.eventID
     WHERE ae.artworkID = idArtwork

@@ -108,9 +108,6 @@ func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, err
 			}
 
 			foundEmails = append(foundEmails, email)
-		} else {
-			// fmt.Printf("   Пропускаем письмо #%d: от '%s', тема '%s'\n",
-			// 	msg.SeqNum, fromAddress, er.truncateText(subject, 30))
 		}
 	}
 

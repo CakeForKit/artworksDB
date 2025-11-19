@@ -33,7 +33,7 @@ go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integ
 
 
 
-# docker compose -f ./deployment/docker-compose.ci.yml \
+# docker compose -f ./artworks-deployment/docker-compose.ci.yml \
 # 			--env-file ./configs/test_db.env \
 # 			exec \
 #             -e ALLURE_OUTPUT_PATH=/app \

@@ -98,11 +98,11 @@ CREATE TABLE IF NOT EXISTS artworks.Events
     dateBegin DateTime,
     dateEnd DateTime,
     canVisit Nullable(UInt8),
-    adress Nullable(String),
+    address Nullable(String),
     cntTickets Nullable(Int32),
     creatorID UUID,
     valid UInt8 DEFAULT 1,
-    CONSTRAINT emptyCheck CHECK empty(title) = 0 AND empty(adress) = 0,
+    CONSTRAINT emptyCheck CHECK empty(title) = 0 AND empty(address) = 0,
     CONSTRAINT dateBeginEndCheck CHECK dateBegin < dateEnd
 )
 ENGINE = MergeTree()

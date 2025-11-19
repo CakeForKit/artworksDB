@@ -194,7 +194,7 @@ FROM generate_series(1, 6)
 ON CONFLICT DO NOTHING;
 
 -- Заполнение таблицы Events (7 записей)
-INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID)
+INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID)
 SELECT 
     gen_random_uuid(),
     'Выставка "' || 

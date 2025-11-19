@@ -67,12 +67,12 @@ RETURNS TABLE (
     dateBegin TIMESTAMP,
     dateEnd TIMESTAMP,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT,
     creatorID UUID
 ) AS $$
 
-    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.address, e.cntTickets, e.creatorID
     FROM Events e
     JOIN Artwork_event ae 
     ON e.id = ae.eventID
@@ -145,7 +145,7 @@ ORDER BY
 
 drop Function if exists get_event_of_artwork
 
-SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.address, e.cntTickets, e.creatorID
     FROM Events e
     JOIN Artwork_event ae ON e.id = ae.eventID
     WHERE ae.artworkID = '30154661-36c5-4761-96ea-691abb9bb407'
@@ -155,7 +155,7 @@ SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets
 select event_id, title, datebegin
 from get_event_of_artwork('30154661-36c5-4761-96ea-691abb9bb407', '2025-04-01 00:00:00', '2025-06-22 00:00:00')
 
-select id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID
+select id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID
 from events
 WHERE 
     dateBegin >= '2025-05-01 00:00:00'::timestamp AND
@@ -237,7 +237,7 @@ CREATE TABLE Events (
     dateBegin DATETIME NOT NULL,
     dateEnd DATETIME NOT NULL,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT DEFAULT 0,
     creatorID INT NOT NULL,
     FOREIGN KEY (creatorID) REFERENCES Employee(id)

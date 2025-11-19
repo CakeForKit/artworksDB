@@ -37,7 +37,7 @@ func (s *EmployeeRepSuite) BeforeAll(t provider.T) {
 	s.adminCreator = testobj.NewAdminMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.employeeRep, err = employeerep.NewEmployeeRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 		s.adminRep, err = adminrep.NewAdminRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
@@ -271,6 +271,7 @@ func (s *EmployeeRepSuite) TestEmployeeRep_Update(t provider.T) {
 			employee1.IsValid(),
 			employee1.GetAdminID(),
 		)
+		t.Require().NoError(err)
 		funcUpdate := func(e *models.Employee) (*models.Employee, error) {
 			return &newEmployee, nil
 		}

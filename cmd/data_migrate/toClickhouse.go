@@ -59,56 +59,34 @@ func main() {
 		log.Fatalf("ClickHouse ping failed: %v", err)
 	}
 
-	// Миграция таблиц
-	tables := []string{
-		"Admins",
-		"Employees",
-		"Users",
-		"Author",
-		"Collection",
-		"Artworks",
-		"Events",
-		"Artwork_event",
-		"TicketPurchases",
-		"tickets_user",
+	migrateTables(pgDB, chDB)
+	log.Println("Data migration completed!")
+}
+
+func migrateTables(pgDB, chDB *sql.DB) {
+	migrations := map[string]func(*sql.DB, *sql.DB) error{
+		"Admins":          migrateAdmins,
+		"Employees":       migrateEmployees,
+		"Users":           migrateUsers,
+		"Author":          migrateAuthor,
+		"Collection":      migrateCollection,
+		"Artworks":        migrateArtworks,
+		"Events":          migrateEvents,
+		"Artwork_event":   migrateArtworkEvent,
+		"TicketPurchases": migrateTicketPurchases,
+		"tickets_user":    migrateTicketsUser,
 	}
 
-	for _, table := range tables {
+	for table, migrateFn := range migrations {
 		start := time.Now()
 		log.Printf("Starting migration of table %s...", table)
 
-		var err error
-		switch table {
-		case "Admins":
-			err = migrateAdmins(pgDB, chDB)
-		case "Employees":
-			err = migrateEmployees(pgDB, chDB)
-		case "Users":
-			err = migrateUsers(pgDB, chDB)
-		case "Author":
-			err = migrateAuthor(pgDB, chDB)
-		case "Collection":
-			err = migrateCollection(pgDB, chDB)
-		case "Artworks":
-			err = migrateArtworks(pgDB, chDB)
-		case "Events":
-			err = migrateEvents(pgDB, chDB)
-		case "Artwork_event":
-			err = migrateArtworkEvent(pgDB, chDB)
-		case "TicketPurchases":
-			err = migrateTicketPurchases(pgDB, chDB)
-		case "tickets_user":
-			err = migrateTicketsUser(pgDB, chDB)
-		}
-
-		if err != nil {
+		if err := migrateFn(pgDB, chDB); err != nil {
 			log.Printf("Migration of table %s failed: %v", table, err)
 		} else {
 			log.Printf("Migration of table %s completed in %v", table, time.Since(start))
 		}
 	}
-
-	log.Println("Data migration completed!")
 }
 
 // Миграция таблицы Admins
@@ -262,72 +240,139 @@ func migrateUsers(pgDB, chDB *sql.DB) error {
 	}
 	defer rows.Close()
 
-	tx, err := chDB.Begin()
+	count, err := processUserRows(rows, chDB)
 	if err != nil {
-		return fmt.Errorf("clickhouse transaction begin error: %v", err)
+		return err
 	}
 
-	stmt, err := tx.Prepare(`
-		INSERT INTO Users (
-			id, username, login, hashedPassword, createdAt, email, subscribeMail
-		) VALUES (?, ?, ?, ?, ?, ?, ?)
-	`)
+	log.Printf("Migrated %d Users records", count)
+	return nil
+}
+
+func processUserRows(rows *sql.Rows, chDB *sql.DB) (int, error) {
+	tx, err := chDB.Begin()
 	if err != nil {
-		return fmt.Errorf("clickhouse prepare error: %v", err)
+		return 0, fmt.Errorf("clickhouse transaction begin error: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	stmt, err := prepareUserStatement(tx)
+	if err != nil {
+		return 0, err
 	}
 	defer stmt.Close()
 
+	count, err := insertUserRows(rows, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("clickhouse commit error: %v", err)
+	}
+
+	return count, nil
+}
+
+func prepareUserStatement(tx *sql.Tx) (*sql.Stmt, error) {
+	stmt, err := tx.Prepare(`
+        INSERT INTO Users (
+            id, username, login, hashedPassword, createdAt, email, subscribeMail
+        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+    `)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse prepare error: %v", err)
+	}
+	return stmt, nil
+}
+
+func insertUserRows(rows *sql.Rows, stmt *sql.Stmt) (int, error) {
 	var count int
+
 	for rows.Next() {
-		var (
-			id             string
-			username       string
-			login          string
-			hashedPassword string
-			createdAt      time.Time
-			email          sql.NullString
-			subscribeMail  bool
-		)
-
-		if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
-			return fmt.Errorf("postgres row scan error: %v", err)
+		userData, err := scanUserRow(rows)
+		if err != nil {
+			return 0, err
 		}
 
-		subscribeMailUint := uint8(0)
-		if subscribeMail {
-			subscribeMailUint = 1
-		}
-
-		var emailValue interface{} = nil
-		if email.Valid {
-			emailValue = email.String
-		}
-
-		if _, err := stmt.Exec(
-			id,
-			username,
-			login,
-			hashedPassword,
-			createdAt,
-			emailValue,
-			subscribeMailUint,
-		); err != nil {
-			return fmt.Errorf("clickhouse exec error: %v", err)
+		if err := executeUserInsert(stmt, userData); err != nil {
+			return 0, err
 		}
 
 		count++
 	}
 
 	if err := rows.Err(); err != nil {
-		return fmt.Errorf("postgres rows error: %v", err)
+		return 0, fmt.Errorf("postgres rows error: %v", err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("clickhouse commit error: %v", err)
+	return count, nil
+}
+
+func scanUserRow(rows *sql.Rows) (*userRowData, error) {
+	var (
+		id             string
+		username       string
+		login          string
+		hashedPassword string
+		createdAt      time.Time
+		email          sql.NullString
+		subscribeMail  bool
+	)
+
+	if err := rows.Scan(&id, &username, &login, &hashedPassword, &createdAt, &email, &subscribeMail); err != nil {
+		return nil, fmt.Errorf("postgres row scan error: %v", err)
 	}
 
-	log.Printf("Migrated %d Users records", count)
+	return &userRowData{
+		id:             id,
+		username:       username,
+		login:          login,
+		hashedPassword: hashedPassword,
+		createdAt:      createdAt,
+		email:          email,
+		subscribeMail:  subscribeMail,
+	}, nil
+}
+
+func executeUserInsert(stmt *sql.Stmt, data *userRowData) error {
+	subscribeMailUint := uint8(0)
+	if data.subscribeMail {
+		subscribeMailUint = 1
+	}
+
+	var emailValue interface{} = nil
+	if data.email.Valid {
+		emailValue = data.email.String
+	}
+
+	if _, err := stmt.Exec(
+		data.id,
+		data.username,
+		data.login,
+		data.hashedPassword,
+		data.createdAt,
+		emailValue,
+		subscribeMailUint,
+	); err != nil {
+		return fmt.Errorf("clickhouse exec error: %v", err)
+	}
+
 	return nil
+}
+
+type userRowData struct {
+	id             string
+	username       string
+	login          string
+	hashedPassword string
+	createdAt      time.Time
+	email          sql.NullString
+	subscribeMail  bool
 }
 
 // Миграция таблицы Author
@@ -338,64 +383,125 @@ func migrateAuthor(pgDB, chDB *sql.DB) error {
 	}
 	defer rows.Close()
 
-	tx, err := chDB.Begin()
+	count, err := processAuthorRows(rows, chDB)
 	if err != nil {
-		return fmt.Errorf("clickhouse transaction begin error: %v", err)
+		return err
 	}
 
-	stmt, err := tx.Prepare(`
-		INSERT INTO Author (
-			id, name, birthYear, deathYear
-		) VALUES (?, ?, ?, ?)
-	`)
+	log.Printf("Migrated %d Author records", count)
+	return nil
+}
+
+func processAuthorRows(rows *sql.Rows, chDB *sql.DB) (int, error) {
+	tx, err := chDB.Begin()
 	if err != nil {
-		return fmt.Errorf("clickhouse prepare error: %v", err)
+		return 0, fmt.Errorf("clickhouse transaction begin error: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	stmt, err := prepareAuthorStatement(tx)
+	if err != nil {
+		return 0, err
 	}
 	defer stmt.Close()
 
+	count, err := insertAuthorRows(rows, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("clickhouse commit error: %v", err)
+	}
+
+	return count, nil
+}
+
+func prepareAuthorStatement(tx *sql.Tx) (*sql.Stmt, error) {
+	stmt, err := tx.Prepare(`
+        INSERT INTO Author (
+            id, name, birthYear, deathYear
+        ) VALUES (?, ?, ?, ?)
+    `)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse prepare error: %v", err)
+	}
+	return stmt, nil
+}
+
+func insertAuthorRows(rows *sql.Rows, stmt *sql.Stmt) (int, error) {
 	var count int
+
 	for rows.Next() {
-		var (
-			id        string
-			name      string
-			birthYear sql.NullInt64
-			deathYear sql.NullInt64
-		)
-
-		if err := rows.Scan(&id, &name, &birthYear, &deathYear); err != nil {
-			return fmt.Errorf("postgres row scan error: %v", err)
+		authorData, err := scanAuthorRow(rows)
+		if err != nil {
+			return 0, err
 		}
 
-		var birthYearValue, deathYearValue interface{} = nil, nil
-		if birthYear.Valid {
-			birthYearValue = int32(birthYear.Int64)
-		}
-		if deathYear.Valid {
-			deathYearValue = int32(deathYear.Int64)
-		}
-
-		if _, err := stmt.Exec(
-			id,
-			name,
-			birthYearValue,
-			deathYearValue,
-		); err != nil {
-			return fmt.Errorf("clickhouse exec error: %v", err)
+		if err := executeAuthorInsert(stmt, authorData); err != nil {
+			return 0, err
 		}
 
 		count++
 	}
 
 	if err := rows.Err(); err != nil {
-		return fmt.Errorf("postgres rows error: %v", err)
+		return 0, fmt.Errorf("postgres rows error: %v", err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("clickhouse commit error: %v", err)
+	return count, nil
+}
+
+func scanAuthorRow(rows *sql.Rows) (*authorRowData, error) {
+	var (
+		id        string
+		name      string
+		birthYear sql.NullInt64
+		deathYear sql.NullInt64
+	)
+
+	if err := rows.Scan(&id, &name, &birthYear, &deathYear); err != nil {
+		return nil, fmt.Errorf("postgres row scan error: %v", err)
 	}
 
-	log.Printf("Migrated %d Author records", count)
+	return &authorRowData{
+		id:        id,
+		name:      name,
+		birthYear: birthYear,
+		deathYear: deathYear,
+	}, nil
+}
+
+func executeAuthorInsert(stmt *sql.Stmt, data *authorRowData) error {
+	var birthYearValue, deathYearValue interface{} = nil, nil
+	if data.birthYear.Valid {
+		birthYearValue = int32(data.birthYear.Int64)
+	}
+	if data.deathYear.Valid {
+		deathYearValue = int32(data.deathYear.Int64)
+	}
+
+	if _, err := stmt.Exec(
+		data.id,
+		data.name,
+		birthYearValue,
+		deathYearValue,
+	); err != nil {
+		return fmt.Errorf("clickhouse exec error: %v", err)
+	}
+
 	return nil
+}
+
+type authorRowData struct {
+	id        string
+	name      string
+	birthYear sql.NullInt64
+	deathYear sql.NullInt64
 }
 
 // Миграция таблицы Collection
@@ -457,176 +563,304 @@ func migrateCollection(pgDB, chDB *sql.DB) error {
 // Миграция таблицы Artworks
 func migrateArtworks(pgDB, chDB *sql.DB) error {
 	rows, err := pgDB.Query(`
-		SELECT id, title, technic, material, size, creationYear, authorID, collectionID 
-		FROM Artworks
-	`)
+        SELECT id, title, technic, material, size, creationYear, authorID, collectionID 
+        FROM Artworks
+    `)
 	if err != nil {
 		return fmt.Errorf("postgres query error: %v", err)
 	}
 	defer rows.Close()
 
-	tx, err := chDB.Begin()
+	count, err := processArtworkRows(rows, chDB)
 	if err != nil {
-		return fmt.Errorf("clickhouse transaction begin error: %v", err)
-	}
-
-	stmt, err := tx.Prepare(`
-		INSERT INTO Artworks (
-			id, title, technic, material, size, creationYear, authorID, collectionID
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-	`)
-	if err != nil {
-		return fmt.Errorf("clickhouse prepare error: %v", err)
-	}
-	defer stmt.Close()
-
-	var count int
-	for rows.Next() {
-		var (
-			id           string
-			title        string
-			technic      sql.NullString
-			material     sql.NullString
-			size         sql.NullString
-			creationYear int32
-			authorID     string
-			collectionID string
-		)
-
-		if err := rows.Scan(&id, &title, &technic, &material, &size, &creationYear, &authorID, &collectionID); err != nil {
-			return fmt.Errorf("postgres row scan error: %v", err)
-		}
-
-		var technicValue, materialValue, sizeValue interface{} = nil, nil, nil
-		if technic.Valid {
-			technicValue = technic.String
-		}
-		if material.Valid {
-			materialValue = material.String
-		}
-		if size.Valid {
-			sizeValue = size.String
-		}
-
-		if _, err := stmt.Exec(
-			id,
-			title,
-			technicValue,
-			materialValue,
-			sizeValue,
-			creationYear,
-			authorID,
-			collectionID,
-		); err != nil {
-			return fmt.Errorf("clickhouse exec error: %v", err)
-		}
-
-		count++
-	}
-
-	if err := rows.Err(); err != nil {
-		return fmt.Errorf("postgres rows error: %v", err)
-	}
-
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("clickhouse commit error: %v", err)
+		return err
 	}
 
 	log.Printf("Migrated %d Artworks records", count)
 	return nil
 }
 
-// Миграция таблицы Events
-func migrateEvents(pgDB, chDB *sql.DB) error {
-	rows, err := pgDB.Query(`
-		SELECT id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID, valid 
-		FROM Events
-	`)
-	if err != nil {
-		return fmt.Errorf("postgres query error: %v", err)
-	}
-	defer rows.Close()
-
+func processArtworkRows(rows *sql.Rows, chDB *sql.DB) (int, error) {
 	tx, err := chDB.Begin()
 	if err != nil {
-		return fmt.Errorf("clickhouse transaction begin error: %v", err)
+		return 0, fmt.Errorf("clickhouse transaction begin error: %v", err)
 	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
 
-	stmt, err := tx.Prepare(`
-		INSERT INTO Events (
-			id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID, valid
-		) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
-	`)
+	stmt, err := prepareArtworkStatement(tx)
 	if err != nil {
-		return fmt.Errorf("clickhouse prepare error: %v", err)
+		return 0, err
 	}
 	defer stmt.Close()
 
+	count, err := insertArtworkRows(rows, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("clickhouse commit error: %v", err)
+	}
+
+	return count, nil
+}
+
+func prepareArtworkStatement(tx *sql.Tx) (*sql.Stmt, error) {
+	stmt, err := tx.Prepare(`
+        INSERT INTO Artworks (
+            id, title, technic, material, size, creationYear, authorID, collectionID
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse prepare error: %v", err)
+	}
+	return stmt, nil
+}
+
+func insertArtworkRows(rows *sql.Rows, stmt *sql.Stmt) (int, error) {
 	var count int
+
 	for rows.Next() {
-		var (
-			id         string
-			title      string
-			dateBegin  time.Time
-			dateEnd    time.Time
-			canVisit   sql.NullBool
-			adress     sql.NullString
-			cntTickets sql.NullInt64
-			creatorID  string
-			valid      bool
-		)
-
-		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit, &adress, &cntTickets, &creatorID, &valid); err != nil {
-			return fmt.Errorf("postgres row scan error: %v", err)
+		artworkData, err := scanArtworkRow(rows)
+		if err != nil {
+			return 0, err
 		}
 
-		var canVisitValue, adressValue, cntTicketsValue interface{} = nil, nil, nil
-		if canVisit.Valid {
-			canVisitUint := uint8(0)
-			if canVisit.Bool {
-				canVisitUint = 1
-			}
-			canVisitValue = canVisitUint
-		}
-		if adress.Valid {
-			adressValue = adress.String
-		}
-		if cntTickets.Valid {
-			cntTicketsValue = int32(cntTickets.Int64)
-		}
-
-		validUint := uint8(0)
-		if valid {
-			validUint = 1
-		}
-
-		if _, err := stmt.Exec(
-			id,
-			title,
-			dateBegin,
-			dateEnd,
-			canVisitValue,
-			adressValue,
-			cntTicketsValue,
-			creatorID,
-			validUint,
-		); err != nil {
-			return fmt.Errorf("clickhouse exec error: %v", err)
+		if err := executeArtworkInsert(stmt, artworkData); err != nil {
+			return 0, err
 		}
 
 		count++
 	}
 
 	if err := rows.Err(); err != nil {
-		return fmt.Errorf("postgres rows error: %v", err)
+		return 0, fmt.Errorf("postgres rows error: %v", err)
 	}
 
-	if err := tx.Commit(); err != nil {
-		return fmt.Errorf("clickhouse commit error: %v", err)
+	return count, nil
+}
+
+func scanArtworkRow(rows *sql.Rows) (*artworkRowData, error) {
+	var data artworkRowData
+
+	if err := rows.Scan(
+		&data.id,
+		&data.title,
+		&data.technic,
+		&data.material,
+		&data.size,
+		&data.creationYear,
+		&data.authorID,
+		&data.collectionID,
+	); err != nil {
+		return nil, fmt.Errorf("postgres row scan error: %v", err)
+	}
+
+	return &data, nil
+}
+
+func executeArtworkInsert(stmt *sql.Stmt, data *artworkRowData) error {
+	technicValue := getNullableString(data.technic)
+	materialValue := getNullableString(data.material)
+	sizeValue := getNullableString(data.size)
+
+	if _, err := stmt.Exec(
+		data.id,
+		data.title,
+		technicValue,
+		materialValue,
+		sizeValue,
+		data.creationYear,
+		data.authorID,
+		data.collectionID,
+	); err != nil {
+		return fmt.Errorf("clickhouse exec error: %v", err)
+	}
+
+	return nil
+}
+
+func getNullableString(nullString sql.NullString) interface{} {
+	if nullString.Valid {
+		return nullString.String
+	}
+	return nil
+}
+
+type artworkRowData struct {
+	id           string
+	title        string
+	technic      sql.NullString
+	material     sql.NullString
+	size         sql.NullString
+	creationYear int32
+	authorID     string
+	collectionID string
+}
+
+// Миграция таблицы Events
+func migrateEvents(pgDB, chDB *sql.DB) error {
+	rows, err := pgDB.Query(`
+        SELECT id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID, valid 
+        FROM Events
+    `)
+	if err != nil {
+		return fmt.Errorf("postgres query error: %v", err)
+	}
+	defer rows.Close()
+
+	count, err := processEventRows(rows, chDB)
+	if err != nil {
+		return err
 	}
 
 	log.Printf("Migrated %d Events records", count)
 	return nil
+}
+
+func processEventRows(rows *sql.Rows, chDB *sql.DB) (int, error) {
+	tx, err := chDB.Begin()
+	if err != nil {
+		return 0, fmt.Errorf("clickhouse transaction begin error: %v", err)
+	}
+	defer func() {
+		if err != nil {
+			_ = tx.Rollback()
+		}
+	}()
+
+	stmt, err := prepareEventStatement(tx)
+	if err != nil {
+		return 0, err
+	}
+	defer stmt.Close()
+
+	count, err := insertEventRows(rows, stmt)
+	if err != nil {
+		return 0, err
+	}
+
+	if err := tx.Commit(); err != nil {
+		return 0, fmt.Errorf("clickhouse commit error: %v", err)
+	}
+
+	return count, nil
+}
+
+func prepareEventStatement(tx *sql.Tx) (*sql.Stmt, error) {
+	stmt, err := tx.Prepare(`
+        INSERT INTO Events (
+            id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID, valid
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    `)
+	if err != nil {
+		return nil, fmt.Errorf("clickhouse prepare error: %v", err)
+	}
+	return stmt, nil
+}
+
+func insertEventRows(rows *sql.Rows, stmt *sql.Stmt) (int, error) {
+	var count int
+
+	for rows.Next() {
+		eventData, err := scanEventRow(rows)
+		if err != nil {
+			return 0, err
+		}
+
+		if err := executeEventInsert(stmt, eventData); err != nil {
+			return 0, err
+		}
+
+		count++
+	}
+
+	if err := rows.Err(); err != nil {
+		return 0, fmt.Errorf("postgres rows error: %v", err)
+	}
+
+	return count, nil
+}
+
+func scanEventRow(rows *sql.Rows) (*eventRowData, error) {
+	var data eventRowData
+
+	if err := rows.Scan(
+		&data.id,
+		&data.title,
+		&data.dateBegin,
+		&data.dateEnd,
+		&data.canVisit,
+		&data.address,
+		&data.cntTickets,
+		&data.creatorID,
+		&data.valid,
+	); err != nil {
+		return nil, fmt.Errorf("postgres row scan error: %v", err)
+	}
+
+	return &data, nil
+}
+
+func executeEventInsert(stmt *sql.Stmt, data *eventRowData) error {
+	canVisitValue := convertNullableBool(data.canVisit)
+	addressValue := getNullableString(data.address)
+	cntTicketsValue := convertNullableInt32(data.cntTickets)
+	validUint := boolToUint8(data.valid)
+
+	if _, err := stmt.Exec(
+		data.id,
+		data.title,
+		data.dateBegin,
+		data.dateEnd,
+		canVisitValue,
+		addressValue,
+		cntTicketsValue,
+		data.creatorID,
+		validUint,
+	); err != nil {
+		return fmt.Errorf("clickhouse exec error: %v", err)
+	}
+
+	return nil
+}
+
+// Вспомогательные функции (можно вынести в общие утилиты)
+func convertNullableBool(nullBool sql.NullBool) interface{} {
+	if nullBool.Valid {
+		return boolToUint8(nullBool.Bool)
+	}
+	return nil
+}
+
+func convertNullableInt32(nullInt sql.NullInt64) interface{} {
+	if nullInt.Valid {
+		return int32(nullInt.Int64)
+	}
+	return nil
+}
+
+func boolToUint8(b bool) uint8 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
+type eventRowData struct {
+	id         string
+	title      string
+	dateBegin  time.Time
+	dateEnd    time.Time
+	canVisit   sql.NullBool
+	address    sql.NullString
+	cntTickets sql.NullInt64
+	creatorID  string
+	valid      bool
 }
 
 // Миграция таблицы Artwork_event

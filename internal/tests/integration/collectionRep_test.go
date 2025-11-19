@@ -33,7 +33,7 @@ func (s *CollectionRepSuite) BeforeAll(t provider.T) {
 	s.collectionCreator = testobj.NewCollectionMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.collectionRep, err = collectionrep.NewCollectionRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 	})

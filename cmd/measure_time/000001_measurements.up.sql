@@ -73,13 +73,13 @@ CREATE TABLE Events (
     dateBegin TIMESTAMP NOT NULL,
     dateEnd TIMESTAMP NOT NULL,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT,
     creatorID UUID NOT NULL,
     FOREIGN KEY (creatorID) REFERENCES Employees(id)
 );
 ALTER TABLE Events ADD CONSTRAINT emptyCheck 
-    CHECK(title != '' AND adress != ''); 
+    CHECK(title != '' AND address != ''); 
 ALTER TABLE Events ADD CONSTRAINT dateBeginEndCheck 
     CHECK(dateBegin < dateEnd);
 
@@ -161,12 +161,12 @@ RETURNS TABLE (
     dateBegin TIMESTAMP,
     dateEnd TIMESTAMP,
     canVisit BOOLEAN,
-    adress VARCHAR(255),
+    address VARCHAR(255),
     cntTickets INT,
     creatorID UUID
 ) AS $$
 
-    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.adress, e.cntTickets, e.creatorID
+    SELECT e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, e.address, e.cntTickets, e.creatorID
     FROM Events e
     JOIN Artwork_event ae ON e.id = ae.eventID
     WHERE ae.artworkID = idArtwork
@@ -371,7 +371,7 @@ FROM generate_series(1, 5000)
 ON CONFLICT DO NOTHING;
 
 -- Заполнение таблицы Events (500 записей)
-INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID)
+INSERT INTO Events (id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID)
 SELECT 
     gen_random_uuid(),
     'Выставка "' || 

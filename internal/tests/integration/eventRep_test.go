@@ -51,7 +51,7 @@ func (s *EventRepSuite) BeforeAll(t provider.T) {
 	s.employeeCreator = testobj.NewEmployeeMother()
 
 	t.WithNewStep("Create repositories", func(sCtx provider.StepCtx) {
-		var err error = nil
+		var err error
 		s.eventRep, err = eventrep.NewEventRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
 		sCtx.Require().NoError(err)
 		s.artworkRep, err = artworkrep.NewArtworkRep(s.ctx, cnfg.PostgresDB, s.DBCreds, s.DBCnfg)
@@ -85,8 +85,12 @@ func (s *EventRepSuite) TestEventRep_GetAllEvents(t provider.T) {
 			s.eventCreator.EventP(uuid.New()),
 			s.eventCreator.EventP(uuid.New()),
 		}
-		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep,
+			s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep,
+			s.authorRep, s.collectionRep)
 
 		filterOps := s.eventCreator.EventFilterEmpty()
 
@@ -100,8 +104,10 @@ func (s *EventRepSuite) TestEventRep_GetAllEvents(t provider.T) {
 		event1 := s.eventCreator.EventP(uuid.New())
 		event2 := s.eventCreator.EventP(uuid.New())
 		events := []*models.Event{event1, event2}
-		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		filterOps := &jsonreqresp.EventFilter{
 			Title:     event1.GetTitle(),
@@ -121,11 +127,17 @@ func (s *EventRepSuite) TestEventRep_GetAllEvents(t provider.T) {
 
 	t.Run("Success with date range filter", func(t provider.T) {
 		baseTime := time.Now().UTC()
-		event1 := s.eventCreator.EventWithDatesP(uuid.New(), baseTime.AddDate(0, -1, 0), baseTime.AddDate(0, 1, 0))
-		event2 := s.eventCreator.EventWithDatesP(uuid.New(), baseTime.AddDate(0, 2, 0), baseTime.AddDate(0, 3, 0))
+		event1 := s.eventCreator.EventWithDatesP(
+			uuid.New(), baseTime.AddDate(0, -1, 0), baseTime.AddDate(0, 1, 0))
+		event2 := s.eventCreator.EventWithDatesP(
+			uuid.New(), baseTime.AddDate(0, 2, 0), baseTime.AddDate(0, 3, 0))
 		events := []*models.Event{event1, event2}
-		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep,
+			s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep,
+			s.artworkRep, s.authorRep, s.collectionRep)
 
 		filterOps := &jsonreqresp.EventFilter{
 			Title:     "",
@@ -150,8 +162,12 @@ func (s *EventRepSuite) TestEventRep_GetArtworkIDs(t provider.T) {
 		artworkIDs := uuid.UUIDs{artwork1.GetID(), artwork2.GetID()}
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), artworkIDs)
 
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		resArtworkIDs, err := s.eventRep.GetArtworkIDs(s.ctx, event.GetID())
@@ -165,8 +181,12 @@ func (s *EventRepSuite) TestEventRep_GetArtworkIDs(t provider.T) {
 
 	t.Run("Empty result for event without artworks", func(t provider.T) {
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), uuid.UUIDs{})
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event}, s.eventRep,
+			s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event}, s.eventRep,
+			s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		resArtworkIDs, err := s.eventRep.GetArtworkIDs(s.ctx, event.GetID())
@@ -190,8 +210,12 @@ func (s *EventRepSuite) TestEventRep_GetByID(t provider.T) {
 		events := []*models.Event{
 			s.eventCreator.EventP(uuid.New()),
 		}
-		fixturesrep.AddTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, events, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, events, s.eventRep, s.employeeRep,
+			s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		resEvent, err := s.eventRep.GetByID(s.ctx, events[0].GetID())
@@ -214,11 +238,19 @@ func (s *EventRepSuite) TestEventRep_GetEventsOfArtworkOnDate(t provider.T) {
 	t.Run("Success", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
 		baseTime := time.Now().UTC()
-		event1 := s.eventCreator.EventWithDateArtworksP(uuid.New(), baseTime.AddDate(0, -1, 0), baseTime.AddDate(0, 1, 0), uuid.UUIDs{artwork.GetID()})
-		event2 := s.eventCreator.EventWithDateArtworksP(uuid.New(), baseTime.AddDate(0, 2, 0), baseTime.AddDate(0, 3, 0), uuid.UUIDs{artwork.GetID()})
+		event1 := s.eventCreator.EventWithDateArtworksP(
+			uuid.New(), baseTime.AddDate(0, -1, 0), baseTime.AddDate(0, 1, 0),
+			uuid.UUIDs{artwork.GetID()})
+		event2 := s.eventCreator.EventWithDateArtworksP(
+			uuid.New(), baseTime.AddDate(0, 2, 0), baseTime.AddDate(0, 3, 0),
+			uuid.UUIDs{artwork.GetID()})
 
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event1, event2}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event1, event2}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event1, event2},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event1, event2},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		dateBeg := baseTime.AddDate(0, -2, 0)
 		dateEnd := baseTime.AddDate(0, 2, 0)
@@ -232,8 +264,10 @@ func (s *EventRepSuite) TestEventRep_GetEventsOfArtworkOnDate(t provider.T) {
 
 	t.Run("Empty result for artwork without events in date range", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
 
 		dateBeg := time.Now().AddDate(0, -1, 0)
 		dateEnd := time.Now().AddDate(0, 1, 0)
@@ -263,8 +297,12 @@ func (s *EventRepSuite) TestEventRep_GetCollectionsStat(t provider.T) {
 		}
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), artworkIDs)
 
-		fixturesrep.AddTestEventsWithArtworks(t, s.ctx, []*models.Event{event}, artworks, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEventsWithArtworks(
+			t, s.ctx, []*models.Event{event}, artworks,
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		stats, err := s.eventRep.GetCollectionsStat(s.ctx, event.GetID())
@@ -287,8 +325,12 @@ func (s *EventRepSuite) TestEventRep_GetCollectionsStat(t provider.T) {
 
 	t.Run("Empty result for event without artworks", func(t provider.T) {
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), uuid.UUIDs{})
-		fixturesrep.AddTestEventsWithArtworks(t, s.ctx, []*models.Event{event}, []*models.Artwork{}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEventsWithArtworks(
+			t, s.ctx, []*models.Event{event}, []*models.Artwork{},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		stats, err := s.eventRep.GetCollectionsStat(s.ctx, event.GetID())
@@ -327,8 +369,12 @@ func (s *EventRepSuite) TestEventRep_Add(t provider.T) {
 
 	t.Run("Duplicate error", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT - try to add event with same ID
 		err := s.eventRep.Add(s.ctx, event)
@@ -352,8 +398,12 @@ func (s *EventRepSuite) TestEventRep_SetNotValid(t provider.T) {
 
 	t.Run("Success", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		err := s.eventRep.SetNotValid(s.ctx, event.GetID())
@@ -379,7 +429,9 @@ func (s *EventRepSuite) TestEventRep_Delete(t provider.T) {
 
 	t.Run("Success", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		err := s.eventRep.Delete(s.ctx, event.GetID())
@@ -404,15 +456,19 @@ func (s *EventRepSuite) TestEventRep_Update(t provider.T) {
 
 	t.Run("Success", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		newEvent, err := models.NewEvent(
 			event.GetID(),
 			"Updated Event Title",
 			event.GetDateBegin().AddDate(0, 0, 1),
 			event.GetDateEnd().AddDate(0, 0, -1),
-			"Updated Event Adress",
+			"Updated Event Address",
 			!event.GetAccess(),
 			event.GetEmployeeID(),
 			event.GetTicketCount()+10,
@@ -446,8 +502,12 @@ func (s *EventRepSuite) TestEventRep_Update(t provider.T) {
 
 	t.Run("Update function returns error", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		expectedErr := errors.New("update function error")
 		funcUpdate := func(e *models.Event) (*models.Event, error) {
@@ -466,13 +526,19 @@ func (s *EventRepSuite) TestEventRep_AddArtworksToEvent(t provider.T) {
 
 	t.Run("Success", func(t provider.T) {
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), uuid.UUIDs{})
-		fixturesrep.AddTestEventsWithArtworks(t, s.ctx, []*models.Event{event}, []*models.Artwork{}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEventsWithArtworks(
+			t, s.ctx, []*models.Event{event}, []*models.Artwork{},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
 
 		artwork1 := s.artworkCreator.ArtworkP(uuid.New())
 		artwork2 := s.artworkCreator.ArtworkP(uuid.New())
 		artworkIDs := uuid.UUIDs{artwork1.GetID(), artwork2.GetID()}
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork1, artwork2}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork1, artwork2},
+			s.artworkRep, s.authorRep, s.collectionRep)
 
 		// ACT
 		err := s.eventRep.AddArtworksToEvent(s.ctx, event.GetID(), artworkIDs)
@@ -492,10 +558,19 @@ func (s *EventRepSuite) TestEventRep_AddArtworksToEvent(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
 		event := s.eventCreator.EventP(uuid.New())
 
-		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork},
+			s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep,
+		)
+		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork},
+			s.artworkRep, s.authorRep, s.collectionRep,
+		)
 
 		// Add artwork first time
 		err := s.eventRep.AddArtworksToEvent(s.ctx, event.GetID(), uuid.UUIDs{artwork.GetID()})
@@ -510,7 +585,10 @@ func (s *EventRepSuite) TestEventRep_AddArtworksToEvent(t provider.T) {
 	t.Run("Event not found", func(t provider.T) {
 		artwork := s.artworkCreator.ArtworkP(uuid.New())
 		fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestArtworks(
+			t, s.ctx, []*models.Artwork{artwork},
+			s.artworkRep, s.authorRep, s.collectionRep,
+		)
 
 		// ACT
 		err := s.eventRep.AddArtworksToEvent(s.ctx, uuid.New(), uuid.UUIDs{artwork.GetID()})
@@ -520,8 +598,14 @@ func (s *EventRepSuite) TestEventRep_AddArtworksToEvent(t provider.T) {
 
 	t.Run("Artwork not found", func(t provider.T) {
 		event := s.eventCreator.EventP(uuid.New())
-		fixturesrep.AddTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep,
+		)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep,
+		)
 
 		// ACT
 		err := s.eventRep.AddArtworksToEvent(s.ctx, event.GetID(), uuid.UUIDs{uuid.New()})
@@ -543,10 +627,16 @@ func (s *EventRepSuite) TestEventRep_DeleteArtworkFromEvent(t provider.T) {
 			artworkIDs = append(artworkIDs, v.GetID())
 		}
 		event := s.eventCreator.EventWithArtworksP(uuid.New(), artworkIDs)
-		fixturesrep.AddTestEventsWithArtworks(t, s.ctx, []*models.Event{event}, artworks, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		fixturesrep.AddTestEventsWithArtworks(
+			t, s.ctx, []*models.Event{event}, artworks,
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep,
+		)
 		err := event.DeleteArtwork(artworkIDs[0])
 		t.Require().NoError(err)
-		defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
+		defer fixturesrep.DelTestEvents(
+			t, s.ctx, []*models.Event{event},
+			s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep,
+		)
 
 		// ACT
 		err = s.eventRep.DeleteArtworkFromEvent(s.ctx, event.GetID(), artworks[0].GetID())
@@ -559,30 +649,6 @@ func (s *EventRepSuite) TestEventRep_DeleteArtworkFromEvent(t provider.T) {
 		t.Require().Len(resArtworkIDs, 1)
 		t.Require().True(resArtworkIDs[0] == artworks[1].GetID())
 	})
-	/*
-		t.Run("Artwork not in event", func(t provider.T) {
-			event := s.eventCreator.EventWithArtworksP(uuid.New(), uuid.UUIDs{})
-
-			fixturesrep.AddTestEventsWithArtworks(t, s.ctx, []*models.Event{event}, []*models.Artwork{}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-			defer fixturesrep.DelTestEvents(t, s.ctx, []*models.Event{event}, s.eventRep, s.employeeRep, s.adminRep, s.artworkRep, s.authorRep, s.collectionRep)
-
-			// ACT - try to delete artwork that was never added to event
-			err := s.eventRep.DeleteArtworkFromEvent(s.ctx, event.GetID(), uuid.New())
-
-			t.Require().Error(err)
-		})
-
-		t.Run("Event not found", func(t provider.T) {
-			artwork := s.artworkCreator.ArtworkP(uuid.New())
-			fixturesrep.AddTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-			defer fixturesrep.DelTestArtworks(t, s.ctx, []*models.Artwork{artwork}, s.artworkRep, s.authorRep, s.collectionRep)
-
-			// ACT
-			err := s.eventRep.DeleteArtworkFromEvent(s.ctx, uuid.New(), artwork.GetID())
-
-			t.Require().Error(err)
-		})
-	*/
 }
 
 func containsUUID(uuids uuid.UUIDs, target uuid.UUID) bool {

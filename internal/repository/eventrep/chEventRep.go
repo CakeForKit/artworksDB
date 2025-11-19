@@ -194,7 +194,7 @@ func (ch *CHEventRep) GetAll(ctx context.Context, filterOps *jsonreqresp.EventFi
 	baseQuery := `
 		SELECT 
 			id, title, dateBegin, dateEnd, canVisit, 
-			adress, cntTickets, creatorID, valid
+			address, cntTickets, creatorID, valid
 		FROM Events`
 
 	filterClause, filterArgs := ch.buildFilterConditions(filterOps)
@@ -227,7 +227,7 @@ func (ch *CHEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 	query := `
 		SELECT 
 			id, title, dateBegin, dateEnd, canVisit, 
-			adress, cntTickets, creatorID, valid
+			address, cntTickets, creatorID, valid
 		FROM Events
 		WHERE id = ?`
 
@@ -260,7 +260,7 @@ func (ch *CHEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 	query := `
 		SELECT 
 			e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, 
-			e.adress, e.cntTickets, e.creatorID, e.valid
+			e.address, e.cntTickets, e.creatorID, e.valid
 		FROM Events e
 		JOIN Artwork_event ae ON e.id = ae.eventID
 		WHERE ae.artworkID = ?
@@ -365,7 +365,7 @@ func (ch *CHEventRep) execChangeQuery(ctx context.Context, query string, args ..
 func (ch *CHEventRep) Add(ctx context.Context, e *models.Event) error {
 	query := `
 		INSERT INTO Events 
-		(id, title, dateBegin, dateEnd, canVisit, adress, cntTickets, creatorID, valid) 
+		(id, title, dateBegin, dateEnd, canVisit, address, cntTickets, creatorID, valid) 
 		VALUES (?, ?, ?, ?, ?, ?, ?, ?, 1)`
 
 	canVisit := uint8(0)
@@ -431,7 +431,7 @@ func (ch *CHEventRep) Update(ctx context.Context,
 		dateBegin = ?, 
 		dateEnd = ?, 
 		canVisit = ?, 
-		adress = ?, 
+		address = ?, 
 		cntTickets = ?, 
 		creatorID = ? 
 		WHERE id = ?`
