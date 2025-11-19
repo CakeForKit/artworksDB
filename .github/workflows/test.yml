@@ -23,12 +23,11 @@ jobs:
     - name: Run golangci-lint
       run: |
         golangci-lint run --timeout=5m --config=.golangci.yml
-    # - name: Run golangci-lint via go run
-    #   run: |
-    #     go run github.com/golangci/golangci-lint/cmd/golangci-lint@v1.64.8 run --timeout=5m --config=.golangci.yml
 
   unit-tests:
     runs-on: ubuntu-latest
+    needs: lint
+    if: success()
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
