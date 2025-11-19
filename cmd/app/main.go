@@ -296,6 +296,5 @@ func main() {
 	// citeGroup.Static("/static", filepath.Join("internal", "frontend", "static"))
 	// ---------------
 
-	// engine.Run(":8080")
-	engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
+	_ = engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
 }
