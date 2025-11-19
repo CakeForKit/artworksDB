@@ -7,6 +7,7 @@ linters:
   enable:
     - revive
     - gocyclo
+    - gocognit
     - govet
     - staticcheck
     - gosimple
@@ -15,16 +16,14 @@ linters:
     - ineffassign
     - gofmt
     - misspell
+    - maintidx 
 
 linters-settings:
   gocyclo:
     min-complexity: 10
   revive:
     rules:
-      - name: exported
-        disabled: true
       - name: line-length-limit
-        disabled: false
         arguments: [120]
 
 issues:
