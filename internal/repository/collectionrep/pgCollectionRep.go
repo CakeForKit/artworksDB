@@ -27,7 +27,8 @@ var (
 	ErrRowsAffected          = errors.New("no rows affected")
 )
 
-func NewPgCollectionRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgCollectionRep, error) {
+func NewPgCollectionRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgCollectionRep, error) {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
 

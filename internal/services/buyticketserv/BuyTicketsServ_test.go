@@ -42,7 +42,8 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 		user := userCreator.DefaultUserP(uuid.New())
 		txCnt := 4
 		purchasesCnt := 2
-		expectedTX := tptxCreator.TicketPurchaseTxByUserP(uuid.New(), user.GetUsername(), user.GetEmail(), event.GetID(), user.GetID(), purchasesCnt)
+		expectedTX := tptxCreator.TicketPurchaseTxByUserP(
+			uuid.New(), user.GetUsername(), user.GetEmail(), event.GetID(), user.GetID(), purchasesCnt)
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)

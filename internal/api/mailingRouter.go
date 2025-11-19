@@ -15,7 +15,8 @@ type MailingRouter struct {
 	eventServ   eventserv.EventService
 }
 
-func NewMailingRouter(router *gin.RouterGroup, mailingServ mailing.MailingService, eventServ eventserv.EventService) MailingRouter {
+func NewMailingRouter(router *gin.RouterGroup,
+	mailingServ mailing.MailingService, eventServ eventserv.EventService) MailingRouter {
 	r := MailingRouter{
 		mailingServ: mailingServ,
 		eventServ:   eventServ,

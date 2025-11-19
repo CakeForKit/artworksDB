@@ -47,7 +47,8 @@ type authEmployee struct {
 	hasher      hasher.Hasher
 }
 
-func NewAuthEmployee(config cnfg.AppConfig, erep employeerep.EmployeeRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthEmployee, error) {
+func NewAuthEmployee(config cnfg.AppConfig, erep employeerep.EmployeeRep,
+	tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthEmployee, error) {
 	service := &authEmployee{
 		tokenMaker:  tokenMaker,
 		config:      config,

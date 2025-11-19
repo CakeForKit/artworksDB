@@ -8,8 +8,13 @@ import (
 )
 
 type TicketPurchaseTxMother interface {
-	TicketPurchaseTxP(tptxID uuid.UUID, eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx
-	TicketPurchaseTxByUserP(tptxID uuid.UUID, customerName string, customerEmail string, eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx
+	TicketPurchaseTxP(
+		tptxID uuid.UUID, eventID uuid.UUID, userID uuid.UUID, cntTickets int,
+	) *models.TicketPurchaseTx
+	TicketPurchaseTxByUserP(
+		tptxID uuid.UUID, customerName string, customerEmail string,
+		eventID uuid.UUID, userID uuid.UUID, cntTickets int,
+	) *models.TicketPurchaseTx
 }
 
 func NewTicketPurchaseTxMother() TicketPurchaseTxMother {
@@ -19,7 +24,8 @@ func NewTicketPurchaseTxMother() TicketPurchaseTxMother {
 type tptxMother struct {
 }
 
-func (um *tptxMother) TicketPurchaseTxP(tptxID uuid.UUID, eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx {
+func (um *tptxMother) TicketPurchaseTxP(
+	tptxID uuid.UUID, eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx {
 	tptx, _ := models.NewBuyTicketTx(
 		tptxID,
 		"test-customer-name",
@@ -33,7 +39,8 @@ func (um *tptxMother) TicketPurchaseTxP(tptxID uuid.UUID, eventID uuid.UUID, use
 	return &tptx
 }
 
-func (um *tptxMother) TicketPurchaseTxByUserP(tptxID uuid.UUID, customerName string, customerEmail string, eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx {
+func (um *tptxMother) TicketPurchaseTxByUserP(tptxID uuid.UUID, customerName string, customerEmail string,
+	eventID uuid.UUID, userID uuid.UUID, cntTickets int) *models.TicketPurchaseTx {
 	tptx, _ := models.NewBuyTicketTx(
 		tptxID,
 		customerName,

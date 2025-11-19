@@ -18,7 +18,8 @@ func NewTicketPurchaseMother() TicketPurchaseMother {
 type ticketPurchaseMother struct {
 }
 
-func (um *ticketPurchaseMother) TicketPurchaseP(tpID uuid.UUID, eventID uuid.UUID, userID uuid.UUID) *models.TicketPurchase {
+func (um *ticketPurchaseMother) TicketPurchaseP(
+	tpID uuid.UUID, eventID uuid.UUID, userID uuid.UUID) *models.TicketPurchase {
 	tp, _ := models.NewTicketPurchase(
 		tpID,
 		"test-customer-name",

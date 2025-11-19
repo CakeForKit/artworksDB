@@ -29,7 +29,8 @@ var (
 	ErrRowsAffected     = errors.New("no rows affected")
 )
 
-func NewPgEventRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgEventRep, error) {
+func NewPgEventRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig,
+) (*PgEventRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_Events:5432/Events"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
@@ -57,10 +58,12 @@ func (pg *PgEventRep) parseEventsRows(rows *sql.Rows) ([]*models.Event, error) {
 		var dateBegin, dateEnd time.Time
 		var canVisit, valid bool
 		var cntTickets int
-		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit, &address, &cntTickets, &creatorID, &valid); err != nil {
+		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit,
+			&address, &cntTickets, &creatorID, &valid); err != nil {
 			return nil, fmt.Errorf("scan error: %w", err)
 		}
-		user, err := models.NewEvent(id, title, dateBegin, dateEnd, address, canVisit, creatorID, cntTickets, valid, nil)
+		user, err := models.NewEvent(id, title, dateBegin, dateEnd,
+			address, canVisit, creatorID, cntTickets, valid, nil)
 		if err != nil {
 			return nil, fmt.Errorf("parseEventsRows: %w", err)
 		}
@@ -240,7 +243,8 @@ func formatTime(t time.Time) string {
 	return t.Format("2006-01-02 15:04:05")
 }
 
-func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
+func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context,
+	artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 
 	funcCall := sq.DebugSqlizer(sq.Expr("get_event_of_artwork(?, ?, ?)",
@@ -248,7 +252,8 @@ func (pg *PgEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uu
 		formatTime(dateBeg),
 		formatTime(dateEnd),
 	))
-	query, args, err := psql.Select("event_id", "title", "dateBegin", "dateEnd", "canVisit", "address", "cntTickets", "creatorID", "valid").
+	query, args, err := psql.Select("event_id", "title", "dateBegin",
+		"dateEnd", "canVisit", "address", "cntTickets", "creatorID", "valid").
 		From(funcCall).
 		ToSql()
 	if err != nil {
@@ -358,7 +363,8 @@ func (pg *PgEventRep) Add(ctx context.Context, e *models.Event) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Insert("Events").
 		Columns("id", "title", "dateBegin", "dateEnd", "canVisit", "address", "cntTickets", "creatorID").
-		Values(e.GetID(), e.GetTitle(), e.GetDateBegin(), e.GetDateEnd(), e.GetAccess(), e.GetAddress(), e.GetTicketCount(), e.GetEmployeeID())
+		Values(e.GetID(), e.GetTitle(), e.GetDateBegin(),
+			e.GetDateEnd(), e.GetAccess(), e.GetAddress(), e.GetTicketCount(), e.GetEmployeeID())
 	err := pg.execChangeQuery(ctx, query)
 	if err != nil {
 		return fmt.Errorf("PgEventRep.Add: %w", err)

@@ -17,7 +17,8 @@ var (
 )
 
 type ArtworkRep interface {
-	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
+	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter,
+		sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
 	GetByID(ctx context.Context, id uuid.UUID) (*models.Artwork, error)
 	//
 	Add(ctx context.Context, aw *models.Artwork) error
@@ -27,7 +28,8 @@ type ArtworkRep interface {
 	Close()
 }
 
-func NewArtworkRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (ArtworkRep, error) {
+func NewArtworkRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (ArtworkRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgArtworkRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

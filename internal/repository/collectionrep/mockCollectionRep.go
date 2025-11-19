@@ -39,7 +39,8 @@ func (m *MockCollectionRep) Delete(ctx context.Context, idCol uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockCollectionRep) Update(ctx context.Context, idCol uuid.UUID, funcUpdate func(*models.Collection) (*models.Collection, error)) error {
+func (m *MockCollectionRep) Update(ctx context.Context, idCol uuid.UUID,
+	funcUpdate func(*models.Collection) (*models.Collection, error)) error {
 	args := m.Called(ctx, idCol, funcUpdate)
 	return args.Error(0)
 }

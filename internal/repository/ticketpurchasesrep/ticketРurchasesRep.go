@@ -24,7 +24,8 @@ type TicketPurchasesRep interface {
 	Close()
 }
 
-func NewTicketPurchasesRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
+func NewTicketPurchasesRep(ctx context.Context, datebaseType string,
+	pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (TicketPurchasesRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgTicketPurchasesRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

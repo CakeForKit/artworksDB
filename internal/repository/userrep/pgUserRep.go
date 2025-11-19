@@ -23,7 +23,8 @@ var (
 	ErrPing        = errors.New("ping failed")
 )
 
-func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgUserRep, error) {
+func NewPgUserRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig,
+) (*PgUserRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
@@ -176,7 +177,8 @@ func (pg *PgUserRep) Add(ctx context.Context, e *models.User) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query, args, err := psql.Insert("Users").
 		Columns("id", "username", "login", "hashedPassword", "createdAt", "email", "subscribeMail").
-		Values(e.GetID(), e.GetUsername(), e.GetLogin(), e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
+		Values(e.GetID(), e.GetUsername(), e.GetLogin(),
+			e.GetHashedPassword(), e.GetCreatedAt(), e.GetEmail(), e.IsSubscribedToMail()).
 		ToSql()
 	if err != nil {
 		return fmt.Errorf("PgUserRep.Add %w: %w", ErrQueryBuilds, err)

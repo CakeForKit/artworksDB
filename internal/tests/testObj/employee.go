@@ -33,7 +33,8 @@ func (um *employeeMother) DefaultEmployee(employeeID uuid.UUID, adminID uuid.UUI
 	return employee
 }
 
-func (um *employeeMother) EmployeeWithPswdHash(employeeID uuid.UUID, adminID uuid.UUID, hashedPassword string) models.Employee {
+func (um *employeeMother) EmployeeWithPswdHash(
+	employeeID uuid.UUID, adminID uuid.UUID, hashedPassword string) models.Employee {
 	employee, _ := models.NewEmployee(
 		employeeID,
 		"test-employee",

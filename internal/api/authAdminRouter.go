@@ -10,10 +10,10 @@ import (
 )
 
 type AuthAdminRouter struct {
-	authu auth.AuthAdmin
+	authu auth.AdminAuth
 }
 
-func (r *AuthAdminRouter) Init(router *gin.RouterGroup, authu auth.AuthAdmin) {
+func (r *AuthAdminRouter) Init(router *gin.RouterGroup, authu auth.AdminAuth) {
 	r.authu = authu
 	gr := router.Group("auth-admin")
 	// gr.POST("/register", r.Register)

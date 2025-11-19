@@ -280,7 +280,8 @@ func (s *ArtworkServiceSuite) TestArtworkService_Update(t provider.T) {
 
 		mockAuthorRep.On("GetByID", ctx, author.GetID()).Return(author, nil)
 		mockCollectionRep.On("GetByID", ctx, collection.GetID()).Return(collection, nil)
-		mockArtworkRep.On("Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)")).Return(nil)
+		mockArtworkRep.On("Update", ctx, artworkID,
+			mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)")).Return(nil)
 
 		artworkService := artworkserv.NewArtworkService(mockArtworkRep, mockAuthorRep, mockCollectionRep)
 
@@ -290,7 +291,8 @@ func (s *ArtworkServiceSuite) TestArtworkService_Update(t provider.T) {
 		sCtx.Require().NoError(err)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
-		mockArtworkRep.AssertCalled(t, "Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))
+		mockArtworkRep.AssertCalled(t, "Update", ctx, artworkID,
+			mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))
 	})
 
 	t.WithNewStep("error author not found in update", func(sCtx provider.StepCtx) {
@@ -337,7 +339,8 @@ func (s *ArtworkServiceSuite) TestArtworkService_Update(t provider.T) {
 		mockAuthorRep.On("GetByID", ctx, author.GetID()).Return(author, nil)
 		mockCollectionRep.On("GetByID", ctx, collection.GetID()).Return(collection, nil)
 		expectedErr := errors.New("update error")
-		mockArtworkRep.On("Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)")).Return(expectedErr)
+		mockArtworkRep.On("Update", ctx, artworkID,
+			mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)")).Return(expectedErr)
 
 		artworkService := artworkserv.NewArtworkService(mockArtworkRep, mockAuthorRep, mockCollectionRep)
 
@@ -347,6 +350,7 @@ func (s *ArtworkServiceSuite) TestArtworkService_Update(t provider.T) {
 		sCtx.Require().ErrorIs(err, expectedErr)
 		mockAuthorRep.AssertCalled(t, "GetByID", ctx, author.GetID())
 		mockCollectionRep.AssertCalled(t, "GetByID", ctx, collection.GetID())
-		mockArtworkRep.AssertCalled(t, "Update", ctx, artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))
+		mockArtworkRep.AssertCalled(t, "Update", ctx,
+			artworkID, mock.AnythingOfType("func(*models.Artwork) (*models.Artwork, error)"))
 	})
 }

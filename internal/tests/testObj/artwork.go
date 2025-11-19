@@ -53,7 +53,8 @@ func (um *artworkMother) ArtworkWithAuthorP(artworkID uuid.UUID, author *models.
 	return &artwork
 }
 
-func (um *artworkMother) ArtworkWithCollectionP(artworkID uuid.UUID, collection *models.Collection) *models.Artwork {
+func (um *artworkMother) ArtworkWithCollectionP(
+	artworkID uuid.UUID, collection *models.Collection) *models.Artwork {
 	authorCretor := NewAuthorMother()
 	artwork, _ := models.NewArtwork(
 		artworkID,
@@ -68,7 +69,8 @@ func (um *artworkMother) ArtworkWithCollectionP(artworkID uuid.UUID, collection 
 	return &artwork
 }
 
-func (um *artworkMother) AddArtworkRequest(creationYear int, authorID uuid.UUID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest {
+func (um *artworkMother) AddArtworkRequest(
+	creationYear int, authorID uuid.UUID, collectionID uuid.UUID) jsonreqresp.AddArtworkRequest {
 	return jsonreqresp.AddArtworkRequest{
 		Title:        "test-artwork-title",
 		CreationYear: creationYear,

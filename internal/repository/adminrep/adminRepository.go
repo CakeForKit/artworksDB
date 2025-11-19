@@ -31,7 +31,8 @@ type AdminRep interface {
 	Close()
 }
 
-func NewAdminRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
+func NewAdminRep(ctx context.Context, datebaseType string,
+	pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AdminRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgAdminRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

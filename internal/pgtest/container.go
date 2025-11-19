@@ -26,7 +26,8 @@ func GetTestPostgres(ctx context.Context) (testcontainers.Container, cnfg.Dateba
 	return pgContainer, pgCreds, pgSetupErr
 }
 
-func NewTestPostgres(ctx context.Context, config *cnfg.PostgresTestConfig) (testcontainers.Container, cnfg.DatebaseCredentials, error) {
+func NewTestPostgres(ctx context.Context,
+	config *cnfg.PostgresTestConfig) (testcontainers.Container, cnfg.DatebaseCredentials, error) {
 	strPort := fmt.Sprintf("%d/tcp", config.Port)
 	// strPort := "5432/tcp"
 

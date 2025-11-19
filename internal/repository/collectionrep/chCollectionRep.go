@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHCollectionRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHCollectionRep, error) {
+func NewCHCollectionRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHCollectionRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{
@@ -79,7 +80,8 @@ func (ch *CHCollectionRep) parseCollectionsRows(rows *sql.Rows) ([]*models.Colle
 	return resCollections, nil
 }
 
-func (ch *CHCollectionRep) execSelectQuery(ctx context.Context, query string, args ...interface{}) ([]*models.Collection, error) {
+func (ch *CHCollectionRep) execSelectQuery(ctx context.Context, query string,
+	args ...interface{}) ([]*models.Collection, error) {
 	rows, err := ch.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)

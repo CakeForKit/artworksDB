@@ -22,7 +22,8 @@ var (
 )
 
 // InitTestConfig инициализирует конфигурацию один раз для всех тестов
-func InitTestConfig(dirConfig string) (*cnfg.AppConfig, *cnfg.DatebaseCredentials, *cnfg.DatebaseConfig, *cnfg.RedisCredentials, error) {
+func InitTestConfig(dirConfig string) (*cnfg.AppConfig, *cnfg.DatebaseCredentials,
+	*cnfg.DatebaseConfig, *cnfg.RedisCredentials, error) {
 	initOnce.Do(func() {
 		appCnfg, initError = cnfg.LoadAppConfig(dirConfig, "config", "yaml")
 		if initError != nil {

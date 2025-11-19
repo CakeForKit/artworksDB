@@ -28,7 +28,8 @@ var (
 	ErrUserInvalidEmail     = errors.New("invalid email format")
 )
 
-func NewUser(id uuid.UUID, username string, login string, hashedPassword string, createdAt time.Time, mail string, subscribeMail bool) (User, error) {
+func NewUser(id uuid.UUID, username string, login string, hashedPassword string,
+	createdAt time.Time, mail string, subscribeMail bool) (User, error) {
 	user := User{
 		id:             id,
 		username:       strings.TrimSpace(username),

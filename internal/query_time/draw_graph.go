@@ -61,32 +61,59 @@ func DrawGraph(pathDir string, start int, stop int, step int) error {
 		return fmt.Errorf("DrawGraph: error start stop step params")
 	}
 
+	cntRowsVals, notIndexVals, indexVals, err := collectData(pathDir, start, stop, step)
+	if err != nil {
+		return err
+	}
+
+	if err := createAndSaveChart(pathDir, cntRowsVals, notIndexVals, indexVals); err != nil {
+		return fmt.Errorf("DrawGraph: %v", err)
+	}
+	return nil
+}
+
+func collectData(pathDir string, start, stop, step int) ([]int, []float64, []float64, error) {
 	cntRowsVals := make([]int, 0)
 	notIndexVals := make([]float64, 0)
 	indexVals := make([]float64, 0)
 
 	fmt.Printf("cnt rows | not Index | Index\n")
 	for i := start; i < stop; i += step {
-		filenameNotIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("%s/data/%d_notIndex.txt", pathDir, i))
-		tmNotIndex, err := readAvg(filenameNotIndex)
+		tmNotIndex, err := readAvg(filepath.Join(cnfg.GetProjectRoot(),
+			fmt.Sprintf("%s/data/%d_notIndex.txt", pathDir, i)))
 		if err != nil {
-			return fmt.Errorf("DrawGraph: %v", err)
+			return nil, nil, nil, fmt.Errorf("DrawGraph: %v", err)
 		}
-		filenameIndex := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("%s/data/%d_Index.txt", pathDir, i))
-		tmIndex, err := readAvg(filenameIndex)
+		tmIndex, err := readAvg(filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("%s/data/%d_Index.txt", pathDir, i)))
 		if err != nil {
-			return fmt.Errorf("DrawGraph: %v", err)
+			return nil, nil, nil, fmt.Errorf("DrawGraph: %v", err)
 		}
 		cntRowsVals = append(cntRowsVals, i)
 		notIndexVals = append(notIndexVals, tmNotIndex)
 		indexVals = append(indexVals, tmIndex)
 		fmt.Printf("%d | %.3f | %.3f \n", i, tmNotIndex, tmIndex)
 	}
+	return cntRowsVals, notIndexVals, indexVals, nil
+}
 
-	// Создаем группированные столбцы
-	w := vg.Points(15) // Ширина столбцов
+func createAndSaveChart(pathDir string, cntRowsVals []int, notIndexVals, indexVals []float64) error {
+	w := vg.Points(15)
 
-	// Преобразуем данные в формат для гистограммы
+	notIndexBars, indexBars, err := createBars(notIndexVals, indexVals, w)
+	if err != nil {
+		return err
+	}
+
+	p := setupPlot(notIndexBars, indexBars, cntRowsVals)
+
+	saveFile := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("%s/histogram.png", pathDir))
+	if err := p.Save(12*vg.Inch, 7*vg.Inch, saveFile); err != nil {
+		return err
+	}
+	return nil
+}
+
+func createBars(notIndexVals, indexVals []float64, w vg.Length) (*plotter.BarChart, *plotter.BarChart, error) {
 	notIndexPoints := make(plotter.Values, len(notIndexVals))
 	indexPoints := make(plotter.Values, len(indexVals))
 	for i := range notIndexVals {
@@ -94,23 +121,24 @@ func DrawGraph(pathDir string, start int, stop int, step int) error {
 		indexPoints[i] = indexVals[i]
 	}
 
-	// Создаем столбцы для notIndexVals
 	notIndexBars, err := plotter.NewBarChart(notIndexPoints, w)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
-	notIndexBars.Color = color.RGBA{R: 200, G: 200, B: 200, A: 255} // Оранжевый цвет
-	notIndexBars.Offset = -w / 2                                    // Смещение влево
+	notIndexBars.Color = color.RGBA{R: 200, G: 200, B: 200, A: 255}
+	notIndexBars.Offset = -w / 2
 
-	// Создаем столбцы для indexVals
 	indexBars, err := plotter.NewBarChart(indexPoints, w)
 	if err != nil {
-		panic(err)
+		return nil, nil, err
 	}
-	indexBars.Color = color.RGBA{R: 128, G: 128, B: 128, A: 255} // Синий цвет
-	indexBars.Offset = -w / 2                                    // Смещение влево
+	indexBars.Color = color.RGBA{R: 128, G: 128, B: 128, A: 255}
+	indexBars.Offset = -w / 2
 
-	// График
+	return notIndexBars, indexBars, nil
+}
+
+func setupPlot(notIndexBars, indexBars *plotter.BarChart, cntRowsVals []int) *plot.Plot {
 	p := plot.New()
 	p.Title.Text = "Зависимость времени выполнения запроса от количества записей в таблице"
 	p.Title.TextStyle.XAlign = draw.XCenter
@@ -136,7 +164,6 @@ func DrawGraph(pathDir string, start int, stop int, step int) error {
 	p.Legend.TextStyle.Font = fontText
 	p.Add(notIndexBars, indexBars)
 
-	// Настраиваем метки по оси X
 	labels := make([]string, len(cntRowsVals))
 	for i, val := range cntRowsVals {
 		if val%10000 == 0 {
@@ -144,13 +171,8 @@ func DrawGraph(pathDir string, start int, stop int, step int) error {
 		} else {
 			labels[i] = ""
 		}
-
 	}
 	p.NominalX(labels...)
 
-	saveFile := filepath.Join(cnfg.GetProjectRoot(), fmt.Sprintf("%s/histogram.png", pathDir))
-	if err := p.Save(12*vg.Inch, 7*vg.Inch, saveFile); err != nil {
-		return fmt.Errorf("DrawGraph: %v", err)
-	}
-	return nil
+	return p
 }

@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHAdminRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHAdminRep, error) {
+func NewCHAdminRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHAdminRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{

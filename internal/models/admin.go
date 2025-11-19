@@ -24,7 +24,8 @@ var (
 	ErrAdminInvalidCreatedAt = errors.New("invalid createdAt time")
 )
 
-func NewAdmin(id uuid.UUID, username string, login string, hashedPassword string, createdAt time.Time, valid bool) (Admin, error) {
+func NewAdmin(id uuid.UUID, username string, login string, hashedPassword string,
+	createdAt time.Time, valid bool) (Admin, error) {
 	admin := Admin{
 		id:             id,
 		username:       strings.TrimSpace(username),

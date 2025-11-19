@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHUserRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHUserRep, error) {
+func NewCHUserRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig,
+) (*CHUserRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{
@@ -106,7 +107,8 @@ func (ch *CHUserRep) GetAll(ctx context.Context) ([]*models.User, error) {
 }
 
 func (ch *CHUserRep) GetAllSubscribed(ctx context.Context) ([]*models.User, error) {
-	query := "SELECT id, username, login, hashedPassword, createdAt, email, subscribeMail FROM Users WHERE subscribeMail = 1"
+	query := "SELECT id, username, login, hashedPassword, createdAt, " +
+		"email, subscribeMail FROM Users WHERE subscribeMail = 1"
 	rows, err := ch.db.QueryContext(ctx, query)
 	if err != nil {
 		return nil, fmt.Errorf("CHUserRep.GetAllSubscribed: %w: %v", ErrQueryExec, err)

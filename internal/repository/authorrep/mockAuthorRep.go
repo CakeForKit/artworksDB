@@ -39,7 +39,8 @@ func (m *MockAuthorRep) Delete(ctx context.Context, idAuthor uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockAuthorRep) Update(ctx context.Context, idAuthor uuid.UUID, funcUpdate func(*models.Author) (*models.Author, error)) error {
+func (m *MockAuthorRep) Update(ctx context.Context, idAuthor uuid.UUID,
+	funcUpdate func(*models.Author) (*models.Author, error)) error {
 	args := m.Called(ctx, idAuthor, funcUpdate)
 	return args.Error(0)
 }

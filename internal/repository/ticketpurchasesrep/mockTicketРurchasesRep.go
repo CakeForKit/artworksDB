@@ -12,7 +12,8 @@ type MockTicketPurchasesRep struct {
 	mock.Mock
 }
 
-func (m *MockTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context, userID uuid.UUID) ([]*models.TicketPurchase, error) {
+func (m *MockTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context,
+	userID uuid.UUID) ([]*models.TicketPurchase, error) {
 	args := m.Called(ctx, userID)
 	return args.Get(0).([]*models.TicketPurchase), args.Error(1)
 }

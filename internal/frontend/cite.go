@@ -1,6 +1,7 @@
 package frontend
 
 import (
+	"context"
 	"errors"
 	"net/http"
 	"strconv"
@@ -22,7 +23,8 @@ type CiteRouter struct {
 	authorServ   authorserv.AuthorServ
 }
 
-func NewCiteRouter(router *gin.RouterGroup, searcherServ searcher.Searcher, authorServ authorserv.AuthorServ) CiteRouter {
+func NewCiteRouter(router *gin.RouterGroup, searcherServ searcher.Searcher, authorServ authorserv.AuthorServ,
+) CiteRouter {
 	r := CiteRouter{
 		searcherServ: searcherServ,
 		authorServ:   authorServ,
@@ -82,18 +84,11 @@ func (r *CiteRouter) allArtworksResp(c *gin.Context) (
 func (r *CiteRouter) GetAllArtworks(c *gin.Context) {
 	artworksResp, filterOps, sortOps := r.allArtworksResp(c)
 	if artworksResp != nil {
-		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.ArtworksPage(artworksResp, filterOps, sortOps))
+		rend := gintemplrenderer.New(c.Request.Context(),
+			http.StatusOK, components.ArtworksPage(artworksResp, filterOps, sortOps))
 		c.Render(http.StatusOK, rend)
 	}
 }
-
-// func (r *CiteRouter) GetAllArtworksEmpl(c *gin.Context) {
-// 	artworksResp, filterOps, sortOps := r.allArtworksResp(c)
-// 	if artworksResp != nil {
-// 		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EmplArtworksPage(artworksResp, filterOps, sortOps))
-// 		c.Render(http.StatusOK, rend)
-// 	}
-// }
 
 func (r *CiteRouter) allEventsResp(c *gin.Context) (
 	[]jsonreqresp.EventResponse, jsonreqresp.EventFilter,
@@ -157,7 +152,6 @@ func (r *CiteRouter) GetAllEvents(c *gin.Context) {
 
 func (r *CiteRouter) GetEvent(c *gin.Context) {
 	ctx := c.Request.Context()
-	// Получаем eventID из параметра пути
 	eventID, err := uuid.Parse(c.Param("id"))
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": "invalid event ID format"})
@@ -166,42 +160,20 @@ func (r *CiteRouter) GetEvent(c *gin.Context) {
 
 	event, err := r.searcherServ.GetEvent(ctx, eventID)
 	if err != nil {
-		if errors.Is(err, eventrep.ErrEventNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		r.handleError(c, err)
 		return
 	}
 
-	artworks, err := r.searcherServ.GetArtworksFromEvent(ctx, eventID)
+	artworksResp, err := r.getArtworksResponse(ctx, eventID)
 	if err != nil {
-		if errors.Is(err, eventrep.ErrEventNotFound) ||
-			errors.Is(err, artworkrep.ErrArtworkNotFound) ||
-			errors.Is(err, eventrep.ErrEventArtowrkNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		r.handleError(c, err)
 		return
-	}
-	artworksResp := make([]jsonreqresp.ArtworkResponse, len(artworks))
-	for i, a := range artworks {
-		artworksResp[i] = a.ToArtworkResponse()
 	}
 
-	modelStatCols, err := r.searcherServ.GetCollectionsStat(ctx, eventID)
+	statCollections, err := r.getCollectionsStatResponse(ctx, eventID)
 	if err != nil {
-		if errors.Is(err, eventrep.ErrEventNotFound) {
-			c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
-		} else {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
-		}
+		r.handleError(c, err)
 		return
-	}
-	statCollections := make([]jsonreqresp.StatCollectionsResponse, len(modelStatCols))
-	for i, v := range modelStatCols {
-		statCollections[i] = v.ToResponse()
 	}
 
 	rend := gintemplrenderer.New(
@@ -216,10 +188,40 @@ func (r *CiteRouter) GetEvent(c *gin.Context) {
 	c.Render(http.StatusOK, rend)
 }
 
-// func (r *CiteRouter) GetAllEventsEmpl(c *gin.Context) {
-// 	eventsResp, filterOps := r.allEventsResp(c)
-// 	if eventsResp != nil {
-// 		rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.EmplEventsPage(eventsResp, filterOps))
-// 		c.Render(http.StatusOK, rend)
-// 	}
-// }
+func (r *CiteRouter) handleError(c *gin.Context, err error) {
+	if errors.Is(err, eventrep.ErrEventNotFound) ||
+		errors.Is(err, artworkrep.ErrArtworkNotFound) ||
+		errors.Is(err, eventrep.ErrEventArtowrkNotFound) {
+		c.JSON(http.StatusNotFound, gin.H{"error": err.Error()})
+	} else {
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
+	}
+}
+
+func (r *CiteRouter) getArtworksResponse(ctx context.Context,
+	eventID uuid.UUID) ([]jsonreqresp.ArtworkResponse, error) {
+	artworks, err := r.searcherServ.GetArtworksFromEvent(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	artworksResp := make([]jsonreqresp.ArtworkResponse, len(artworks))
+	for i, a := range artworks {
+		artworksResp[i] = a.ToArtworkResponse()
+	}
+	return artworksResp, nil
+}
+
+func (r *CiteRouter) getCollectionsStatResponse(ctx context.Context,
+	eventID uuid.UUID) ([]jsonreqresp.StatCollectionsResponse, error) {
+	modelStatCols, err := r.searcherServ.GetCollectionsStat(ctx, eventID)
+	if err != nil {
+		return nil, err
+	}
+
+	statCollections := make([]jsonreqresp.StatCollectionsResponse, len(modelStatCols))
+	for i, v := range modelStatCols {
+		statCollections[i] = v.ToResponse()
+	}
+	return statCollections, nil
+}

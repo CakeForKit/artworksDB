@@ -117,13 +117,15 @@ func (s *CollectionServiceSuite) TestCollectionServ_Update(t provider.T) {
 		updateReq := collectionCreator.CollectionUpdateReq()
 
 		mockColRep := new(collectionrep.MockCollectionRep)
-		mockColRep.On("Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).Return(nil)
+		mockColRep.On("Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).Return(nil)
 
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
 		sCtx.Require().NoError(err)
-		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
+		mockColRep.AssertCalled(t, "Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
 	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
@@ -133,13 +135,15 @@ func (s *CollectionServiceSuite) TestCollectionServ_Update(t provider.T) {
 		expectedErr := errors.New("update error")
 
 		mockColRep := new(collectionrep.MockCollectionRep)
-		mockColRep.On("Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).Return(expectedErr)
+		mockColRep.On("Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).Return(expectedErr)
 
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
 		sCtx.Require().ErrorIs(err, expectedErr)
-		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
+		mockColRep.AssertCalled(t, "Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
 	t.WithNewStep("error in update function", func(sCtx provider.StepCtx) {
@@ -150,14 +154,16 @@ func (s *CollectionServiceSuite) TestCollectionServ_Update(t provider.T) {
 
 		mockColRep := new(collectionrep.MockCollectionRep)
 		// Mock will call the actual update function which should fail
-		mockColRep.On("Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).
+		mockColRep.On("Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)")).
 			Return(errors.New("validation error"))
 
 		collectionServ := collectionserv.NewCollectionServ(mockColRep)
 		// ACT
 		err := collectionServ.Update(ctx, collectionID, updateReq)
 		sCtx.Require().Error(err)
-		mockColRep.AssertCalled(t, "Update", ctx, collectionID, mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
+		mockColRep.AssertCalled(t, "Update", ctx, collectionID,
+			mock.AnythingOfType("func(*models.Collection) (*models.Collection, error)"))
 	})
 
 }

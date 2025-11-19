@@ -23,7 +23,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHArtworkRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHArtworkRep, error) {
+func NewCHArtworkRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHArtworkRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{
@@ -118,7 +119,8 @@ func (ch *CHArtworkRep) buildFilterConditions(filterOps *jsonreqresp.ArtworkFilt
 		args = append(args, "%"+filterOps.Collection+"%")
 	}
 	if filterOps.EventID != uuid.Nil {
-		conditions = append(conditions, "EXISTS (SELECT 1 FROM Artwork_event ae WHERE Artworks.id = ae.artworkID AND ae.eventID = ?)")
+		conditions = append(conditions,
+			"EXISTS (SELECT 1 FROM Artwork_event ae WHERE Artworks.id = ae.artworkID AND ae.eventID = ?)")
 		args = append(args, filterOps.EventID)
 	}
 
@@ -161,7 +163,8 @@ func (ch *CHArtworkRep) buildSortClause(sortOps *jsonreqresp.ArtworkSortOps) str
 	}
 }
 
-func (ch *CHArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
+func (ch *CHArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter,
+	sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
 	baseQuery := `
 		SELECT 
 			Artworks.id, Artworks.title, Artworks.technic, Artworks.material,

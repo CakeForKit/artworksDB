@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHTicketPurchasesRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHTicketPurchasesRep, error) {
+func NewCHTicketPurchasesRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHTicketPurchasesRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{
@@ -80,7 +81,8 @@ func (ch *CHTicketPurchasesRep) parseTicketPurchasesRows(rows *sql.Rows) ([]*mod
 	return resTicketPurchases, nil
 }
 
-func (ch *CHTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context, userID uuid.UUID) ([]*models.TicketPurchase, error) {
+func (ch *CHTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context,
+	userID uuid.UUID) ([]*models.TicketPurchase, error) {
 	query := `
 		SELECT tp.id, tp.customerName, tp.customerEmail, 
 		       tp.purchaseDate, tp.eventID, tu.userID

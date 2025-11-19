@@ -34,7 +34,8 @@ type UserRep interface {
 	Close()
 }
 
-func NewUserRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
+func NewUserRep(ctx context.Context, datebaseType string,
+	pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (UserRep, error) {
 	switch datebaseType {
 	case cnfg.PostgresDB:
 		return NewPgUserRep(ctx, pgCreds, dbConf)

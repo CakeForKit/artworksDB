@@ -27,7 +27,8 @@ var (
 	ErrRowsAffected      = errors.New("no rows affected")
 )
 
-func NewPgAuthorRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgAuthorRep, error) {
+func NewPgAuthorRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgAuthorRep, error) {
 
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)

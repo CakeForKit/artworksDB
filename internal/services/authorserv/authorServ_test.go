@@ -123,14 +123,16 @@ func (s *AuthorServiceSuite) TestAuthorServ_Update(t provider.T) {
 		updateReq := authorCreator.AuthorUpdateReq()
 
 		mockAuthorRep := new(authorrep.MockAuthorRep)
-		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(nil)
+		mockAuthorRep.On("Update", ctx, authorID,
+			mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(nil)
 
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
 
 		sCtx.Assert().NoError(err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID,
+			mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	}, allure.NewParameter("scenario", "successful update"))
 
 	t.WithNewStep("error in rep", func(sCtx provider.StepCtx) {
@@ -142,14 +144,16 @@ func (s *AuthorServiceSuite) TestAuthorServ_Update(t provider.T) {
 		expectedErr := errors.New("update error")
 
 		mockAuthorRep := new(authorrep.MockAuthorRep)
-		mockAuthorRep.On("Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(expectedErr)
+		mockAuthorRep.On("Update", ctx, authorID,
+			mock.AnythingOfType("func(*models.Author) (*models.Author, error)")).Return(expectedErr)
 
 		authorServ := authorserv.NewAuthorServ(mockAuthorRep)
 		// ACT
 		err := authorServ.Update(ctx, authorID, updateReq)
 
 		sCtx.Assert().ErrorIs(err, expectedErr)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID,
+			mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	}, allure.NewParameter("scenario", "repository error"))
 
 	t.WithNewStep("error in update function", func(sCtx provider.StepCtx) {
@@ -166,7 +170,8 @@ func (s *AuthorServiceSuite) TestAuthorServ_Update(t provider.T) {
 		err := authorServ.Update(ctx, authorID, updateReq)
 
 		sCtx.Assert().Error(err)
-		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID, mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
+		mockAuthorRep.AssertCalled(t, "Update", ctx, authorID,
+			mock.AnythingOfType("func(*models.Author) (*models.Author, error)"))
 	}, allure.NewParameter("scenario", "validation error"))
 }
 

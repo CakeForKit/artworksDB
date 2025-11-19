@@ -48,7 +48,8 @@ func (m *MockEmployeeRep) Update_(ctx context.Context, updatedEmployee *models.E
 	return args.Get(0).(*models.Employee), args.Error(1)
 }
 
-func (m *MockEmployeeRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error) {
+func (m *MockEmployeeRep) Update(ctx context.Context, id uuid.UUID,
+	funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error) {
 	args := m.Called(ctx, id, funcUpdate)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

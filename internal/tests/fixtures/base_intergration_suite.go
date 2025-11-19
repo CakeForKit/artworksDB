@@ -17,7 +17,8 @@ type BaseIntegrationSuite struct {
 func (s *BaseIntegrationSuite) BeforeAll(t provider.T) {
 	t.Tags("integration")
 	t.WithNewStep("Load configuration", func(sCtx provider.StepCtx) {
-		appCnfg, dbCreds, dbCnfg, redisCreds, err := InitTestConfig("../../../configs/") // испольнение теста из: artworksDB/internal/tests/integration_test
+		// испольнение теста из: artworksDB/internal/tests/integration_test
+		appCnfg, dbCreds, dbCnfg, redisCreds, err := InitTestConfig("../../../configs/")
 		sCtx.Require().NoError(err, "Failed to load config")
 		s.AppCnfg = appCnfg
 		s.DBCreds = dbCreds

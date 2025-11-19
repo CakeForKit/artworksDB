@@ -12,7 +12,8 @@ import (
 )
 
 type Searcher interface {
-	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
+	GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter,
+		sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error)
 	GetAllEvents(ctx context.Context, filterOps *jsonreqresp.EventFilter) ([]*models.Event, error)
 	GetEvent(ctx context.Context, eventID uuid.UUID) (*models.Event, error)
 	GetArtworksFromEvent(ctx context.Context, eventID uuid.UUID) ([]*models.Artwork, error)
@@ -31,7 +32,8 @@ func NewSearcher(artRep artworkrep.ArtworkRep, eventRep eventrep.EventRep) Searc
 	}
 }
 
-func (s *searcher) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
+func (s *searcher) GetAllArtworks(ctx context.Context,
+	filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
 	return s.artworkRep.GetAllArtworks(ctx, filterOps, sortOps)
 }
 

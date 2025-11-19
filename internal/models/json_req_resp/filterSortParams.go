@@ -35,6 +35,6 @@ const (
 )
 
 type ArtworkSortOps struct {
-	Field     string `json:"field,omitempty" binding:"omitempty,oneof=title author_name creationYear" example:""` // обязательное, одно из значений
-	Direction string `json:"direction,omitempty" binding:"omitempty,oneof=ASC DESC" example:""`                   // обязательное, только ASC или DESC
+	Field     string `json:"field,omitempty" binding:"omitempty,oneof=title author_name creationYear" example:""`
+	Direction string `json:"direction,omitempty" binding:"omitempty,oneof=ASC DESC" example:""`
 }

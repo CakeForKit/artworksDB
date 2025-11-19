@@ -213,7 +213,8 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 		mockUserRep := new(userrep.MockUserRep)
 		mockEmployeeRep := new(employeerep.MockEmployeeRep)
-		mockEmployeeRep.On("Update", ctx, employee.GetID(), mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)")).Return(employee, nil)
+		mockEmployeeRep.On("Update", ctx, employee.GetID(),
+			mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)")).Return(employee, nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
 		// ACT
@@ -221,7 +222,8 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 		sCtx.Assert().NoError(err)
 		mockAuthZRep.AssertCalled(t, "AdminIDFromContext", ctx)
-		mockEmployeeRep.AssertCalled(t, "Update", ctx, employee.GetID(), mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)"))
+		mockEmployeeRep.AssertCalled(t, "Update", ctx, employee.GetID(),
+			mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)"))
 	}, allure.NewParameter("scenario", "successful change"))
 
 	t.WithNewStep("error no admin in context", func(sCtx provider.StepCtx) {
@@ -255,7 +257,8 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 		mockUserRep := new(userrep.MockUserRep)
 		mockEmployeeRep := new(employeerep.MockEmployeeRep)
 		expectedErr := errors.New("error")
-		mockEmployeeRep.On("Update", ctx, employee.GetID(), mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)")).Return(employee, expectedErr)
+		mockEmployeeRep.On("Update", ctx, employee.GetID(),
+			mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)")).Return(employee, expectedErr)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
 		// ACT
@@ -263,6 +266,7 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 		sCtx.Assert().ErrorIs(err, expectedErr)
 		mockAuthZRep.AssertCalled(t, "AdminIDFromContext", ctx)
-		mockEmployeeRep.AssertCalled(t, "Update", ctx, employee.GetID(), mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)"))
+		mockEmployeeRep.AssertCalled(t, "Update", ctx, employee.GetID(),
+			mock.AnythingOfType("func(*models.Employee) (*models.Employee, error)"))
 	}, allure.NewParameter("scenario", "update error"))
 }

@@ -23,13 +23,15 @@ type EmployeeRep interface {
 	GetByLogin(ctx context.Context, login string) (*models.Employee, error)
 	Add(ctx context.Context, e *models.Employee) error
 	Delete(ctx context.Context, id uuid.UUID) error
-	Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error)
+	Update(ctx context.Context, id uuid.UUID,
+		funcUpdate func(*models.Employee) (*models.Employee, error)) (*models.Employee, error)
 	Update_(ctx context.Context, updatedEmployee *models.Employee) (*models.Employee, error)
 	Ping(ctx context.Context) error
 	Close()
 }
 
-func NewEmployeeRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
+func NewEmployeeRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (EmployeeRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgEmployeeRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

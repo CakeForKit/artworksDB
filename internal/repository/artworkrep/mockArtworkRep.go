@@ -13,7 +13,8 @@ type MockArtworkRep struct {
 	mock.Mock
 }
 
-func (m *MockArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
+func (m *MockArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter,
+	sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
 	args := m.Called(ctx, filterOps, sortOps)
 	return args.Get(0).([]*models.Artwork), args.Error(1)
 }
@@ -36,7 +37,8 @@ func (m *MockArtworkRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockArtworkRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.Artwork) (*models.Artwork, error)) error {
+func (m *MockArtworkRep) Update(ctx context.Context, id uuid.UUID,
+	funcUpdate func(*models.Artwork) (*models.Artwork, error)) error {
 	args := m.Called(ctx, id, funcUpdate)
 	return args.Error(0)
 }

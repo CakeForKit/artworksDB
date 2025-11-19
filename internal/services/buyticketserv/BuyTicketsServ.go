@@ -23,8 +23,8 @@ var (
 )
 
 type BuyTicketsServ interface {
-	BuyTicket(ctx context.Context, eventID uuid.UUID, cntTickets int, customerName string, customerEmail string) (*models.TicketPurchaseTx, error)
-	// BuyTicketByUser(ctx context.Context, event models.Event, cntTickets int, user models.User) (*models.TicketPurchaseTx, error)
+	BuyTicket(ctx context.Context, eventID uuid.UUID, cntTickets int, customerName string, customerEmail string,
+	) (*models.TicketPurchaseTx, error)
 	ConfirmBuyTicket(ctx context.Context, TxID uuid.UUID) error
 	CancelBuyTicket(ctx context.Context, TxID uuid.UUID) error
 	GetAllTicketPurchasesOfUser(ctx context.Context) ([]*models.TicketPurchase, error)
@@ -88,37 +88,67 @@ func (b *buyTicketsServ) BuyTicket(
 	customerName string,
 	customerEmail string,
 ) (*models.TicketPurchaseTx, error) {
-	var err error
-	ticketsFree, err := b.cntFreeTickets(ctx, eventID)
-	if err != nil {
-		return nil, fmt.Errorf("BuyTicket: %w", err)
-	}
-	if ticketsFree <= 0 {
-		return nil, fmt.Errorf("BuyTicket: %w", ErrNoFreeTicket)
+	if err := b.validateTicketAvailability(ctx, eventID); err != nil {
+		return nil, err
 	}
 
-	userID, err := b.authZ.UserIDFromContext(ctx)
-	if err != nil && err != auth.ErrNotAuthZ {
+	userID, userName, userEmail, err := b.getUserData(ctx, customerName, customerEmail)
+	if err != nil {
 		return nil, fmt.Errorf("%w: %w", ErrBuyTicketsServ, err)
 	}
 
-	var userName, userEmail string
-	if err == auth.ErrNotAuthZ {
-		if customerName == "" || customerEmail == "" {
-			return nil, fmt.Errorf("%w: %w", ErrBuyTicketsServ, ErrNoUserData)
-		}
-		userName = customerName
-		userEmail = customerEmail
-		userID = uuid.Nil
-	} else {
-		user, err := b.userRep.GetByID(ctx, userID)
-		if err != nil {
-			return nil, fmt.Errorf("%w: %w", ErrBuyTicketsServ, err)
-		}
-		userName = user.GetUsername()
-		userEmail = user.GetEmail()
-		userID = user.GetID()
+	return b.createPurchaseTransaction(ctx, eventID, cntTickets, userID, userName, userEmail)
+}
+
+func (b *buyTicketsServ) validateTicketAvailability(ctx context.Context, eventID uuid.UUID) error {
+	ticketsFree, err := b.cntFreeTickets(ctx, eventID)
+	if err != nil {
+		return fmt.Errorf("BuyTicket: %w", err)
 	}
+	if ticketsFree <= 0 {
+		return fmt.Errorf("BuyTicket: %w", ErrNoFreeTicket)
+	}
+	return nil
+}
+
+func (b *buyTicketsServ) getUserData(ctx context.Context, customerName,
+	customerEmail string) (uuid.UUID, string, string, error) {
+	userID, err := b.authZ.UserIDFromContext(ctx)
+	if err != nil && err != auth.ErrNotAuthZ {
+		return uuid.Nil, "", "", err
+	}
+
+	if err == auth.ErrNotAuthZ {
+		return b.getUnauthenticatedUserData(customerName, customerEmail)
+	}
+	return b.getAuthenticatedUserData(ctx, userID)
+}
+
+func (b *buyTicketsServ) getUnauthenticatedUserData(customerName,
+	customerEmail string) (uuid.UUID, string, string, error) {
+	if customerName == "" || customerEmail == "" {
+		return uuid.Nil, "", "", ErrNoUserData
+	}
+	return uuid.Nil, customerName, customerEmail, nil
+}
+
+func (b *buyTicketsServ) getAuthenticatedUserData(ctx context.Context,
+	userID uuid.UUID) (uuid.UUID, string, string, error) {
+	user, err := b.userRep.GetByID(ctx, userID)
+	if err != nil {
+		return uuid.Nil, "", "", err
+	}
+	return user.GetID(), user.GetUsername(), user.GetEmail(), nil
+}
+
+func (b *buyTicketsServ) createPurchaseTransaction(
+	ctx context.Context,
+	eventID uuid.UUID,
+	cntTickets int,
+	userID uuid.UUID,
+	userName string,
+	userEmail string,
+) (*models.TicketPurchaseTx, error) {
 	timeExpire := time.Now().Add(b.config.BuyTicketTransactionDuration)
 	tx, err := models.NewBuyTicketTx(
 		uuid.New(),
@@ -134,10 +164,10 @@ func (b *buyTicketsServ) BuyTicket(
 		return nil, fmt.Errorf("%w: %w", ErrBuyTicketsServ, err)
 	}
 
-	err = b.txRep.Add(ctx, tx)
-	if err != nil {
+	if err := b.txRep.Add(ctx, tx); err != nil {
 		return nil, fmt.Errorf("BuyTicket: %w", err)
 	}
+
 	return &tx, nil
 }
 

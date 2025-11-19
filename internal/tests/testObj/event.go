@@ -13,7 +13,8 @@ type EventMother interface {
 	EventCntTicketsP(eventID uuid.UUID, cntTickets int) *models.Event
 	EventWithDatesP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time) *models.Event
 	EventWithArtworksP(eventID uuid.UUID, artworkIDs uuid.UUIDs) *models.Event
-	EventWithDateArtworksP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event
+	EventWithDateArtworksP(eventID uuid.UUID, dateBegin time.Time,
+		dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event
 	EventAdd(employeeID uuid.UUID) *jsonreqresp.EventAdd
 	StatCollectionsP() *models.StatCollections
 	EventFilterEmpty() *jsonreqresp.EventFilter
@@ -90,7 +91,8 @@ func (um *eventMother) EventWithArtworksP(eventID uuid.UUID, artworkIDs uuid.UUI
 	return &event
 }
 
-func (um *eventMother) EventWithDateArtworksP(eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event {
+func (um *eventMother) EventWithDateArtworksP(
+	eventID uuid.UUID, dateBegin time.Time, dateEnd time.Time, artworkIDs uuid.UUIDs) *models.Event {
 	event, _ := models.NewEvent(
 		eventID,
 		"test-event-title",

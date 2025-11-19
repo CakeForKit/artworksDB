@@ -6,9 +6,9 @@ export ALLURE_RESULTS_DIR
 export ALLURE_OUTPUT_PATH
 
 SCRIPTS := ./scripts
-DC_CI := ./deployment/docker-compose.ci.yml
+DC_CI := ./artworks-deployment/docker-compose.ci.yml
 TEST_DB_ENV := ./configs/test_db.env
-DC_DEV := ./deployment/docker-compose.dev.yaml
+DC_DEV := ./artworks-deployment/docker-compose.dev.yaml
 DB_ENV := ./configs/db.env
 EMAIL_ENV := ./configs/email.env
 
@@ -105,7 +105,7 @@ build:
 .PHONY: clear_docker
 clear_docker:
 # Остановите все контейнеры
-	docker-compose -f ./deployment/docker-compose.ci.yml down
+	docker-compose -f ./artworks-deployment/docker-compose.ci.yml down
 # Удалите старые образы
 	docker rmi deployment-test-runner
 # Очистите builder кеш

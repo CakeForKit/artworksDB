@@ -25,7 +25,8 @@ type CollectionRep interface {
 	Close()
 }
 
-func NewCollectionRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {
+func NewCollectionRep(ctx context.Context, datebaseType string,
+	pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (CollectionRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgCollectionRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

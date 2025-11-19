@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHAuthorRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHAuthorRep, error) {
+func NewCHAuthorRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHAuthorRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{
@@ -87,7 +88,8 @@ func (ch *CHAuthorRep) parseAuthorsRows(rows *sql.Rows) ([]*models.Author, error
 	return resAuthors, nil
 }
 
-func (ch *CHAuthorRep) execSelectQuery(ctx context.Context, query string, args ...interface{}) ([]*models.Author, error) {
+func (ch *CHAuthorRep) execSelectQuery(ctx context.Context, query string,
+	args ...interface{}) ([]*models.Author, error) {
 	rows, err := ch.db.QueryContext(ctx, query, args...)
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryExec, err)

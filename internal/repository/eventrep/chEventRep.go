@@ -23,7 +23,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHEventRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHEventRep, error) {
+func NewCHEventRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig,
+) (*CHEventRep, error) {
 	// fmt.Printf("NewCHEventRep\n\n")
 	var resErr error
 	chOnce.Do(func() {
@@ -70,7 +71,8 @@ func (ch *CHEventRep) parseEventsRows(rows *sql.Rows) ([]*models.Event, error) {
 		var canVisit, valid uint8
 		var cntTickets int32
 
-		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit, &address, &cntTickets, &creatorID, &valid); err != nil {
+		if err := rows.Scan(&id, &title, &dateBegin, &dateEnd, &canVisit, &address,
+			&cntTickets, &creatorID, &valid); err != nil {
 			return nil, fmt.Errorf("scan error: %v", err)
 		}
 
@@ -256,7 +258,8 @@ func (ch *CHEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event,
 	return events[0], nil
 }
 
-func (ch *CHEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
+func (ch *CHEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID,
+	dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
 	query := `
 		SELECT 
 			e.id, e.title, e.dateBegin, e.dateEnd, e.canVisit, 

@@ -39,7 +39,8 @@ func (m *MockEventRep) GetByID(ctx context.Context, id uuid.UUID) (*models.Event
 	return args.Get(0).(*models.Event), args.Error(1)
 }
 
-func (m *MockEventRep) GetEventsOfArtworkOnDate(ctx context.Context, artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
+func (m *MockEventRep) GetEventsOfArtworkOnDate(ctx context.Context,
+	artworkID uuid.UUID, dateBeg time.Time, dateEnd time.Time) ([]*models.Event, error) {
 	args := m.Called(ctx, artworkID, dateBeg, dateEnd)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)
@@ -75,7 +76,8 @@ func (m *MockEventRep) Delete(ctx context.Context, eventID uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockEventRep) Update(ctx context.Context, eventID uuid.UUID, funcUpdate func(*models.Event) (*models.Event, error)) error {
+func (m *MockEventRep) Update(ctx context.Context, eventID uuid.UUID,
+	funcUpdate func(*models.Event) (*models.Event, error)) error {
 	args := m.Called(ctx, eventID, funcUpdate)
 	return args.Error(0)
 }

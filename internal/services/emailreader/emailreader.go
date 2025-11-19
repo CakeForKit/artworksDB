@@ -42,22 +42,11 @@ type SearchCriteria struct {
 
 // FindEmailByCriteria ищет письмо по критериям и возвращает САМОЕ ПОСЛЕДНЕЕ найденное
 func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, error) {
-	imapAddr := er.Host + ":" + er.Port
-	c, err := client.DialTLS(imapAddr, nil)
+	c, err := er.connectAndLogin()
 	if err != nil {
-		return nil, fmt.Errorf("ошибка подключения: %w", err)
+		return nil, err
 	}
-	// defer  c.Logout()
-	defer func() {
-		err := c.Logout()
-		if err != nil {
-			log.Printf("Logout error: %v", err)
-		}
-	}()
-
-	if err := c.Login(er.Username, er.Password); err != nil {
-		return nil, fmt.Errorf("ошибка авторизации: %w", err)
-	}
+	defer er.logout(c)
 
 	mailbox, err := c.Select("INBOX", false)
 	if err != nil {
@@ -67,12 +56,38 @@ func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, err
 		return nil, fmt.Errorf("в папке INBOX нет писем")
 	}
 
-	// fmt.Printf("🔍 Поиск САМОГО ПОСЛЕДНЕГО письма от '%s' с темой содержащей '%s'\n", criteria.From, criteria.Subject)
-	// fmt.Printf("📂 Всего писем в папке: %d\n", mailbox.Messages)
+	foundEmails, err := er.fetchAndFilterEmails(c, mailbox.Messages, criteria)
+	if err != nil {
+		return nil, err
+	}
 
-	var foundEmails []*Email
+	return er.findLatestEmail(foundEmails)
+}
+
+func (er *EmailReader) connectAndLogin() (*client.Client, error) {
+	imapAddr := er.Host + ":" + er.Port
+	c, err := client.DialTLS(imapAddr, nil)
+	if err != nil {
+		return nil, fmt.Errorf("ошибка подключения: %w", err)
+	}
+
+	if err := c.Login(er.Username, er.Password); err != nil {
+		return nil, fmt.Errorf("ошибка авторизации: %w", err)
+	}
+
+	return c, nil
+}
+
+func (er *EmailReader) logout(c *client.Client) {
+	if err := c.Logout(); err != nil {
+		log.Printf("Logout error: %v", err)
+	}
+}
+
+func (er *EmailReader) fetchAndFilterEmails(c *client.Client, totalMessages uint32,
+	criteria SearchCriteria) ([]*Email, error) {
 	seqset := new(imap.SeqSet)
-	seqset.AddRange(1, mailbox.Messages)
+	seqset.AddRange(1, totalMessages)
 
 	section := &imap.BodySectionName{}
 	messages := make(chan *imap.Message, 10)
@@ -87,26 +102,10 @@ func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, err
 		}, messages)
 	}()
 
+	var foundEmails []*Email
 	for msg := range messages {
-		fromAddress := msg.Envelope.From[0].Address()
-		subject := msg.Envelope.Subject
-
-		if er.matchesCriteria(fromAddress, subject, criteria) {
-			// fmt.Printf("✅ Найдено подходящее письмо! ID: %d\n", msg.SeqNum)
-			email := &Email{
-				ID:      msg.SeqNum,
-				From:    fromAddress,
-				Subject: subject,
-				Date:    msg.Envelope.Date.Format("2006-01-02 15:04"),
-			}
-
-			if msg.GetBody(section) != nil {
-				body, err := er.extractBody(msg.GetBody(section))
-				if err == nil {
-					email.Body = body
-				}
-			}
-
+		email, ok := er.processMessage(msg, section, criteria)
+		if ok {
 			foundEmails = append(foundEmails, email)
 		}
 	}
@@ -115,18 +114,47 @@ func (er *EmailReader) FindEmailByCriteria(criteria SearchCriteria) (*Email, err
 		return nil, fmt.Errorf("ошибка получения писем: %w", err)
 	}
 
-	if len(foundEmails) > 0 {
-		var latestEmail *Email
-		for _, email := range foundEmails {
-			if latestEmail == nil || email.ID > latestEmail.ID {
-				latestEmail = email
-			}
-		}
-		// fmt.Printf("🎯 Возвращаем САМОЕ ПОСЛЕДНЕЕ письмо ID: %d\n", latestEmail.ID)
-		return latestEmail, nil
+	return foundEmails, nil
+}
+
+func (er *EmailReader) processMessage(msg *imap.Message, section *imap.BodySectionName,
+	criteria SearchCriteria) (*Email, bool) {
+	fromAddress := msg.Envelope.From[0].Address()
+	subject := msg.Envelope.Subject
+
+	if !er.matchesCriteria(fromAddress, subject, criteria) {
+		return nil, false
 	}
 
-	return nil, fmt.Errorf("письмо не найдено")
+	email := &Email{
+		ID:      msg.SeqNum,
+		From:    fromAddress,
+		Subject: subject,
+		Date:    msg.Envelope.Date.Format("2006-01-02 15:04"),
+	}
+
+	if msg.GetBody(section) != nil {
+		if body, err := er.extractBody(msg.GetBody(section)); err == nil {
+			email.Body = body
+		}
+	}
+
+	return email, true
+}
+
+func (er *EmailReader) findLatestEmail(emails []*Email) (*Email, error) {
+	if len(emails) == 0 {
+		return nil, fmt.Errorf("письмо не найдено")
+	}
+
+	var latestEmail *Email
+	for _, email := range emails {
+		if latestEmail == nil || email.ID > latestEmail.ID {
+			latestEmail = email
+		}
+	}
+
+	return latestEmail, nil
 }
 
 func (er *EmailReader) matchesCriteria(from, subject string, criteria SearchCriteria) bool {

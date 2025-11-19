@@ -41,13 +41,15 @@ func NewEmployeeCiteRouter(gr *gin.RouterGroup,
 func (r *EmployeeCiteRouter) AuthorsCRUDPage(c *gin.Context) {
 	authorsResp := r.allAuthorsResp(c)
 
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.AuthorsPage(TokenLocalstorage, authorsResp))
+	rend := gintemplrenderer.New(c.Request.Context(),
+		http.StatusOK, components.AuthorsPage(TokenLocalstorage, authorsResp))
 	c.Render(http.StatusOK, rend)
 }
 
 func (r *EmployeeCiteRouter) CollectionsCRUDPage(c *gin.Context) {
 	colsResp := r.allCollectionsResp(c)
-	rend := gintemplrenderer.New(c.Request.Context(), http.StatusOK, components.CollectionsPage(TokenLocalstorage, colsResp))
+	rend := gintemplrenderer.New(c.Request.Context(),
+		http.StatusOK, components.CollectionsPage(TokenLocalstorage, colsResp))
 	c.Render(http.StatusOK, rend)
 }
 

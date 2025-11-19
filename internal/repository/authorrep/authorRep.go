@@ -25,7 +25,8 @@ type AuthorRep interface {
 	Close()
 }
 
-func NewAuthorRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {
+func NewAuthorRep(ctx context.Context, datebaseType string, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (AuthorRep, error) {
 	if datebaseType == cnfg.PostgresDB {
 		return NewPgAuthorRep(ctx, pgCreds, dbConf)
 	} else if datebaseType == cnfg.ClickHouseDB {

@@ -29,7 +29,7 @@ type RegisterAdminRequest struct {
 	Password  string `json:"password" binding:"required,min=6" example:"12345678"`
 }
 
-type AuthAdmin interface {
+type AdminAuth interface {
 	LoginAdmin(ctx context.Context, lur LoginAdminRequest) (string, error)
 	RegisterAdmin(ctx context.Context, rur RegisterAdminRequest) error
 	VerifyByToken(token string) (*token.Payload, error)
@@ -46,7 +46,8 @@ type authAdmin struct {
 	hasher     hasher.Hasher
 }
 
-func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep, tokenMaker token.TokenMaker, hasher hasher.Hasher) (AuthAdmin, error) {
+func NewAuthAdmin(config cnfg.AppConfig, urep adminrep.AdminRep,
+	tokenMaker token.TokenMaker, hasher hasher.Hasher) (AdminAuth, error) {
 	server := &authAdmin{
 		tokenMaker: tokenMaker,
 		config:     config,

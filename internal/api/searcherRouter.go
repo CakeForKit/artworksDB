@@ -107,7 +107,7 @@ func (r *SearcherRouter) GetArtworkFromEvent(c *gin.Context) {
 // @Tags Поиск
 // @Accept json
 // @Produce json
-// @Param title            query string     false  "Фильтр по названию произведения (макс. 255 символов)"  maxLength(255)
+// @Param title            query string     false  "Фильтр по названию произведения (макс. 255 символов)" maxLength(255)
 // @Param author_name      query string     false  "Фильтр по имени автора (макс. 100 символов)"    maxLength(100)
 // @Param collection_title query string     false  "Фильтр по названию коллекции (макс. 255 символов)" maxLength(255)
 // @Param event_id         query string     false  "Фильтр по ID мероприятия" format(uuid)

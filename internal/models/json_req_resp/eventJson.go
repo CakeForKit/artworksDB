@@ -77,6 +77,10 @@ func (er *EventResponse) Equal(other *EventResponse) bool {
 		return false
 	}
 
+	return er.equalFields(other) && slicesEqual(er.ArtworkIDs, other.ArtworkIDs)
+}
+
+func (er *EventResponse) equalFields(other *EventResponse) bool {
 	return er.ID == other.ID &&
 		er.Title == other.Title &&
 		er.DateBegin.Equal(other.DateBegin) &&
@@ -85,8 +89,7 @@ func (er *EventResponse) Equal(other *EventResponse) bool {
 		er.CanVisit == other.CanVisit &&
 		er.EmployeeID == other.EmployeeID &&
 		er.CntTickets == other.CntTickets &&
-		er.Valid == other.Valid &&
-		slicesEqual(er.ArtworkIDs, other.ArtworkIDs)
+		er.Valid == other.Valid
 }
 
 // Вспомогательная функция для сравнения слайсов

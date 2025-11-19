@@ -309,7 +309,8 @@ func (s *EventServiceSuite) TestEventService_Update(t provider.T) {
 
 		event := eventCreator.EventP(eventID)
 		mockEventRep.On("GetByID", ctx, eventID).Return(event, nil)
-		mockEventRep.On("Update", ctx, eventID, mock.AnythingOfType("func(*models.Event) (*models.Event, error)")).Return(nil)
+		mockEventRep.On("Update", ctx, eventID,
+			mock.AnythingOfType("func(*models.Event) (*models.Event, error)")).Return(nil)
 
 		eventServ := eventserv.NewEventService(mockEventRep, mockArtworkRep)
 
@@ -318,7 +319,8 @@ func (s *EventServiceSuite) TestEventService_Update(t provider.T) {
 
 		sCtx.Require().NoError(err)
 		mockEventRep.AssertCalled(t, "GetByID", ctx, eventID)
-		mockEventRep.AssertCalled(t, "Update", ctx, eventID, mock.AnythingOfType("func(*models.Event) (*models.Event, error)"))
+		mockEventRep.AssertCalled(t, "Update", ctx, eventID,
+			mock.AnythingOfType("func(*models.Event) (*models.Event, error)"))
 	})
 
 	t.WithNewStep("error event not found", func(sCtx provider.StepCtx) {

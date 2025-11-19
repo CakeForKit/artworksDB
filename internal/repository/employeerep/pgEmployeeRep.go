@@ -28,7 +28,8 @@ var (
 	ErrRowsAffected        = errors.New("no rows affected")
 )
 
-func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgEmployeeRep, error) {
+func NewPgEmployeeRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgEmployeeRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)

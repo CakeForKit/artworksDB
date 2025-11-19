@@ -28,7 +28,8 @@ var (
 	ErrRowsAffected       = errors.New("no rows affected")
 )
 
-func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgArtworkRep, error) {
+func NewPgArtworkRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgArtworkRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
@@ -134,7 +135,8 @@ func (pg *PgArtworkRep) execSelectQuery(ctx context.Context, query sq.SelectBuil
 	return arts, nil
 }
 
-func (pg *PgArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter, sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
+func (pg *PgArtworkRep) GetAllArtworks(ctx context.Context, filterOps *jsonreqresp.ArtworkFilter,
+	sortOps *jsonreqresp.ArtworkSortOps) ([]*models.Artwork, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select(
 		"artworks.id", "artworks.title", "artworks.technic", "artworks.material",
@@ -204,7 +206,8 @@ func (pg *PgArtworkRep) Add(ctx context.Context, e *models.Artwork) error {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Insert("Artworks").
 		Columns("id", "title", "technic", "material", "size", "creationYear", "authorID", "collectionID").
-		Values(e.GetID(), e.GetTitle(), e.GetTechnic(), e.GetMaterial(), e.GetSize(), e.GetCreationYear(), e.GetAuthor().GetID(), e.GetCollection().GetID())
+		Values(e.GetID(), e.GetTitle(), e.GetTechnic(), e.GetMaterial(), e.GetSize(), e.GetCreationYear(),
+			e.GetAuthor().GetID(), e.GetCollection().GetID())
 
 	err := pg.execChangeQuery(ctx, query)
 	if err != nil {

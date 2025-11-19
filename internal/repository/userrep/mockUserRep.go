@@ -55,7 +55,8 @@ func (m *MockUserRep) Delete(ctx context.Context, id uuid.UUID) error {
 	return args.Error(0)
 }
 
-func (m *MockUserRep) Update(ctx context.Context, id uuid.UUID, funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
+func (m *MockUserRep) Update(ctx context.Context, id uuid.UUID,
+	funcUpdate func(*models.User) (*models.User, error)) (*models.User, error) {
 	args := m.Called(ctx, id, funcUpdate)
 	if args.Get(0) == nil {
 		return nil, args.Error(1)

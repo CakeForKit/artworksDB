@@ -24,7 +24,8 @@ var (
 	ErrQueryBuilds = errors.New("query build failed")
 )
 
-func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
+func NewPgAdminRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgAdminRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)

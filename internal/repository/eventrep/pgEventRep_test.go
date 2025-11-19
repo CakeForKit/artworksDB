@@ -39,7 +39,8 @@ type testHelper struct {
 	employeeID uuid.UUID
 }
 
-func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID, pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig) {
+func addEmployee(t *testing.T, ctx context.Context, employeeID uuid.UUID,
+	pgCreds *cnfg.DatebaseCredentials, dbCnfg *cnfg.DatebaseConfig) {
 	admin, err := models.NewAdmin(
 		uuid.New(),
 		"admin",

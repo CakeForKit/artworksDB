@@ -8,25 +8,18 @@ type AuthorResponse struct {
 }
 
 type AddAuthorRequest struct {
-	Name      string `json:"name" binding:"required,min=2,max=100" example:"Винсент Ван Гог"`           // Обязательное, 2-100 символов
-	BirthYear int    `json:"birthYear" binding:"required,gte=1000" example:"1853"`                      // Обязательное, >= 1000
-	DeathYear int    `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear" example:"1890"` // Опциональное, >= BirthYear
+	Name      string `json:"name" binding:"required,min=2,max=100" example:"Винсент Ван Гог"`
+	BirthYear int    `json:"birthYear" binding:"required,gte=1000" example:"1853"`
+	DeathYear int    `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear" example:"1890"`
 }
 
 type UpdateAuthorRequest struct {
 	ID        string `json:"id" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
-	Name      string `json:"name" binding:"required,min=2,max=100" example:"Винсент Ван Гог"`           // Обязательное, 2-100 символов
-	BirthYear int    `json:"birthYear" binding:"required,gte=1000" example:"1853"`                      // Обязательное, >= 1000
-	DeathYear int    `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear" example:"1890"` // Опциональное, >= BirthYear
+	Name      string `json:"name" binding:"required,min=2,max=100" example:"Винсент Ван Гог"`
+	BirthYear int    `json:"birthYear" binding:"required,gte=1000" example:"1853"`
+	DeathYear int    `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear" example:"1890"`
 }
 
 type DeleteAuthorRequest struct {
 	ID string `json:"id" binding:"required,uuid" example:"cfd9ff5d-cb37-407c-b043-288a482e9239"`
 }
-
-// type AuthorRequest struct {
-// 	ID        string `json:"id,omitempty" example:"ba1df957-ed5e-4694-8766-c5ec5806e5e7"`
-// 	Name      string `json:"name" binding:"required,min=2,max=100" example:"Винсент Ван Гог"`           // Обязательное, 2-100 символов
-// 	BirthYear int    `json:"birthYear" binding:"required,gte=1000" example:"1853"`                      // Обязательное, >= 1000
-// 	DeathYear int    `json:"deathYear,omitempty" binding:"omitempty,gtefield=BirthYear" example:"1890"` // Опциональное, >= BirthYear
-// }

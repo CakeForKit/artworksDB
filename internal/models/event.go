@@ -103,10 +103,19 @@ func (e1 *Event) Equal(other interface{}) bool {
 	}
 
 	e2, ok := other.(*Event)
-	if !ok {
+	if !ok || e2 == nil {
 		return false
 	}
-	if e2 == nil || len(e1.artworkIDs) != len(e2.artworkIDs) {
+
+	if !e1.equalArtworkIDs(e2) {
+		return false
+	}
+
+	return e1.equalFields(e2)
+}
+
+func (e1 *Event) equalArtworkIDs(e2 *Event) bool {
+	if len(e1.artworkIDs) != len(e2.artworkIDs) {
 		return false
 	}
 	for i := range e1.artworkIDs {
@@ -114,7 +123,10 @@ func (e1 *Event) Equal(other interface{}) bool {
 			return false
 		}
 	}
+	return true
+}
 
+func (e1 *Event) equalFields(e2 *Event) bool {
 	return e1.title == e2.title &&
 		CmpTimeToMinute(e1.dateBegin, e2.dateBegin) &&
 		CmpTimeToMinute(e1.dateEnd, e2.dateEnd) &&

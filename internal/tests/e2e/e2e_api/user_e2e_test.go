@@ -69,7 +69,8 @@ func (s *UserE2ESuite) AfterEach(t provider.T) {
 		sCtx.Require().NoError(err)
 		user, err := userRep.GetByLogin(ctx, s.registerUserData.Login)
 		sCtx.Require().NoError(err)
-		userRep.Delete(ctx, user.GetID())
+		err = userRep.Delete(ctx, user.GetID())
+		sCtx.Require().NoError(err)
 	})
 }
 

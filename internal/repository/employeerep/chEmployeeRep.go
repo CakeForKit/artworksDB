@@ -22,7 +22,8 @@ var (
 	chOnce     sync.Once
 )
 
-func NewCHEmployeeRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials, dbConf *cnfg.DatebaseConfig) (*CHEmployeeRep, error) {
+func NewCHEmployeeRep(ctx context.Context, chCreds *cnfg.ClickHouseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*CHEmployeeRep, error) {
 	var resErr error
 	chOnce.Do(func() {
 		conn := clickhouse.OpenDB(&clickhouse.Options{

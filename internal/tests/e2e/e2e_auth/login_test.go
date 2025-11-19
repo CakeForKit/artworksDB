@@ -53,7 +53,8 @@ func InitializeLoginScenario(sc *godog.ScenarioContext) {
 		}
 		regCtx.client = fixtures.NewHTTPClient(regCtx.baseConf.BaseURL)
 
-		userRep, err = userrep.NewUserRep(ctx, regCtx.baseConf.AppCnfg.Datebase, regCtx.baseConf.DBCreds, regCtx.baseConf.DBCnfg)
+		userRep, err = userrep.NewUserRep(ctx,
+			regCtx.baseConf.AppCnfg.Datebase, regCtx.baseConf.DBCreds, regCtx.baseConf.DBCnfg)
 		if err != nil {
 			return ctx, err
 		}
@@ -104,7 +105,7 @@ func InitializeLoginScenario(sc *godog.ScenarioContext) {
 		if userRep != nil {
 			user, err := userRep.GetByLogin(ctx, regCtx.registerData.Login)
 			if err == nil {
-				userRep.Delete(ctx, user.GetID())
+				_ = userRep.Delete(ctx, user.GetID())
 			}
 		}
 

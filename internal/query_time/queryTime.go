@@ -331,6 +331,129 @@ func (q *queryTime) dropIndex() error {
 }
 
 func (q *queryTime) MeasureTime(start int, stop int, step int) error {
+	ctx := context.Background()
+
+	if err := q.addRelationArtworkEvent(ctx, start); err != nil {
+		return fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	for i := start; i < stop; i += step {
+		if err := q.measureForCount(i, step); err != nil {
+			return fmt.Errorf("MeasureTime: %v", err)
+		}
+	}
+
+	return nil
+}
+
+func (q *queryTime) measureForCount(count int, step int) error {
+	ctx := context.Background()
+	cntForOneMeasure := 20
+
+	cnt, err := q.getCountRelationsAE(ctx)
+	if err != nil {
+		return fmt.Errorf("MeasureTime: %v", err)
+	}
+	fmt.Printf("Count Artwork_events = %d\n", cnt)
+
+	fileNotIndex, fileIndex, nifileExplain, ifileExplain, err := q.openResultFiles(count)
+	if err != nil {
+		return err
+	}
+	defer fileNotIndex.Close()
+	defer fileIndex.Close()
+	defer nifileExplain.Close()
+	defer ifileExplain.Close()
+
+	if err := q.measureWithoutIndex(ctx, cntForOneMeasure, fileNotIndex, nifileExplain); err != nil {
+		return err
+	}
+
+	if err := q.createIndex(); err != nil {
+		return fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	fmt.Print("---------------------------------------\n")
+	if err := q.measureWithIndex(ctx, cntForOneMeasure, fileIndex, ifileExplain); err != nil {
+		return err
+	}
+
+	if err := q.dropIndex(); err != nil {
+		return fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	if err := q.addRelationArtworkEvent(ctx, step); err != nil {
+		return fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	return nil
+}
+
+func (q *queryTime) openResultFiles(count int) (*os.File, *os.File, *os.File, *os.File, error) {
+	projectRoot := cnfg.GetProjectRoot()
+	dir := filepath.Join(projectRoot, "/measure_results/data/")
+
+	fnameNotIndex := filepath.Join(dir, fmt.Sprintf("%d_notIndex.txt", count))
+	fileNotIndex, err := os.OpenFile(fnameNotIndex, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	fnameIndex := filepath.Join(dir, fmt.Sprintf("%d_Index.txt", count))
+	fileIndex, err := os.OpenFile(fnameIndex, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("MeasureTime: %v", err)
+	}
+
+	nifileExplain, err := os.OpenFile("./measure_results/notindex_explain.txt",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to open file: %w", err)
+	}
+
+	ifileExplain, err := os.OpenFile("./measure_results/index_explain.txt",
+		os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	if err != nil {
+		return nil, nil, nil, nil, fmt.Errorf("failed to open file: %w", err)
+	}
+
+	return fileNotIndex, fileIndex, nifileExplain, ifileExplain, nil
+}
+
+func (q *queryTime) measureWithoutIndex(ctx context.Context, cntForOneMeasure int,
+	fileNotIndex, nifileExplain *os.File) error {
+	for i := range cntForOneMeasure {
+		resultExplain, err := q.oneMeasure(ctx, (i == cntForOneMeasure-1), nifileExplain)
+		if err != nil {
+			return fmt.Errorf("MeasureTime: %v", err)
+		}
+		if _, err = fileNotIndex.WriteString(fmt.Sprintf("%f\n", resultExplain.ExecutionTime)); err != nil {
+			return fmt.Errorf("MeasureTime: %v", err)
+		}
+		fmt.Printf("ExecutionTime: %f, ActualRows: %d\n",
+			resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
+	}
+	return nil
+}
+
+func (q *queryTime) measureWithIndex(ctx context.Context, cntForOneMeasure int,
+	fileIndex, ifileExplain *os.File) error {
+	for i := range cntForOneMeasure {
+		resultExplain, err := q.oneMeasure(ctx, (i == cntForOneMeasure-1), ifileExplain)
+		if err != nil {
+			return fmt.Errorf("MeasureTime: %v", err)
+		}
+		if _, err = fileIndex.WriteString(fmt.Sprintf("%f\n", resultExplain.ExecutionTime)); err != nil {
+			return fmt.Errorf("MeasureTime: %v", err)
+		}
+		fmt.Printf("ExecutionTime: %f, ActualRows: %d\n",
+			resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
+	}
+	return nil
+}
+
+/*
+func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 	projectRoot := cnfg.GetProjectRoot()
 	dir := filepath.Join(projectRoot, "/measure_results/data/")
 	ctx := context.Background()
@@ -359,12 +482,14 @@ func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 			return fmt.Errorf("MeasureTime: %v", err)
 		}
 		defer fileIndex.Close()
-		nifileExplain, err := os.OpenFile("./measure_results/notindex_explain.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		nifileExplain, err := os.OpenFile("./measure_results/notindex_explain.txt",
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
 		defer nifileExplain.Close()
-		ifileExplain, err := os.OpenFile("./measure_results/index_explain.txt", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+		ifileExplain, err := os.OpenFile("./measure_results/index_explain.txt",
+			os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 		if err != nil {
 			return fmt.Errorf("failed to open file: %w", err)
 		}
@@ -378,7 +503,8 @@ func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 			if _, err = fileNotIndex.WriteString(fmt.Sprintf("%f\n", resultExplain.ExecutionTime)); err != nil {
 				return fmt.Errorf("MeasureTime: %v", err)
 			}
-			fmt.Printf("ExecutionTime: %f, ActualRows: %d\n", resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
+			fmt.Printf("ExecutionTime: %f, ActualRows: %d\n",
+				resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
 		}
 		err = q.createIndex()
 		if err != nil {
@@ -393,7 +519,8 @@ func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 			if _, err = fileIndex.WriteString(fmt.Sprintf("%f\n", resultExplain.ExecutionTime)); err != nil {
 				return fmt.Errorf("MeasureTime: %v", err)
 			}
-			fmt.Printf("ExecutionTime: %f, ActualRows: %d\n", resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
+			fmt.Printf("ExecutionTime: %f, ActualRows: %d\n",
+				resultExplain.ExecutionTime, resultExplain.Plan.ActualRows)
 		}
 		err = q.dropIndex()
 		if err != nil {
@@ -415,3 +542,4 @@ func (q *queryTime) MeasureTime(start int, stop int, step int) error {
 	// }
 	return nil
 }
+*/

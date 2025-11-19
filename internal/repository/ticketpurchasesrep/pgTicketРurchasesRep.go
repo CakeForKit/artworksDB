@@ -27,7 +27,8 @@ var (
 	ErrRowsAffected               = errors.New("no rows affected")
 )
 
-func NewPgTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials, dbConf *cnfg.DatebaseConfig) (*PgTicketPurchasesRep, error) {
+func NewPgTicketPurchasesRep(ctx context.Context, pgCreds *cnfg.DatebaseCredentials,
+	dbConf *cnfg.DatebaseConfig) (*PgTicketPurchasesRep, error) {
 	// connStr := "postgres://puser:ppassword@postgres_artworks:5432/artworks"
 	connStr := fmt.Sprintf("postgres://%s:%s@%s:%d/%s",
 		pgCreds.Username, pgCreds.Password, pgCreds.Host, pgCreds.Port, pgCreds.DbName)
@@ -68,7 +69,8 @@ func (pg *PgTicketPurchasesRep) parseTicketPurchasessRows(rows *sql.Rows) ([]*mo
 	return resTicketPurchases, nil
 }
 
-func (pg *PgTicketPurchasesRep) execSelectQuery(ctx context.Context, query sq.SelectBuilder) ([]*models.TicketPurchase, error) {
+func (pg *PgTicketPurchasesRep) execSelectQuery(ctx context.Context,
+	query sq.SelectBuilder) ([]*models.TicketPurchase, error) {
 	querySQL, args, err := query.ToSql()
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrQueryBuilds, err)
@@ -87,7 +89,8 @@ func (pg *PgTicketPurchasesRep) execSelectQuery(ctx context.Context, query sq.Se
 	return arts, nil
 }
 
-func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context, userID uuid.UUID) ([]*models.TicketPurchase, error) {
+func (pg *PgTicketPurchasesRep) GetTPurchasesOfUserID(ctx context.Context,
+	userID uuid.UUID) ([]*models.TicketPurchase, error) {
 	psql := sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
 	query := psql.Select(
 		"tp.id", "tp.customername", "tp.customeremail",

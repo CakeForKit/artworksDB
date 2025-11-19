@@ -47,6 +47,95 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
+func getConfig() (
+	appCnfg *cnfg.AppConfig,
+	dbCreds *cnfg.DatebaseCredentials,
+	redisCreds *cnfg.RedisCredentials,
+	dbCnfg *cnfg.DatebaseConfig,
+	err error,
+) {
+	appCnfg, err = cnfg.LoadAppConfig("./configs/", "config", "yaml")
+	if err != nil {
+		return
+	}
+	if appCnfg.Datebase == cnfg.PostgresDB {
+		dbCreds, err = cnfg.LoadPgCredentials("./configs/", "db", "env")
+		if err != nil {
+			err = fmt.Errorf("cannot load PgCredentials: %v", err)
+			return
+		}
+	} else if appCnfg.Datebase == cnfg.ClickHouseDB {
+		dbCreds, err = cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
+		if err != nil {
+			err = fmt.Errorf("cannot load ClickHouseCredentials: %v", err)
+			return
+		}
+	}
+
+	redisCreds, err = cnfg.LoadRedisCredentials("./configs/", "redis", "env")
+	if err != nil {
+		panic(fmt.Errorf("cannot load RedisCredentials: %v", err))
+	}
+	dbCnfg, err = cnfg.LoadDatebaseConfig("./configs/", "config", "yaml")
+	if err != nil {
+		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
+	}
+	return // appCnfg, dbCreds, redisCreds, dbCnfg
+}
+
+func getRepositories(
+	ctx context.Context,
+	appCnfg *cnfg.AppConfig,
+	dbCreds *cnfg.DatebaseCredentials,
+	redisCreds *cnfg.RedisCredentials,
+	dbCnfg *cnfg.DatebaseConfig,
+) (
+	userRep userrep.UserRep, employeeRep employeerep.EmployeeRep,
+	adminRep adminrep.AdminRep, collectionRep collectionrep.CollectionRep,
+	authorRep authorrep.AuthorRep, artworkRep artworkrep.ArtworkRep,
+	eventRep eventrep.EventRep, txRep buyticketstxrep.BuyTicketsTxRep,
+	tPurchasesRep ticketpurchasesrep.TicketPurchasesRep,
+	err error,
+) {
+	userRep, err = userrep.NewUserRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	employeeRep, err = employeerep.NewEmployeeRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	adminRep, err = adminrep.NewAdminRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	collectionRep, err = collectionrep.NewCollectionRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	authorRep, err = authorrep.NewAuthorRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	artworkRep, err = artworkrep.NewArtworkRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	eventRep, err = eventrep.NewEventRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	txRep, err = buyticketstxrep.NewBuyTicketsTxRep(ctx, redisCreds)
+	if err != nil {
+		return
+	}
+	tPurchasesRep, err = ticketpurchasesrep.NewTicketPurchasesRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	if err != nil {
+		return
+	}
+	return
+}
+
 func main() {
 	ctx := context.Background()
 	engine := gin.New()
@@ -79,31 +168,9 @@ func main() {
 	// apiGroup.Use(middleware.LogMiddleware(projLogger))
 
 	// ----- Config ------
-	appCnfg, err := cnfg.LoadAppConfig("./configs/", "config", "yaml")
+	appCnfg, dbCreds, redisCreds, dbCnfg, err := getConfig()
 	if err != nil {
-		panic(fmt.Errorf("cannot load AppConfig: %v", err))
-	}
-	var dbCreds *cnfg.DatebaseCredentials
-	if appCnfg.Datebase == cnfg.PostgresDB {
-		pgCreds, err := cnfg.LoadPgCredentials("./configs/", "db", "env")
-		if err != nil {
-			panic(fmt.Errorf("cannot load PgCredentials: %v", err))
-		}
-		dbCreds = pgCreds
-	} else if appCnfg.Datebase == cnfg.ClickHouseDB {
-		clhCreds, err := cnfg.LoadClickHouseCredentials("./configs/", "clickhouse", "env")
-		if err != nil {
-			panic(fmt.Errorf("cannot load ClickHouseCredentials: %v", err))
-		}
-		dbCreds = clhCreds
-	}
-	redisCreds, err := cnfg.LoadRedisCredentials("./configs/", "redis", "env")
-	if err != nil {
-		panic(fmt.Errorf("cannot load RedisCredentials: %v", err))
-	}
-	dbCnfg, err := cnfg.LoadDatebaseConfig("./configs/", "config", "yaml")
-	if err != nil {
-		panic(fmt.Errorf("cannot load DatebaseConfig: %v", err))
+		panic(err)
 	}
 	// ------------------
 
@@ -112,39 +179,9 @@ func main() {
 	engine.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler, url))
 
 	// ----- Repositories -----
-	userRep, err := userrep.NewUserRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	employeeRep, err := employeerep.NewEmployeeRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	adminRep, err := adminrep.NewAdminRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	collectionRep, err := collectionrep.NewCollectionRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	authorRep, err := authorrep.NewAuthorRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	artworkRep, err := artworkrep.NewArtworkRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	eventRep, err := eventrep.NewEventRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
-	if err != nil {
-		panic(err)
-	}
-	txRep, err := buyticketstxrep.NewBuyTicketsTxRep(ctx, redisCreds)
-	if err != nil {
-		panic(err)
-	}
-	tPurchasesRep, err := ticketpurchasesrep.NewTicketPurchasesRep(ctx, appCnfg.Datebase, dbCreds, dbCnfg)
+	userRep, employeeRep, adminRep, collectionRep,
+		authorRep, artworkRep, eventRep, txRep,
+		tPurchasesRep, err := getRepositories(ctx, appCnfg, dbCreds, redisCreds, dbCnfg)
 	if err != nil {
 		panic(err)
 	}
@@ -260,5 +297,5 @@ func main() {
 	// ---------------
 
 	// engine.Run(":8080")
-	engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
+	_ = engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
 }
