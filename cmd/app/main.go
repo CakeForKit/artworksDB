@@ -297,5 +297,5 @@ func main() {
 	// ---------------
 
 	// engine.Run(":8080")
-	_ = engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
+	engine.Run(fmt.Sprintf(":%d", appCnfg.Port))
 }
