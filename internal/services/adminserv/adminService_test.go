@@ -9,7 +9,7 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
 	"github.com/CakeForKit/artworksDB.git/internal/services/adminserv"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
 	"github.com/ozontech/allure-go/pkg/allure"
@@ -41,7 +41,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllUsers(t provider.T) {
 		mockUserRep := new(userrep.MockUserRep)
 		mockUserRep.On("GetAll", ctx).Return(users2, nil)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -64,7 +64,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllUsers(t provider.T) {
 		mockUserRep := new(userrep.MockUserRep)
 		mockUserRep.On("GetAll", ctx).Return(usersEmpty, nil)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -85,7 +85,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllUsers(t provider.T) {
 		expectedErr := errors.New("userRep error")
 		mockUserRep.On("GetAll", ctx).Return(usersEmpty, expectedErr)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -101,7 +101,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllUsers(t provider.T) {
 		mockEmployeeRep := new(employeerep.MockEmployeeRep)
 		mockUserRep := new(userrep.MockUserRep)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		expectedErr := errors.New("admin error")
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), expectedErr)
 
@@ -128,7 +128,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllEmployees(t provider.T) {
 		mockEmployeeRep := new(employeerep.MockEmployeeRep)
 		mockEmployeeRep.On("GetAll", ctx).Return(employees2, nil)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -151,7 +151,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllEmployees(t provider.T) {
 		mockUserRep := new(userrep.MockUserRep)
 		mockEmployeeRep.On("GetAll", ctx).Return(employeesEmpty, nil)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -172,7 +172,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllEmployees(t provider.T) {
 		expectedErr := errors.New("emplRep error")
 		mockEmployeeRep.On("GetAll", ctx).Return(employeesEmpty, expectedErr)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		adminServ := adminserv.NewAdminService(mockEmployeeRep, mockUserRep, mockAuthZRep)
@@ -188,7 +188,7 @@ func (s *AdminServiceSuite) TestAdminService_GetAllEmployees(t provider.T) {
 		mockEmployeeRep := new(employeerep.MockEmployeeRep)
 		mockUserRep := new(userrep.MockUserRep)
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		expectedErr := errors.New("admin error")
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), expectedErr)
 
@@ -205,7 +205,7 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 	t.WithNewStep("success", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		valid := true
@@ -228,7 +228,7 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 	t.WithNewStep("error no admin in context", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		expectedErr := errors.New("admin error")
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), expectedErr)
 
@@ -248,7 +248,7 @@ func (s *AdminServiceSuite) TestAdminService_ChangeEmployeeRights(t provider.T) 
 
 	t.WithNewStep("error update", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("AdminIDFromContext", ctx).Return(uuid.New(), nil)
 
 		valid := true

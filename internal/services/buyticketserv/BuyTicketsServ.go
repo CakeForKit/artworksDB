@@ -12,7 +12,7 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/ticketpurchasesrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/google/uuid"
 )
 
@@ -35,7 +35,7 @@ type buyTicketsServ struct {
 	txRep         buyticketstxrep.BuyTicketsTxRep
 	tPurchasesRep ticketpurchasesrep.TicketPurchasesRep
 	config        cnfg.AppConfig
-	authZ         auth.AuthZ
+	authZ         authz.AuthZ
 	userRep       userrep.UserRep
 	eventRep      eventrep.EventRep
 }
@@ -44,7 +44,7 @@ func NewBuyTicketsServ(
 	txRep buyticketstxrep.BuyTicketsTxRep,
 	tPurchasesRep ticketpurchasesrep.TicketPurchasesRep,
 	config cnfg.AppConfig,
-	authZ auth.AuthZ,
+	authZ authz.AuthZ,
 	userRep userrep.UserRep,
 	eventRep eventrep.EventRep,
 ) (BuyTicketsServ, error) {
@@ -114,11 +114,11 @@ func (b *buyTicketsServ) validateTicketAvailability(ctx context.Context, eventID
 func (b *buyTicketsServ) getUserData(ctx context.Context, customerName,
 	customerEmail string) (uuid.UUID, string, string, error) {
 	userID, err := b.authZ.UserIDFromContext(ctx)
-	if err != nil && err != auth.ErrNotAuthZ {
+	if err != nil && err != authz.ErrNotAuthZ {
 		return uuid.Nil, "", "", err
 	}
 
-	if err == auth.ErrNotAuthZ {
+	if err == authz.ErrNotAuthZ {
 		return b.getUnauthenticatedUserData(customerName, customerEmail)
 	}
 	return b.getAuthenticatedUserData(ctx, userID)

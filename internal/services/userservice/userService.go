@@ -7,7 +7,7 @@ import (
 
 	"github.com/CakeForKit/artworksDB.git/internal/models"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
 )
 
@@ -20,11 +20,11 @@ type UserService interface {
 
 type userService struct {
 	userRep userrep.UserRep
-	authZ   auth.AuthZ
+	authZ   authz.AuthZ
 	hash    hasher.Hasher
 }
 
-func NewUserService(userRep userrep.UserRep, authZ auth.AuthZ, hash hasher.Hasher) UserService {
+func NewUserService(userRep userrep.UserRep, authZ authz.AuthZ, hash hasher.Hasher) UserService {
 	return &userService{
 		userRep: userRep,
 		authZ:   authZ,

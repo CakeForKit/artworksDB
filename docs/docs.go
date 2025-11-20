@@ -130,7 +130,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.RegisterEmployeeRequest"
+                            "$ref": "#/definitions/authemployee.RegisterEmployeeRequest"
                         }
                     }
                 ],
@@ -210,7 +210,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginAdminRequest"
+                            "$ref": "#/definitions/authadmin.LoginAdminRequest"
                         }
                     }
                 ],
@@ -226,6 +226,40 @@ const docTemplate = `{
                     },
                     "403": {
                         "description": "Нет прав доступа"
+                    }
+                }
+            }
+        },
+        "/auth-admin/register": {
+            "post": {
+                "description": "Register a new admin",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Аутентификация"
+                ],
+                "summary": "Register admin",
+                "parameters": [
+                    {
+                        "description": "Register credentials",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authadmin.RegisterAdminRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "The admin registered"
+                    },
+                    "400": {
+                        "description": "Wrong input parameters"
+                    },
+                    "401": {
+                        "description": "Auth error"
                     }
                 }
             }
@@ -247,13 +281,50 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/auth.LoginEmployeeRequest"
+                            "$ref": "#/definitions/authemployee.LoginEmployeeRequest"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
                         "description": "Сотрудник успешно аутентифицирован"
+                    },
+                    "400": {
+                        "description": "Неверные входные параметры"
+                    },
+                    "401": {
+                        "description": "Ошибка аутентификации"
+                    },
+                    "403": {
+                        "description": "Нет прав доступа"
+                    }
+                }
+            }
+        },
+        "/auth-employee/register": {
+            "post": {
+                "description": "Регистрирует сотрудника",
+                "consumes": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Аутентификация"
+                ],
+                "summary": "Регистрация сотрудника",
+                "parameters": [
+                    {
+                        "description": "Учетные данные для регистрации",
+                        "name": "request",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authemployee.RegisterEmployeeRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Сотрудник успешно зарегистрирован"
                     },
                     "400": {
                         "description": "Неверные входные параметры"
@@ -1771,7 +1842,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "auth.LoginAdminRequest": {
+        "authadmin.LoginAdminRequest": {
             "type": "object",
             "required": [
                 "login",
@@ -1790,7 +1861,32 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.LoginEmployeeRequest": {
+        "authadmin.RegisterAdminRequest": {
+            "type": "object",
+            "required": [
+                "adminname",
+                "login",
+                "password"
+            ],
+            "properties": {
+                "adminname": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "admin"
+                },
+                "login": {
+                    "type": "string",
+                    "maxLength": 50,
+                    "example": "admin"
+                },
+                "password": {
+                    "type": "string",
+                    "minLength": 6,
+                    "example": "12345678"
+                }
+            }
+        },
+        "authemployee.LoginEmployeeRequest": {
             "type": "object",
             "required": [
                 "login",
@@ -1810,14 +1906,20 @@ const docTemplate = `{
                 }
             }
         },
-        "auth.RegisterEmployeeRequest": {
+        "authemployee.RegisterEmployeeRequest": {
             "type": "object",
             "required": [
+                "adminID",
                 "login",
                 "password",
                 "username"
             ],
             "properties": {
+                "adminID": {
+                    "description": "Valid    bool      ` + "`" + `json:\"valid\" binding:\"required,boolean\" example:\"true\"` + "`" + `",
+                    "type": "string",
+                    "example": "8f005053-5b95-4a6a-bdcd-7395ee3ed204"
+                },
                 "login": {
                     "type": "string",
                     "maxLength": 50,
@@ -1974,18 +2076,15 @@ const docTemplate = `{
             ],
             "properties": {
                 "birthYear": {
-                    "description": "Обязательное, \u003e= 1000",
                     "type": "integer",
                     "minimum": 1000,
                     "example": 1853
                 },
                 "deathYear": {
-                    "description": "Опциональное, \u003e= BirthYear",
                     "type": "integer",
                     "example": 1890
                 },
                 "name": {
-                    "description": "Обязательное, 2-100 символов",
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 2,
@@ -2046,7 +2145,6 @@ const docTemplate = `{
             ],
             "properties": {
                 "title": {
-                    "description": "Обязательное, 2-255 символов",
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 2,
@@ -2430,13 +2528,11 @@ const docTemplate = `{
             ],
             "properties": {
                 "birthYear": {
-                    "description": "Обязательное, \u003e= 1000",
                     "type": "integer",
                     "minimum": 1000,
                     "example": 1853
                 },
                 "deathYear": {
-                    "description": "Опциональное, \u003e= BirthYear",
                     "type": "integer",
                     "example": 1890
                 },
@@ -2445,7 +2541,6 @@ const docTemplate = `{
                     "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
                 "name": {
-                    "description": "Обязательное, 2-100 символов",
                     "type": "string",
                     "maxLength": 100,
                     "minLength": 2,
@@ -2510,7 +2605,6 @@ const docTemplate = `{
                     "example": "cfd9ff5d-cb37-407c-b043-288a482e9239"
                 },
                 "title": {
-                    "description": "Обязательное, 2-255 символов",
                     "type": "string",
                     "maxLength": 255,
                     "minLength": 2,

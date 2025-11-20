@@ -7,7 +7,7 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/models"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/google/uuid"
 )
 
@@ -17,7 +17,7 @@ type AdminService interface {
 	ChangeEmployeeRights(ctx context.Context, employeeID uuid.UUID, valid bool) error
 }
 
-func NewAdminService(empRep employeerep.EmployeeRep, userRep userrep.UserRep, authZ auth.AuthZ) AdminService {
+func NewAdminService(empRep employeerep.EmployeeRep, userRep userrep.UserRep, authZ authz.AuthZ) AdminService {
 	return &adminService{
 		employeeRep: empRep,
 		userRep:     userRep,
@@ -28,7 +28,7 @@ func NewAdminService(empRep employeerep.EmployeeRep, userRep userrep.UserRep, au
 type adminService struct {
 	employeeRep employeerep.EmployeeRep
 	userRep     userrep.UserRep
-	authZ       auth.AuthZ
+	authZ       authz.AuthZ
 }
 
 func (e *adminService) GetAllEmployees(ctx context.Context) ([]*models.Employee, error) {

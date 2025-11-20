@@ -7,7 +7,7 @@ import (
 
 	"github.com/CakeForKit/artworksDB.git/internal/models"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
 	"github.com/CakeForKit/artworksDB.git/internal/services/userservice"
 	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
@@ -33,7 +33,7 @@ func (s *UserServiceSuite) TestUserService_GetSelf(t provider.T) {
 	t.WithNewStep("WithNewStep", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("UserIDFromContext", ctx).Return(user.GetID(), nil)
 
 		mockUserRep := new(userrep.MockUserRep)
@@ -52,7 +52,7 @@ func (s *UserServiceSuite) TestUserService_GetSelf(t provider.T) {
 	t.WithNewStep("error UserID from context", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		expectedErr := errors.New("UserIDFromContext error")
 		mockAuthZRep.On("UserIDFromContext", ctx).Return(uuid.Nil, expectedErr)
 
@@ -69,7 +69,7 @@ func (s *UserServiceSuite) TestUserService_GetSelf(t provider.T) {
 	t.WithNewStep("error no userID", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("UserIDFromContext", ctx).Return(user.GetID(), nil)
 
 		mockUserRep := new(userrep.MockUserRep)
@@ -97,7 +97,7 @@ func (s *UserServiceSuite) TestUserService_ChangeSubscribeToMailing(t provider.T
 		ctx := context.Background()
 		subscr := false
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("UserIDFromContext", ctx).Return(user.GetID(), nil)
 
 		mockUserRep := new(userrep.MockUserRep)
@@ -115,7 +115,7 @@ func (s *UserServiceSuite) TestUserService_ChangeSubscribeToMailing(t provider.T
 		ctx := context.Background()
 		subscr := false
 
-		mockAuthZRep := new(auth.MockAuthZ)
+		mockAuthZRep := new(authz.MockAuthZ)
 		mockAuthZRep.On("UserIDFromContext", ctx).Return(user.GetID(), nil)
 
 		mockUserRep := new(userrep.MockUserRep)

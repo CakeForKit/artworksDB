@@ -14,6 +14,10 @@ services:
       - APP_EMAIL=${APP_EMAIL}
       - TEST_USER_EMAIL=${TEST_USER_EMAIL}
       - TEST_USER_EMAIL_PASSWORD=${TEST_USER_EMAIL_PASSWORD}
+      # 
+      - TRACING_ENABLED=true
+      - JAEGER_URL=http://jaeger:4318
+      - SERVICE_NAME=artworks-app
     volumes:
       - ../:/app          # Монтируем весь проект в контейнер
       - /app/go/pkg/mod   # Кэш для модулей Go
@@ -25,6 +29,18 @@ services:
     networks:
       - postgres-db
       - redis_artworks
+      - jaeger-network
+
+  jaeger:
+    container_name: jaeger_artworks
+    image: jaegertracing/all-in-one:latest
+    environment:
+      - COLLECTOR_OTLP_ENABLED=true
+    ports:
+      - "16686:16686"    # Web UI
+      - "4318:4318"    # HTTP collector endpoint
+    networks:
+      - jaeger-network
 
   postgres:
     container_name: postgres_artworks
@@ -123,4 +139,5 @@ networks:
     name: redis_artworks
   clickhouse-db:
     name: clickhouse-db
-
+  jaeger-network:
+    name: jaeger-network

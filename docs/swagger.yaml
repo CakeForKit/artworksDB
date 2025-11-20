@@ -1,6 +1,6 @@
 basePath: /api/v1
 definitions:
-  auth.LoginAdminRequest:
+  authadmin.LoginAdminRequest:
     properties:
       login:
         example: admin
@@ -14,7 +14,26 @@ definitions:
     - login
     - password
     type: object
-  auth.LoginEmployeeRequest:
+  authadmin.RegisterAdminRequest:
+    properties:
+      adminname:
+        example: admin
+        maxLength: 50
+        type: string
+      login:
+        example: admin
+        maxLength: 50
+        type: string
+      password:
+        example: "12345678"
+        minLength: 6
+        type: string
+    required:
+    - adminname
+    - login
+    - password
+    type: object
+  authemployee.LoginEmployeeRequest:
     properties:
       login:
         example: elogin
@@ -29,8 +48,12 @@ definitions:
     - login
     - password
     type: object
-  auth.RegisterEmployeeRequest:
+  authemployee.RegisterEmployeeRequest:
     properties:
+      adminID:
+        description: Valid    bool      `json:"valid" binding:"required,boolean" example:"true"`
+        example: 8f005053-5b95-4a6a-bdcd-7395ee3ed204
+        type: string
       login:
         example: elogin
         maxLength: 50
@@ -45,6 +68,7 @@ definitions:
         maxLength: 50
         type: string
     required:
+    - adminID
     - login
     - password
     - username
@@ -151,16 +175,13 @@ definitions:
   jsonreqresp.AddAuthorRequest:
     properties:
       birthYear:
-        description: Обязательное, >= 1000
         example: 1853
         minimum: 1000
         type: integer
       deathYear:
-        description: Опциональное, >= BirthYear
         example: 1890
         type: integer
       name:
-        description: Обязательное, 2-100 символов
         example: Винсент Ван Гог
         maxLength: 100
         minLength: 2
@@ -207,7 +228,6 @@ definitions:
   jsonreqresp.AddRequest:
     properties:
       title:
-        description: Обязательное, 2-255 символов
         example: Музей современного искусства
         maxLength: 255
         minLength: 2
@@ -477,19 +497,16 @@ definitions:
   jsonreqresp.UpdateAuthorRequest:
     properties:
       birthYear:
-        description: Обязательное, >= 1000
         example: 1853
         minimum: 1000
         type: integer
       deathYear:
-        description: Опциональное, >= BirthYear
         example: 1890
         type: integer
       id:
         example: cfd9ff5d-cb37-407c-b043-288a482e9239
         type: string
       name:
-        description: Обязательное, 2-100 символов
         example: Винсент Ван Гог
         maxLength: 100
         minLength: 2
@@ -540,7 +557,6 @@ definitions:
         example: cfd9ff5d-cb37-407c-b043-288a482e9239
         type: string
       title:
-        description: Обязательное, 2-255 символов
         example: Музей современного искусства
         maxLength: 255
         minLength: 2
@@ -650,7 +666,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.RegisterEmployeeRequest'
+          $ref: '#/definitions/authemployee.RegisterEmployeeRequest'
       responses:
         "200":
           description: Сотрудник зарегистрирован
@@ -703,7 +719,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginAdminRequest'
+          $ref: '#/definitions/authadmin.LoginAdminRequest'
       responses:
         "200":
           description: Администратор успешно аутентифицирован
@@ -714,6 +730,28 @@ paths:
         "403":
           description: Нет прав доступа
       summary: Вход администратора
+      tags:
+      - Аутентификация
+  /auth-admin/register:
+    post:
+      consumes:
+      - application/json
+      description: Register a new admin
+      parameters:
+      - description: Register credentials
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authadmin.RegisterAdminRequest'
+      responses:
+        "200":
+          description: The admin registered
+        "400":
+          description: Wrong input parameters
+        "401":
+          description: Auth error
+      summary: Register admin
       tags:
       - Аутентификация
   /auth-employee/login:
@@ -727,7 +765,7 @@ paths:
         name: request
         required: true
         schema:
-          $ref: '#/definitions/auth.LoginEmployeeRequest'
+          $ref: '#/definitions/authemployee.LoginEmployeeRequest'
       responses:
         "200":
           description: Сотрудник успешно аутентифицирован
@@ -738,6 +776,30 @@ paths:
         "403":
           description: Нет прав доступа
       summary: Вход сотрудника
+      tags:
+      - Аутентификация
+  /auth-employee/register:
+    post:
+      consumes:
+      - application/json
+      description: Регистрирует сотрудника
+      parameters:
+      - description: Учетные данные для регистрации
+        in: body
+        name: request
+        required: true
+        schema:
+          $ref: '#/definitions/authemployee.RegisterEmployeeRequest'
+      responses:
+        "200":
+          description: Сотрудник успешно зарегистрирован
+        "400":
+          description: Неверные входные параметры
+        "401":
+          description: Ошибка аутентификации
+        "403":
+          description: Нет прав доступа
+      summary: Регистрация сотрудника
       tags:
       - Аутентификация
   /auth-user/login:

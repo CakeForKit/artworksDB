@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/CakeForKit/artworksDB.git/internal/frontend"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/token"
 	"github.com/gin-gonic/gin"
 )
@@ -46,7 +46,7 @@ func tokenFromHeader(c *gin.Context) (string, error) {
 	return accessToken, nil
 }
 
-func AuthMiddleware(authServ TokenVerifier, authZ auth.AuthZ, mandatory bool) gin.HandlerFunc {
+func AuthMiddleware(authServ TokenVerifier, authZ authz.AuthZ, mandatory bool) gin.HandlerFunc {
 	return func(c *gin.Context) {
 
 		accessToken, err := tokenFromHeader(c)

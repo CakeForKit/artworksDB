@@ -7,7 +7,7 @@ import (
 
 	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/buyticketstxrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/buyticketserv"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -103,7 +103,7 @@ func (r *BuyTicketRouter) GetAllTicketPurchasesOfUser(c *gin.Context) {
 
 	txPurchases, err := r.buyTicketServ.GetAllTicketPurchasesOfUser(ctx)
 	if err != nil {
-		if errors.Is(err, auth.ErrNotAuthZ) || errors.Is(err, auth.ErrHasNoRights) {
+		if errors.Is(err, authz.ErrNotAuthZ) || errors.Is(err, authz.ErrHasNoRights) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})

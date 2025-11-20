@@ -11,7 +11,7 @@ import (
 	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/ticketpurchasesrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/buyticketserv"
 	testobj "github.com/CakeForKit/artworksDB.git/internal/tests/testObj"
 	"github.com/google/uuid"
@@ -47,7 +47,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -90,14 +90,14 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
 		mockEventRep.On("GetByID", ctx, event.GetID()).Return(event, nil)
 		mockTXRep.On("GetCntTxByEventID", ctx, event.GetID()).Return(txCnt, nil)
 		mockTPurchasesRep.On("GetCntTPurchasesForEvent", ctx, event.GetID()).Return(purchasesCnt, nil)
-		mockAuthZ.On("UserIDFromContext", ctx).Return(uuid.Nil, auth.ErrNotAuthZ)
+		mockAuthZ.On("UserIDFromContext", ctx).Return(uuid.Nil, authz.ErrNotAuthZ)
 		mockTXRep.On("Add", ctx, mock.AnythingOfType("models.TicketPurchaseTx")).Return(nil)
 
 		buyTicketsServ, err := buyticketserv.NewBuyTicketsServ(
@@ -130,7 +130,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -166,14 +166,14 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_BuyTicket(t provider.T) {
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
 		mockEventRep.On("GetByID", ctx, event.GetID()).Return(event, nil)
 		mockTXRep.On("GetCntTxByEventID", ctx, event.GetID()).Return(txCnt, nil)
 		mockTPurchasesRep.On("GetCntTPurchasesForEvent", ctx, event.GetID()).Return(purchasesCnt, nil)
-		mockAuthZ.On("UserIDFromContext", ctx).Return(uuid.Nil, auth.ErrNotAuthZ)
+		mockAuthZ.On("UserIDFromContext", ctx).Return(uuid.Nil, authz.ErrNotAuthZ)
 
 		buyTicketsServ, err := buyticketserv.NewBuyTicketsServ(
 			mockTXRep,
@@ -207,7 +207,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_ConfirmBuyTicket(t provider.
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -242,7 +242,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_ConfirmBuyTicket(t provider.
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -278,7 +278,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_CancelBuyTicket(t provider.T
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -309,7 +309,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_CancelBuyTicket(t provider.T
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -348,7 +348,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_GetAllTicketPurchasesOfUser(
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -380,11 +380,11 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_GetAllTicketPurchasesOfUser(
 	t.WithNewStep("error user not authenticated", func(sCtx provider.StepCtx) {
 		ctx := context.Background()
 		appCnfg := testobj.NewAppConfigMother().Default()
-		expectedErr := auth.ErrNotAuthZ
+		expectedErr := authz.ErrNotAuthZ
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 
@@ -419,7 +419,7 @@ func (s *BuyTicketsServiceSuite) TestBuyTicketsServ_GetBuyTicketTransactionDurat
 
 		mockTXRep := new(buyticketstxrep.MockBuyTicketsTxRep)
 		mockTPurchasesRep := new(ticketpurchasesrep.MockTicketPurchasesRep)
-		mockAuthZ := new(auth.MockAuthZ)
+		mockAuthZ := new(authz.MockAuthZ)
 		mockUsrRep := new(userrep.MockUserRep)
 		mockEventRep := new(eventrep.MockEventRep)
 

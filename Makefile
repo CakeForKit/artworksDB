@@ -17,16 +17,6 @@ EMAIL_ENV := ./configs/email.env
 lint:
 	golangci-lint run
 
-.PHONY: fmt
-fmt:
-	gofmt -w -s .
-	goimports -w .
-
-# # Проверка форматирования
-# fmt-check:
-# 	gofmt -l -s .
-# 	@test -z "$$(gofmt -l -s .)"
-
 .PHONY: allure
 allure: unit_test integration_test e2e_test report_allure open_allure
 
@@ -56,6 +46,10 @@ clear_allure:
 open_allure:
 	allure open $(ALLURE_REPORT_DIR)
 	
+
+.PHONY: jeager
+jeager:
+	docker compose -v -f $(DC_DEV) up --build jaeger -d
 
 
 .PHONY: run_app

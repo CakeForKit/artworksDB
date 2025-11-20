@@ -6,19 +6,19 @@ import (
 	"net/http"
 
 	"github.com/CakeForKit/artworksDB.git/internal/repository/userrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
 	attemptsrep "github.com/CakeForKit/artworksDB.git/internal/services/auth/attempts_rep"
 	authmodels "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_models"
+	authuser "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_user"
 	"github.com/CakeForKit/artworksDB.git/internal/services/auth/hasher"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type AuthUserRouter struct {
-	authu auth.AuthUser
+	authu authuser.AuthUser
 }
 
-func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu auth.AuthUser) {
+func (r *AuthUserRouter) Init(router *gin.RouterGroup, authu authuser.AuthUser) {
 	r.authu = authu
 	gr := router.Group("auth-user")
 	gr.POST("/register", r.Register)

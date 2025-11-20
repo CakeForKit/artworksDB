@@ -7,20 +7,21 @@ import (
 	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/employeerep"
 	"github.com/CakeForKit/artworksDB.git/internal/services/adminserv"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	authemployee "github.com/CakeForKit/artworksDB.git/internal/services/auth/auth_employee"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
 
 type AdminRouter struct {
 	adminServ adminserv.AdminService
-	authe     auth.AuthEmployee
-	authZ     auth.AuthZ
+	authe     authemployee.AuthEmployee
+	authZ     authz.AuthZ
 }
 
 func (r *AdminRouter) Init(
 	router *gin.RouterGroup, adminserv adminserv.AdminService,
-	authe auth.AuthEmployee, authZ auth.AuthZ) {
+	authe authemployee.AuthEmployee, authZ authz.AuthZ) {
 	r.adminServ = adminserv
 	r.authe = authe
 	r.authZ = authZ
@@ -89,7 +90,7 @@ func (r *AdminRouter) GetAllUsers(c *gin.Context) {
 // @Accept json
 // @Security ApiKeyAuth
 // @Param Authorization header string true "bearer {token}"
-// @Param request body auth.RegisterEmployeeRequest true "Данные для регистрации"
+// @Param request body authemployee.RegisterEmployeeRequest true "Данные для регистрации"
 // @Success 200 "Сотрудник зарегистрирован"
 // @Failure 400 "Неверные входные параметры"
 // @Failure 401 "Ошибка авторизации"
@@ -100,7 +101,7 @@ func (r *AdminRouter) Register(c *gin.Context) {
 
 	adminID, err := r.authZ.AdminIDFromContext(ctx)
 	if err != nil {
-		if errors.Is(err, auth.ErrNotAuthZ) || errors.Is(err, auth.ErrHasNoRights) {
+		if errors.Is(err, authz.ErrNotAuthZ) || errors.Is(err, authz.ErrHasNoRights) {
 			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		} else {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
@@ -108,7 +109,7 @@ func (r *AdminRouter) Register(c *gin.Context) {
 		return
 	}
 
-	var req auth.RegisterEmployeeRequest
+	var req authemployee.RegisterEmployeeRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return

@@ -8,7 +8,7 @@ import (
 	jsonreqresp "github.com/CakeForKit/artworksDB.git/internal/models/json_req_resp"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/artworkrep"
 	"github.com/CakeForKit/artworksDB.git/internal/repository/eventrep"
-	"github.com/CakeForKit/artworksDB.git/internal/services/auth"
+	"github.com/CakeForKit/artworksDB.git/internal/services/auth/authz"
 	"github.com/CakeForKit/artworksDB.git/internal/services/eventserv"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -16,10 +16,10 @@ import (
 
 type EventRouter struct {
 	eventServ eventserv.EventService
-	authZ     auth.AuthZ
+	authZ     authz.AuthZ
 }
 
-func NewEventRouter(router *gin.RouterGroup, eventServ eventserv.EventService, authZ auth.AuthZ) EventRouter {
+func NewEventRouter(router *gin.RouterGroup, eventServ eventserv.EventService, authZ authz.AuthZ) EventRouter {
 	r := EventRouter{
 		eventServ: eventServ,
 		authZ:     authZ,

@@ -1,12 +1,11 @@
--- Active: 1744740356603@@127.0.0.1@5432@artworks
+-- Active: 1763648423014@@127.0.0.1@5432@artworks
 SELECT *
 FROM INFORMATION_SCHEMA.TABLES
 WHERE schemaname = 'public';
 
 
 
-
-select * from users;
+select * from employees;
 
 delete from users where email = 'tmpforread@mail.ru';
 
