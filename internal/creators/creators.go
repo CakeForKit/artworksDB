@@ -194,9 +194,6 @@ func GetServs(
 	mailingServ mailing.MailingService,
 ) {
 	userServ = userservice.NewUserService(userRep, authZ, hasher)
-	if tracer.IsEnabled() {
-		userServ = userservice.NewTracedUserService(userServ, tracer)
-	}
 	adminServ = adminserv.NewAdminService(employeeRep, userRep, authZ)
 	buyTicketServ, _ = buyticketserv.NewBuyTicketsServ(txRep, tPurchasesRep, *appCnfg, authZ, userRep, eventRep)
 	collectionServ = collectionserv.NewCollectionServ(collectionRep)
@@ -204,10 +201,17 @@ func GetServs(
 	artworkServ = artworkserv.NewArtworkService(artworkRep, authorRep, collectionRep)
 	eventServ = eventserv.NewEventService(eventRep, artworkRep)
 	searcherServ = searcher.NewSearcher(artworkRep, eventRep)
+	mailingServ = mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
+
 	if tracer.IsEnabled() {
+		userServ = userservice.NewTracedUserService(userServ, tracer)
+		adminServ = adminserv.NewTracedAdminService(adminServ, tracer)
+		buyTicketServ = buyticketserv.NewTracedBuyTicketsServ(buyTicketServ, tracer)
+		collectionServ = collectionserv.NewTracedCollectionServ(collectionServ, tracer)
+		authroServ = authorserv.NewTracedAuthorServ(authroServ, tracer)
+		artworkServ = artworkserv.NewTracedArtworkService(artworkServ, tracer)
+		eventServ = eventserv.NewTracedEventService(eventServ, tracer)
 		searcherServ = searcher.NewTracedSearcher(searcherServ, tracer)
 	}
-
-	mailingServ = mailing.NewGmailSender(userRep, "museum", "museum@test.ru", "1234")
 	return
 }

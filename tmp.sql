@@ -6,6 +6,7 @@ WHERE schemaname = 'public';
 
 
 select * from employees;
+select * from admins;
 
 delete from users where email = 'tmpforread@mail.ru';
 
