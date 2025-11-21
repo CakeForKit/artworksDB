@@ -10,6 +10,36 @@ import (
 )
 
 func main() {
+	analyzer := tracing.NewTraceAnalyzer("http://localhost:16686")
+
+	startStr := "2025-11-21T20:29:40Z"
+	endStr := "2025-11-21T20:29:52Z"
+	startTime, err := time.Parse(time.RFC3339, startStr)
+	if err != nil {
+		panic(err)
+	}
+	endTime, err := time.Parse(time.RFC3339, endStr)
+	if err != nil {
+		panic(err)
+	}
+
+	analysis, err := analyzer.AnalyzeTimeRange(
+		context.Background(),
+		"artworks-timing",
+		startTime,
+		endTime,
+	)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	// Выводим результаты
+	analyzer.PrintTimeRangeAnalysis(analysis)
+
+	main1()
+}
+
+func main1() {
 	// Создаем анализатор
 	analyzer := tracing.NewTraceAnalyzer("http://localhost:16686")
 	ctx := context.Background()

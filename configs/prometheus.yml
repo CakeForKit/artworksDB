@@ -2,11 +2,6 @@ global:
   scrape_interval: 1s
 
 scrape_configs:
-  - job_name: "app_artworks_dev"
-    static_configs:
-      - targets: ["app_artworks_dev:8080"]  
-    metrics_path: /metrics
-
   - job_name: "cadvisortest"
     static_configs:
       - targets: ["cadvisortest:8081"]  

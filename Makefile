@@ -47,10 +47,17 @@ open_allure:
 	allure open $(ALLURE_REPORT_DIR)
 	
 
-.PHONY: jeager
-jeager:
-	docker compose -v -f $(DC_DEV) up --build jaeger -d
+.PHONY: metrics
+metrics:
+	docker compose -v -f $(DC_DEV) up --build jaeger cadvisortest prometheus -d
 
+.PHONY: cad_run
+cad_run:
+	docker compose -f $(DC_DEV) up --build cadvisortest -d
+
+.PHONY: cad_down
+cad_down:
+	docker compose -f $(DC_DEV) down -v cadvisortest
 
 .PHONY: run_app
 run_app:
