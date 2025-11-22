@@ -75,11 +75,6 @@ func CalculateStatsFromFile(filename string) (*Stats, error) {
 	if err := scanner.Err(); err != nil {
 		return nil, fmt.Errorf("❌ Error reading file: %v", err)
 	}
-
-	if stats.Count == 0 {
-		return nil, fmt.Errorf("❌ No valid data found in file")
-	}
-
 	stats.Avg = stats.Sum / float64(stats.Count)
 
 	return stats, nil
