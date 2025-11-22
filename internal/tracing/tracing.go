@@ -24,7 +24,7 @@ func DefaultConfigTracer() *ConfigTracer {
 	return &ConfigTracer{
 		ServiceName:  "artworks",
 		CollectorURL: "jaeger:4318", // OTLP HTTP endpoint
-		Enabled:      false,
+		Enabled:      true,
 		Timeout:      10 * time.Second,
 	}
 }

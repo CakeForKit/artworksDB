@@ -186,6 +186,18 @@ func saveMetrics(queryResponse PrometheusQueryRangeResponse, metricName string) 
 		_, _ = fmt.Fprintf(file, "%d %.2f\n", v.Timestamp, v.Val)
 	}
 
+	avg := 0.0
+	for _, v := range resultVals {
+		avg += v.Val
+	}
+	avg = avg / float64(len(resultVals))
+	// fileAvg, err := os.Create(fmt.Sprintf("./metrics_data/prometheus/%s.txt", metricName))
+	// if err != nil {
+	// 	return fmt.Errorf("❌ Failed to create file for %s: %v", metricName, err)
+	// }
+	// defer fileAvg.Close()
+	_, _ = fmt.Fprintf(file, "%.2f\n", avg)
+
 	return nil
 }
 
