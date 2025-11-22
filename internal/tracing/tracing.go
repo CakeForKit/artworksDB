@@ -49,7 +49,7 @@ func NewTracer(config *ConfigTracer) (*Tracer, error) {
 		otlptracehttp.WithInsecure(), // Для HTTP без TLS
 	)
 	if err != nil {
-		return nil, fmt.Errorf("failed to create OTLP exporter: %w", err)
+		return &Tracer{enabled: false}, fmt.Errorf("failed to create OTLP exporter: %w", err)
 	}
 
 	tp := sdktrace.NewTracerProvider(
