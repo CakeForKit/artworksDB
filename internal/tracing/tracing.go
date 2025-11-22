@@ -84,6 +84,10 @@ func (t *Tracer) IsEnabled() bool {
 	return t.enabled
 }
 
+func (t *Tracer) ChangeEnabled(new bool) {
+	t.enabled = new
+}
+
 func (t *Tracer) StartSpan(
 	ctx context.Context,
 	name string,
