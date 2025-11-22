@@ -4,7 +4,7 @@ set -a  # Automatically export all variables
 source ./configs/email.env
 set +a
 
-first=1
+first=39
 cnt=100
 for ((i=first; i<=cnt; i++))
 do
