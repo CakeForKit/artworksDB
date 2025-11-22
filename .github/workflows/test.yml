@@ -3,7 +3,7 @@ name: Tests
 on:
   push:
     branches: [ "*" ]
-jobs:
+jobs: 
   lint:
     runs-on: ubuntu-latest
     steps:
