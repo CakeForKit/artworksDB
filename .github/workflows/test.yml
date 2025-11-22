@@ -98,6 +98,21 @@ jobs:
         run: |
           docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d redis_artworks test-runner 
+
+          for i in {1..30}; do
+            if curl -f http://localhost:8080/api/v1/health > /dev/null 2>&1; then
+              echo "Test runner is ready!"
+              break
+            fi
+            echo "Waiting for test-runner to be ready... attempt $i/30"
+            sleep 2
+          done
+          
+          if ! curl -f http://localhost:8080/api/v1/health; then
+            echo "ERROR: Test runner failed to start"
+            docker compose -f ./artworks-deployment/docker-compose.ci.yml logs test-runner
+            exit 1
+          fi
         env:
           APP_EMAIL_PASSWORD: ${{ secrets.APP_EMAIL_PASSWORD }}
           APP_EMAIL: ${{ secrets.APP_EMAIL }}

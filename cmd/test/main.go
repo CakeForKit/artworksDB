@@ -35,6 +35,10 @@ func main() {
 	})
 	apiGroup := engine.Group("/api/v1")
 
+	apiGroup.GET("/health", func(c *gin.Context) {
+		c.JSON(200, gin.H{"status": "ok"})
+	})
+
 	tracer, err := tracing.NewTracer(tracing.DefaultConfigTracer())
 	if err != nil {
 		panic(err)
