@@ -113,6 +113,9 @@ jobs:
             docker compose -f ./artworks-deployment/docker-compose.ci.yml logs test-runner
             exit 1
           fi
+
+          echo "Current logs:"
+          docker compose -f ./artworks-deployment/docker-compose.ci.yml logs test-runner --tail=20
         env:
           APP_EMAIL_PASSWORD: ${{ secrets.APP_EMAIL_PASSWORD }}
           APP_EMAIL: ${{ secrets.APP_EMAIL }}
