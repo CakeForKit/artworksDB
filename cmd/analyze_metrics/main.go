@@ -85,6 +85,9 @@ func main() {
 		"./metrics_data/traced/container_cpu_usage_seconds_total.txt",
 		"./metrics_data/traced/container_memory_usage_bytes.txt",
 		"./metrics_data/traced/e2e.txt",
+		"./metrics_data/no_trace/container_cpu_usage_seconds_total.txt",
+		"./metrics_data/no_trace/container_memory_usage_bytes.txt",
+		"./metrics_data/no_trace/e2e.txt",
 	}
 	for _, filename := range filenames {
 		fmt.Printf("%s:\n", filename)
