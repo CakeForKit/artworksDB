@@ -6,10 +6,10 @@ run:
 linters:
   enable:
     - revive
-    - gocyclo
-    - gocognit
     - govet
     - staticcheck
+    - gocyclo
+    - gocognit
     - gosimple
     - unused
     - typecheck
@@ -26,6 +26,6 @@ linters-settings:
       - name: line-length-limit
         arguments: [120]
 
-issues:
-  max-issues-per-linter: 0
-  max-same-issues: 0
+# issues:
+#   max-issues-per-linter: 0
+#   max-same-issues: 0

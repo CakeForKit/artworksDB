@@ -15,12 +15,16 @@ EMAIL_ENV := ./configs/email.env
 
 .PHONY: lint
 lint:
-	golangci-lint run
+	golangci-lint run --config=.golangci.yml 
 
 .PHONY: fmt
 fmt:
 	gofmt -w -s .
 	goimports -w .
+
+.PHONY: cycl
+cycl:
+	gocyclo -over=9 -under=11 .
 
 # # Проверка форматирования
 # fmt-check:
