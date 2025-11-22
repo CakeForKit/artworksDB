@@ -17,12 +17,10 @@ type Stats struct {
 }
 
 func (s *Stats) PrintStats() {
-	fmt.Printf("📊 Статистика по второй колонке:\n")
-	fmt.Printf("   Количество значений: %d\n", s.Count)
-	fmt.Printf("   Минимальное: %.4f\n", s.Min)
-	fmt.Printf("   Максимальное: %.4f\n", s.Max)
-	fmt.Printf("   Среднее: %.4f\n", s.Avg)
-	fmt.Printf("   Сумма: %.4f\n", s.Sum)
+	// fmt.Printf("   Количество значений: %d\n", s.Count)
+	fmt.Printf("   Min: %.4f\n", s.Min)
+	fmt.Printf("   Max: %.4f\n", s.Max)
+	fmt.Printf("   Avg: %.4f\n", s.Avg)
 }
 
 // CalculateStatsFromFile вычисляет статистику по второй колонке файла
@@ -49,11 +47,16 @@ func CalculateStatsFromFile(filename string) (*Stats, error) {
 		}
 
 		columns := strings.Fields(line)
-		if len(columns) < 2 {
+		valueStr := ""
+		if len(columns) == 1 {
+			valueStr = columns[0]
+		} else if len(columns) == 2 {
+			valueStr = columns[1]
+		} else {
 			return nil, fmt.Errorf("❌ Invalid format on line %d: expected 2 columns, got %d", lineNumber, len(columns))
 		}
 
-		value, err := strconv.ParseFloat(columns[1], 64)
+		value, err := strconv.ParseFloat(valueStr, 64)
 		if err != nil {
 			return nil, fmt.Errorf("❌ Failed to parse number on line %d: %v", lineNumber, err)
 		}
@@ -83,15 +86,20 @@ func CalculateStatsFromFile(filename string) (*Stats, error) {
 }
 
 func main() {
-	// Пример использования
-	filename := "./metrics_data/prometheus/container_cpu_usage_seconds_total.txt"
-
-	// Базовая статистика
-	stats, err := CalculateStatsFromFile(filename)
-	if err != nil {
-		fmt.Printf("❌ Ошибка: %v\n", err)
-		return
+	filenames := []string{
+		"./metrics_data/traced/container_cpu_usage_seconds_total.txt",
+		"./metrics_data/traced/container_memory_usage_bytes.txt",
+		"./metrics_data/traced/e2e.txt",
 	}
+	for _, filename := range filenames {
+		fmt.Printf("%s:\n", filename)
 
-	stats.PrintStats()
+		stats, err := CalculateStatsFromFile(filename)
+		if err != nil {
+			fmt.Printf("❌ Ошибка: %v\n", err)
+			return
+		}
+
+		stats.PrintStats()
+	}
 }

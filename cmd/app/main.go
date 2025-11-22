@@ -43,12 +43,12 @@ func main() {
 	})
 	apiGroup := engine.Group("/api/v1")
 
-	timingTracer, err := tracing.NewTimingTracer(tracing.DefaultTimingConfig())
-	if err != nil {
-		panic(err)
-	}
-	defer timingTracer.Shutdown(ctx)
-	apiGroup.Use(middleware.MetricsMiddleware(timingTracer))
+	// timingTracer, err := tracing.NewTimingTracer(tracing.DefaultTimingConfig())
+	// if err != nil {
+	// 	panic(err)
+	// }
+	// defer timingTracer.Shutdown(ctx)
+	// apiGroup.Use(middleware.MetricsMiddleware(timingTracer))
 
 	tracer, err := tracing.NewTracer(tracing.DefaultConfigTracer())
 	if err != nil {

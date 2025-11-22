@@ -3,6 +3,7 @@ package e2eapi_test
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strings"
 	"testing"
@@ -49,6 +50,7 @@ func (s *UserE2ESuite) BeforeEach(t provider.T) {
 	s.registerUserReqCreator = testobj.NewRegisterUserRequestMother()
 	s.registerUserData = s.registerUserReqCreator.RegisterWithEmail(s.EmailReader.Username)
 	t.WithNewStep("Register new user", func(sCtx provider.StepCtx) {
+		fmt.Printf("Register user: %v\n\n", s.registerUserData)
 		resp, err := s.client.DoRequest("POST", "/auth-user/register", s.registerUserData)
 		sCtx.Require().NoError(err)
 		sCtx.Assert().Equal(http.StatusOK, resp.StatusCode)
