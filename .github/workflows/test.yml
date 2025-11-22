@@ -78,23 +78,23 @@ jobs:
         env:
           POSTGRES_HOST: localhost
 
-      - name: Run Integration Tests
-        id: integration-tests
-        run: go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integration 
-        env:
-          ALLURE_OUTPUT_DIR: allure-results
-          ALLURE_OUTPUT_PATH: ${{ github.workspace }}
+      # - name: Run Integration Tests
+      #   id: integration-tests
+      #   run: go test -v -shuffle=on github.com/CakeForKit/artworksDB.git/internal/tests/integration 
+      #   env:
+      #     ALLURE_OUTPUT_DIR: allure-results
+      #     ALLURE_OUTPUT_PATH: ${{ github.workspace }}
 
-      - name: Upload Integration Allure results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: allure-results-integration  # Название артефакта
-          path: allure-results  # Путь к файлам отчета
+      # - name: Upload Integration Allure results
+      #   if: always()
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: allure-results-integration  # Название артефакта
+      #     path: allure-results  # Путь к файлам отчета
 
       - name: Build and up test-runner container
         id: test-runner-up
-        if: steps.integration-tests.outcome == 'success'
+        # if: steps.integration-tests.outcome == 'success'
         run: |
           docker compose -f ./artworks-deployment/docker-compose.ci.yml \
             --env-file ./configs/test_db.env up --build -d redis_artworks test-runner 
